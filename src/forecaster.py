@@ -4,18 +4,27 @@ This module provides the high level Forecaster class.
 class Forecaster:
     """
     """
-    def __init__(self) -> None:
+    def __init__(self, model) -> None:
         """
         
         """
         self.model = None # Fully trained inference model
-        self.input_data = None # Up to date relevant input data
+        self.x_in = None # Up to date relevant input data
     
 
-    def forecast_for(timestamp) -> str:
+    @property
+    def forecast(self):
         """
         """
-        return "Expected change in level for " + timestamp + " is..."
+        self.model.run_inference(self.x_in)
+
+
+    def forecast_for(self, timestamp) -> str:
+        """
+        """
+        expected_level = self.forecast[timestamp]
+        
+        return "Expected level for " + timestamp + " is " + expected_level
 
 
     def update_input_data(self, input_data) -> None:
