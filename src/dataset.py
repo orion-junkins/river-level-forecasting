@@ -1,3 +1,4 @@
+#%%
 """
 This module provides data set processing utilities. Core functionality lies within the 'Dataset' class.
 Other helper functions are defined below. 
@@ -12,10 +13,11 @@ class Dataset:
     Wrapper class for combined weather and level data sets. 
     """
     def __init__(self, weather_urls, level_url) -> None:
-        self.weather_data = []
-        #self._process_all_weather_urls(weather_urls)
-        self._process_level_url(level_url)
+        self.verbose = True
+        self.weather_dataframes = []
         self.df_level = None
+        self._process_all_weather_urls(weather_urls)
+        self._process_level_url(level_url)
 
 
     def _process_level_url(self, level_url) -> None:
@@ -48,8 +50,9 @@ class Dataset:
         
         # Cast the level column to type float
         self.df_level['level'] = self.df_level['level'].astype(float)
-        print("Level data Fetched. Raw data following initial pre-pro:")
-        display(self.df_level)
+        if self.verbose:
+            print("Level data Fetched. Raw data following initial pre-pro:")
+            display(self.df_level)
 
 
     def _process_all_weather_urls(self, weather_urls):
@@ -61,6 +64,10 @@ class Dataset:
         """
         for url in weather_urls:
             self._process_weather_url(url)
+        if self.verbose:
+            print("Weather data Fetched. Raw data following initial pre-pro:")
+            for df_weather in self.weather_dataframes:
+                display(df_weather)
 
     def _process_weather_url(self, url):
         """
@@ -69,7 +76,23 @@ class Dataset:
         Args:
             url (string): exact url linking to the target CSV
         """
-        weather_data = pd.read_csv(url, comment='#')  
+        # Fetch data from url
+        df_weather = pd.read_csv(url, comment='#') 
+        
+        # Drop un-needed metadata
+        df_weather = df_weather.drop(columns=['Precipitation Accumulation (in) Start of Day Values']) 
+        
+        # Renamne the date column to match levels data
+        df_weather.rename(columns={'Date':'datetime'}, inplace=True)
+
+        # Convert the datetime column into datetime objects
+        df_weather["datetime"] = pd.to_datetime(df_weather["datetime"])
+
+        # Use the datetime column as the index
+        df_weather.set_index('datetime', inplace=True)
+        
+        # Add the processed dataframe to the list
+        self.weather_dataframes.append(df_weather)
 
     
 def yesterday() -> str:
@@ -82,9 +105,12 @@ def yesterday() -> str:
     yesterday = yesterday.strftime("%Y-%m-%d")
     return yesterday
 
-
+#%%
 # Example usage: 
 # Based on today's date, fetch all relevant water data
 mck_vida_url = 'https://waterdata.usgs.gov/nwis/dv?cb_00060=on&format=rdb&site_no=14162500&referred_module=sw&period=&begin_date=1988-10-12&end_date=' + yesterday()
 
-ds = Dataset("", mck_vida_url)
+# Fetch weather & SWE data for Mckenzie basin. Atuomatically retrieves all data up to present.
+mck_weather_url ='https://wcc.sc.egov.usda.gov/reportGenerator/view_csv/customSingleStationReport/daily/619:OR:SNTL%7Cid=%22%22%7Cname/POR_BEGIN,POR_END/WTEQ::value,PREC::value,TMAX::value,TMIN::value,TAVG::value,PRCP::value'
+
+ds = Dataset([mck_weather_url], mck_vida_url)
