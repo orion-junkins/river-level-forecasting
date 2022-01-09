@@ -4,6 +4,8 @@ This module provides data set processing utilities. Core functionality lies with
 Other helper functions are defined below. 
 """
 import pandas as pd
+import numpy as np
+from sklearn.preprocessing import MinMaxScaler
 from datetime import datetime, timedelta
 import re
 from IPython.display import display
@@ -18,10 +20,12 @@ class Dataset:
         self.weather_dataframes = []
         self.df_level = None
         self.df_merged = None
+        self.df_proccessed = None
 
         self._process_all_weather_urls(weather_urls)
         self._process_level_url(level_url)
         self._merge_all()
+        self._process_merged()
 
 
     def _process_level_url(self, level_url) -> None:
@@ -105,6 +109,7 @@ class Dataset:
         # Add the processed dataframe to the list
         self.weather_dataframes.append(df_weather)
 
+
     def _merge_all(self):
         temp_weather_dataframes = self.weather_dataframes
         self.df_merged = temp_weather_dataframes.pop(0)
@@ -118,7 +123,55 @@ class Dataset:
             print("Data merged. Full data frame following merge:")
             display(self.df_merged)
 
-    
+    def _process_merged(self):
+        self.df_processed = self.df_merged
+
+        self.df_processed['next_level'] = np.nan
+        rows = self.df_processed.shape[0]
+        for row_idx in range(0, rows-1):
+            self.df_processed['next_level'][row_idx] = self.df_processed['level'][row_idx+1]
+        # Impute NaNs by averaging backfilled and forward filled approachess
+        # Essentially, this will average nearest non NaN neighbors on either side sequentially
+
+        # Compute forward/back filled data
+        for_fill = self.df_processed.fillna(method='ffill')
+        back_fill = self.df_processed.fillna(method='bfill')
+
+        # For every column in the dataframe,
+        for col in self.df_processed.columns:
+            # Average the forward and back filled values
+            self.df_processed[col] = (for_fill[col] + back_fill[col])/2
+
+        # Drop any rows remaining which have NaN values (generally first and/or last rows)
+        self.df_processed.dropna(inplace=True)
+
+        # Confirm imputation worked
+        assert(self.df_processed.isna().sum().sum() == 0)
+
+        # Perform min-max scaling on all columns
+        # Create the scaler for feature data
+        scaler = MinMaxScaler()
+
+        # For every feature column,
+        for column in self.df_processed.columns[:-1]:
+            # fit and transform the data
+            self.df_processed[[column]] = scaler.fit_transform(self.df_processed[[column]])
+
+        # Create a separate scaler for target data 
+        target_scaler = MinMaxScaler()
+
+        # Scale the target column
+        target_col = self.df_processed.columns[-1]
+        self.df_processed[[target_col]] = target_scaler.fit_transform(self.df_processed[[target_col]])
+
+        # Display the newly scaled dataframe
+        if self.verbose: 
+            display(self.df_processed)
+
+        
+
+
+            
 def yesterday() -> str:
     """
     Helper function for data retrieval
