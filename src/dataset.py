@@ -14,10 +14,14 @@ class Dataset:
     """
     def __init__(self, weather_urls, level_url) -> None:
         self.verbose = True
+
         self.weather_dataframes = []
         self.df_level = None
+        self.df_merged = None
+
         self._process_all_weather_urls(weather_urls)
         self._process_level_url(level_url)
+        self._merge_all()
 
 
     def _process_level_url(self, level_url) -> None:
@@ -100,6 +104,19 @@ class Dataset:
         
         # Add the processed dataframe to the list
         self.weather_dataframes.append(df_weather)
+
+    def _merge_all(self):
+        temp_weather_dataframes = self.weather_dataframes
+        self.df_merged = temp_weather_dataframes.pop(0)
+
+        for df_weather in temp_weather_dataframes:
+            self.df_merged = pd.merge(self.df_merged, df_weather, on="datetime")
+        
+        self.df_merged = pd.merge(self.df_merged, self.df_level, on="datetime")
+
+        if self.verbose:
+            print("Data merged. Full data frame following merge:")
+            display(self.df_merged)
 
     
 def yesterday() -> str:
