@@ -13,9 +13,9 @@ class Dataset:
     """
     def __init__(self, weather_urls, level_url) -> None:
         self.weather_data = []
-        self.level_data = None
         #self._process_all_weather_urls(weather_urls)
         self._process_level_url(level_url)
+        self.df_level = None
 
 
     def _process_level_url(self, level_url) -> None:
@@ -25,31 +25,31 @@ class Dataset:
         Args:
             level_url (string): exact url linking to the desired CSV file
         """
-        self.level_data = pd.read_csv(level_url, sep='\t', comment='#') 
+        self.df_level = pd.read_csv(level_url, sep='\t', comment='#') 
 
-        cols_to_drop = [col for col in self.level_data.columns if 'cd' in col]
+        cols_to_drop = [col for col in self.df_level.columns if 'cd' in col]
 
         cols_to_drop.append('site_no')
 
-        self.level_data.drop(columns=cols_to_drop, inplace=True)
-        self.level_data.drop(0, inplace=True)
+        self.df_level.drop(columns=cols_to_drop, inplace=True)
+        self.df_level.drop(0, inplace=True)
 
         # Convert the datetime column to datetime objects
-        self.level_data["datetime"] = pd.to_datetime(self.level_data["datetime"])
+        self.df_level["datetime"] = pd.to_datetime(self.df_level["datetime"])
         
         # Use the datetime column as the index
-        self.level_data.set_index('datetime', inplace=True)
-        for col in self.level_data.columns:
+        self.df_level.set_index('datetime', inplace=True)
+        for col in self.df_level.columns:
             matched = re.match("[0-9]+_[0-9]+_*[0-9]*", col)
             is_match = bool(matched)
             if is_match:
                 # Rename the level column
-                self.level_data.rename(columns={col:'level'}, inplace=True)
+                self.df_level.rename(columns={col:'level'}, inplace=True)
         
         # Cast the level column to type float
-        self.level_data['level'] = self.level_data['level'].astype(float)
+        self.df_level['level'] = self.df_level['level'].astype(float)
         print("Level data Fetched. Raw data following initial pre-pro:")
-        display(self.level_data)
+        display(self.df_level)
 
 
     def _process_all_weather_urls(self, weather_urls):
