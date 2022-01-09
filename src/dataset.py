@@ -69,6 +69,7 @@ class Dataset:
             for df_weather in self.weather_dataframes:
                 display(df_weather)
 
+
     def _process_weather_url(self, url):
         """
         Fetch data from the given url, proccess it and add it to the list of weather datasets.
@@ -79,9 +80,15 @@ class Dataset:
         # Fetch data from url
         df_weather = pd.read_csv(url, comment='#') 
         
+
         # Drop un-needed metadata
-        df_weather = df_weather.drop(columns=['Precipitation Accumulation (in) Start of Day Values']) 
-        
+        cols_to_drop = ['Precipitation Accumulation (in) Start of Day Values']
+        for col in cols_to_drop:
+            if col not in df_weather.columns:
+                cols_to_drop.remove(col)
+
+        df_weather.drop(columns=cols_to_drop, inplace=True)
+
         # Renamne the date column to match levels data
         df_weather.rename(columns={'Date':'datetime'}, inplace=True)
 
@@ -111,6 +118,10 @@ def yesterday() -> str:
 mck_vida_url = 'https://waterdata.usgs.gov/nwis/dv?cb_00060=on&format=rdb&site_no=14162500&referred_module=sw&period=&begin_date=1988-10-12&end_date=' + yesterday()
 
 # Fetch weather & SWE data for Mckenzie basin. Atuomatically retrieves all data up to present.
-mck_weather_url ='https://wcc.sc.egov.usda.gov/reportGenerator/view_csv/customSingleStationReport/daily/619:OR:SNTL%7Cid=%22%22%7Cname/POR_BEGIN,POR_END/WTEQ::value,PREC::value,TMAX::value,TMIN::value,TAVG::value,PRCP::value'
+mck1_weather_url ='https://wcc.sc.egov.usda.gov/reportGenerator/view_csv/customSingleStationReport/daily/619:OR:SNTL%7Cid=%22%22%7Cname/POR_BEGIN,POR_END/WTEQ::value,PREC::value,TMAX::value,TMIN::value,TAVG::value,PRCP::value'
 
-ds = Dataset([mck_weather_url], mck_vida_url)
+mck2_weather_url = 'https://wcc.sc.egov.usda.gov/reportGenerator/view_csv/customMultiTimeSeriesGroupByStationReport/daily/start_of_period/719:OR:SNTL%7Cid=%22%22%7Cname/1980-11-03,2022-01-08/WTEQ::value,TMAX::value,TMIN::value,TAVG::value,PRCP::value?fitToScreen=false'
+
+ds = Dataset([mck1_weather_url, mck2_weather_url], mck_vida_url)
+
+# %%
