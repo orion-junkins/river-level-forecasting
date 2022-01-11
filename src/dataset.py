@@ -1,4 +1,3 @@
-#%%
 """
 This module provides data set processing utilities. Core functionality lies within the 'Dataset' class.
 Other helper functions are defined below. 
@@ -33,6 +32,7 @@ class Dataset:
         self._merge_all()
         self._process_merged()
         self._build_X_y(5)
+        self._partition()
 
 
 
