@@ -21,12 +21,20 @@ class Dataset:
         self.df_level = None
         self.df_merged = None
         self.df_proccessed = None
+        self.X = None
+        self.y = None
 
         self._process_all_weather_urls(weather_urls)
         self._process_level_url(level_url)
         self._merge_all()
         self._process_merged()
+        self._build_X_y(5)
 
+
+
+    @property
+    def size(self):
+        return len(self.X)
 
     def _process_level_url(self, level_url) -> None:
         """
@@ -123,6 +131,7 @@ class Dataset:
             print("Data merged. Full data frame following merge:")
             display(self.df_merged)
 
+
     def _process_merged(self):
         self.df_processed = self.df_merged
 
@@ -142,6 +151,7 @@ class Dataset:
             # Average the forward and back filled values
             self.df_processed[col] = (for_fill[col] + back_fill[col])/2
 
+        # TODO: Move all row drops past sequencing
         # Drop any rows remaining which have NaN values (generally first and/or last rows)
         self.df_processed.dropna(inplace=True)
 
@@ -168,7 +178,24 @@ class Dataset:
         if self.verbose: 
             display(self.df_processed)
 
-        
+
+    def _build_X_y(self, window_length):
+        self.X = self.df_processed.iloc[:,:-1].values
+        self.y = self.df_processed.iloc[:,-1].values
+
+        num_samples = self.size - window_length
+
+        windowed_X = []
+        windowed_y = []
+        for index in range(num_samples):
+            current_window_end = index + window_length
+            cur_X_seq = self.X[index:current_window_end, :]
+            windowed_X.append(cur_X_seq)
+
+            windowed_y.append(self.y[current_window_end])
+
+        self.X = np.array(windowed_X)
+        self.y = np.array(windowed_y)
 
 
             
