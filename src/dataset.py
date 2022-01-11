@@ -6,6 +6,7 @@ Other helper functions are defined below.
 import pandas as pd
 import numpy as np
 from sklearn.preprocessing import MinMaxScaler
+from sklearn.model_selection import train_test_split
 from datetime import datetime, timedelta
 import re
 from IPython.display import display
@@ -22,7 +23,11 @@ class Dataset:
         self.df_merged = None
         self.df_proccessed = None
         self.X = None
-        self.y = None
+        self.y = None 
+        self.X_train = None
+        self.X_test = None
+        self.y_train = None
+        self.y_test = None
 
         self._process_all_weather_urls(weather_urls)
         self._process_level_url(level_url)
@@ -179,7 +184,7 @@ class Dataset:
             display(self.df_processed)
 
 
-    def _build_X_y(self, window_length):
+    def _build_X_y(self, window_length=5):
         self.X = self.df_processed.iloc[:,:-1].values
         self.y = self.df_processed.iloc[:,-1].values
 
@@ -197,6 +202,9 @@ class Dataset:
         self.X = np.array(windowed_X)
         self.y = np.array(windowed_y)
 
+
+    def _partition(self):
+        self.X_train, self.X_test, self.y_train, self.y_test = train_test_split(self.X, self.y, test_size = 0.2, random_state = 0)
 
             
 def yesterday() -> str:
