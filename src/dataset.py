@@ -27,6 +27,9 @@ class Dataset:
         self.y_train = None
         self.y_test = None
 
+        self.scaler = None
+        self.target_scaler = None
+        
         self._process_all_weather_urls(weather_urls)
         self._process_level_url(level_url)
         self._merge_all()
@@ -164,19 +167,19 @@ class Dataset:
 
         # Perform min-max scaling on all columns
         # Create the scaler for feature data
-        scaler = MinMaxScaler()
+        self.scaler = MinMaxScaler()
 
         # For every feature column,
         for column in self.df_processed.columns[:-1]:
             # fit and transform the data
-            self.df_processed[[column]] = scaler.fit_transform(self.df_processed[[column]])
+            self.df_processed[[column]] = self.scaler.fit_transform(self.df_processed[[column]])
 
         # Create a separate scaler for target data 
-        target_scaler = MinMaxScaler()
+        self.target_scaler = MinMaxScaler()
 
         # Scale the target column
         target_col = self.df_processed.columns[-1]
-        self.df_processed[[target_col]] = target_scaler.fit_transform(self.df_processed[[target_col]])
+        self.df_processed[[target_col]] = self.target_scaler.fit_transform(self.df_processed[[target_col]])
 
         # Display the newly scaled dataframe
         if self.verbose: 
