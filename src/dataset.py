@@ -15,33 +15,16 @@ class Dataset:
     """
     def __init__(self, weather_urls, level_url) -> None:
         self.verbose = True
+        self.scaler = MinMaxScaler()
+        self.target_scaler = MinMaxScaler()
 
-        self.weather_dataframes = []
-        self.df_level = None
-        self.df_merged = None
-        self.df_proccessed = None
-        self.X = None
-        self.y = None 
-        self.X_train = None
-        self.X_test = None
-        self.y_train = None
-        self.y_test = None
+        self.weather_dataframes = self._process_all_weather_urls(weather_urls)
+        self.df_level = self._process_level_url(level_url)
+        self.df_merged = self._merge_all()
+        self.df_processed = self._process_merged()
+        self.X, self.y = self._build_X_y()
+        self.X_train, self.X_test, self.y_train, self.y_test = self._partition()
 
-        self.scaler = None
-        self.target_scaler = None
-        
-        self._process_all_weather_urls(weather_urls)
-        self._process_level_url(level_url)
-        self._merge_all()
-        self._process_merged()
-        self._build_X_y(5)
-        self._partition()
-
-
-
-    @property
-    def size(self):
-        return len(self.X)
 
     def _process_level_url(self, level_url) -> None:
         """
@@ -50,32 +33,34 @@ class Dataset:
         Args:
             level_url (string): exact url linking to the desired CSV file
         """
-        self.df_level = pd.read_csv(level_url, sep='\t', comment='#') 
+        df_level = pd.read_csv(level_url, sep='\t', comment='#') 
 
-        cols_to_drop = [col for col in self.df_level.columns if 'cd' in col]
+        cols_to_drop = [col for col in df_level.columns if 'cd' in col]
 
         cols_to_drop.append('site_no')
 
-        self.df_level.drop(columns=cols_to_drop, inplace=True)
-        self.df_level.drop(0, inplace=True)
+        df_level.drop(columns=cols_to_drop, inplace=True)
+        df_level.drop(0, inplace=True)
 
         # Convert the datetime column to datetime objects
-        self.df_level["datetime"] = pd.to_datetime(self.df_level["datetime"])
+        df_level["datetime"] = pd.to_datetime(df_level["datetime"])
         
         # Use the datetime column as the index
-        self.df_level.set_index('datetime', inplace=True)
-        for col in self.df_level.columns:
+        df_level.set_index('datetime', inplace=True)
+        for col in df_level.columns:
             matched = re.match("[0-9]+_[0-9]+_*[0-9]*", col)
             is_match = bool(matched)
             if is_match:
                 # Rename the level column
-                self.df_level.rename(columns={col:'level'}, inplace=True)
+                df_level.rename(columns={col:'level'}, inplace=True)
         
         # Cast the level column to type float
-        self.df_level['level'] = self.df_level['level'].astype(float)
+        df_level['level'] = df_level['level'].astype(float)
         if self.verbose:
             print("Level data Fetched. Raw data following initial pre-pro:")
-            display(self.df_level)
+            display(df_level)
+
+        return df_level
 
 
     def _process_all_weather_urls(self, weather_urls):
@@ -85,17 +70,21 @@ class Dataset:
         Args:
             weather_urls (list): List of exact urls linking to CSV files for the target weather stations.
         """
+        weather_dataframes = []
         for url in weather_urls:
-            self._process_weather_url(url)
+            weather_dataframes.append(self._process_weather_url(url))
+
         if self.verbose:
             print("Weather data Fetched. Raw data following initial pre-pro:")
-            for df_weather in self.weather_dataframes:
+            for df_weather in weather_dataframes:
                 display(df_weather)
+
+        return weather_dataframes
 
 
     def _process_weather_url(self, url):
         """
-        Fetch data from the given url, proccess it and add it to the list of weather datasets.
+        Fetch data from the given url, process it and add it to the list of weather datasets.
 
         Args:
             url (string): exact url linking to the target CSV
@@ -121,89 +110,88 @@ class Dataset:
         # Use the datetime column as the index
         df_weather.set_index('datetime', inplace=True)
         
-        # Add the processed dataframe to the list
-        self.weather_dataframes.append(df_weather)
+        return(df_weather)
 
 
     def _merge_all(self):
         temp_weather_dataframes = self.weather_dataframes
-        self.df_merged = temp_weather_dataframes.pop(0)
+        df_merged = temp_weather_dataframes.pop(0)
 
         for df_weather in temp_weather_dataframes:
-            self.df_merged = pd.merge(self.df_merged, df_weather, on="datetime")
+            df_merged = pd.merge(df_merged, df_weather, on="datetime")
         
-        self.df_merged = pd.merge(self.df_merged, self.df_level, on="datetime")
+        df_merged = pd.merge(df_merged, self.df_level, on="datetime")
 
         if self.verbose:
             print("Data merged. Full data frame following merge:")
-            display(self.df_merged)
+            display(df_merged)
+        
+        return df_merged
 
 
     def _process_merged(self):
-        self.df_processed = self.df_merged
+        df_processed = self.df_merged
 
-        self.df_processed['next_level'] = np.nan
-        rows = self.df_processed.shape[0]
+        df_processed['next_level'] = np.nan
+        rows = df_processed.shape[0]
         for row_idx in range(0, rows-1):
-            self.df_processed['next_level'][row_idx] = self.df_processed['level'][row_idx+1]
+            df_processed['next_level'][row_idx] = df_processed['level'][row_idx+1]
+
         # Impute NaNs by averaging backfilled and forward filled approachess
         # Essentially, this will average nearest non NaN neighbors on either side sequentially
-
         # Compute forward/back filled data
-        for_fill = self.df_processed.fillna(method='ffill')
-        back_fill = self.df_processed.fillna(method='bfill')
+        for_fill = df_processed.fillna(method='ffill')
+        back_fill = df_processed.fillna(method='bfill')
 
         # For every column in the dataframe,
-        for col in self.df_processed.columns:
+        for col in df_processed.columns:
             # Average the forward and back filled values
-            self.df_processed[col] = (for_fill[col] + back_fill[col])/2
+            df_processed[col] = (for_fill[col] + back_fill[col])/2
 
         # TODO: Move all row drops past sequencing
         # Drop any rows remaining which have NaN values (generally first and/or last rows)
-        self.df_processed.dropna(inplace=True)
+        df_processed.dropna(inplace=True)
 
         # Confirm imputation worked
-        assert(self.df_processed.isna().sum().sum() == 0)
-
-        # Perform min-max scaling on all columns
-        # Create the scaler for feature data
-        self.scaler = MinMaxScaler()
+        assert(df_processed.isna().sum().sum() == 0)
 
         # For every feature column,
-        for column in self.df_processed.columns[:-1]:
+        for column in df_processed.columns[:-1]:
             # fit and transform the data
-            self.df_processed[[column]] = self.scaler.fit_transform(self.df_processed[[column]])
-
-        # Create a separate scaler for target data 
-        self.target_scaler = MinMaxScaler()
+            df_processed[[column]] = self.scaler.fit_transform(df_processed[[column]])
 
         # Scale the target column
-        target_col = self.df_processed.columns[-1]
-        self.df_processed[[target_col]] = self.target_scaler.fit_transform(self.df_processed[[target_col]])
+        target_col = df_processed.columns[-1]
+        df_processed[[target_col]] = self.target_scaler.fit_transform(df_processed[[target_col]])
 
         # Display the newly scaled dataframe
         if self.verbose: 
-            display(self.df_processed)
+            display(df_processed)
+        
+        return df_processed
 
 
     def _build_X_y(self, window_length=5):
-        self.X = self.df_processed.iloc[:,:-1].values
-        self.y = self.df_processed.iloc[:,-1].values
+        X = self.df_processed.iloc[:,:-1].values
+        y = self.df_processed.iloc[:,-1].values
 
-        num_samples = self.size - window_length
+        num_samples = len(X) - window_length
 
         windowed_X = []
         windowed_y = []
         for index in range(num_samples):
             current_window_end = index + window_length
-            cur_X_seq = self.X[index:current_window_end, :]
+            cur_X_seq = X[index:current_window_end, :]
             windowed_X.append(cur_X_seq)
 
-            windowed_y.append(self.y[current_window_end])
+            windowed_y.append(y[current_window_end])
 
-        self.X = np.array(windowed_X)
-        self.y = np.array(windowed_y)
+        X = np.array(windowed_X)
+        y = np.array(windowed_y)
+        
+        return (X, y)
 
 
     def _partition(self):
-        self.X_train, self.X_test, self.y_train, self.y_test = train_test_split(self.X, self.y, test_size = 0.2, random_state = 0)
+        X_train, X_test, y_train, y_test = train_test_split(self.X, self.y, test_size = 0.2, random_state = 0)
+        return (X_train, X_test, y_train, y_test)
