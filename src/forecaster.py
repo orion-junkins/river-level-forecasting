@@ -1,15 +1,20 @@
 """
 This module provides the high level Forecaster class. 
 """
+from dataset import *
+
 class Forecaster:
     """
     """
-    def __init__(self, model) -> None:
+    def __init__(self, weather_locations, gauge_url, model) -> None:
         """
         
         """
-        self.model = None # Fully trained inference model
-        self.x_in = None # Up to date relevant input data
+        self.historical_data = Dataset(weather_locations, gauge_url)
+        self.model = model.fit(self.data.X_train_shaped, self.data.y_train, 
+                        epochs = 20, 
+                        batch_size = 10, 
+                        shuffle = True)
     
 
     @property
@@ -31,3 +36,4 @@ class Forecaster:
         """
         """
         self.input_data = input_data
+        
