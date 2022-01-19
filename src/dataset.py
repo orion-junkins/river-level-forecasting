@@ -25,6 +25,11 @@ class Dataset:
         self.X, self.y = self._build_X_y()
         self.X_train, self.X_test, self.y_train, self.y_test = self._partition()
 
+        # TODO Investigate best location in pipeline for reshaping
+        self.X_train_shaped = self.X_train.reshape(self.X_train.shape[0], self.X_train.shape[1], self.X_train.shape[2], 1)
+        self.X_test_shaped = self.X_test.reshape(self.X_test.shape[0], self.X_test.shape[1], self.X_test.shape[2], 1)
+
+        self.input_shape = self.X_train_shaped[0].shape
 
     def _process_level_url(self, level_url) -> None:
         """
