@@ -5,7 +5,7 @@ import json
 import urllib.request, json 
 from datetime import datetime
 
-from ...open_weather_api_keys import api_key
+from open_weather_api_keys import api_key
 
 def fetch_forecast(lat, lon, start=None, excludes="current,minutely,hourly,alerts", api_key=api_key):
     request_url = f"https://api.openweathermap.org/data/2.5/onecall?lat={lat}&lon={lon}&exclude={excludes}&appid={api_key}"
@@ -16,7 +16,13 @@ def fetch_forecast(lat, lon, start=None, excludes="current,minutely,hourly,alert
     df = pd.json_normalize(data, record_path =['daily'])
     return df
 
-df = fetch_forecast(44.21, -121.87)
+def fetch_forecasts(locations):
+    forecasts = []
+    for loc in locations:
+        forecasts.append(fetch_forecast(loc[0], loc[1]))
+    return forecasts
+
+df = fetch_forecasts([44.21, -121.87])
 df_backup = df
 #%%
 df = df_backup
@@ -32,3 +38,8 @@ def convert_timestamp_to_time(timestamp):
 df['dt'] = df['dt'].apply(convert_timestamp_to_datetime)
 df['sunrise'] = df['sunrise'].apply(convert_timestamp_to_time)
 df['sunset'] = df['sunset'].apply(convert_timestamp_to_time)
+
+df
+# %%
+print(df.columns)
+# %%
