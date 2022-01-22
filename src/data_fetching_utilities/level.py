@@ -1,13 +1,14 @@
 import dataretrieval.nwis as nwis
+import pandas as pd
 
-def get_historical_level(gauge_id, start=None, end=None, parameterCd='00060', drop_cols=["00060_cd", "site_no"], rename_dict={"00060":"level"} ):
+def get_historical_level(gauge_id, start="1900-01-01", end=None, parameterCd='00060', drop_cols=["00060_cd", "site_no"], rename_dict={"00060":"level"} ):
     """
     Fetch level data for the given gauge ID. Fetches instant values from start to end.
     Drops and renames columns according to given args.
 
     Args:
         gauge_id (string): USGS Gauge ID
-        start (str, optional): Start date in the form "yyyy-mm-dd". Defaults to None, giving data from start of collection.
+        start (str, optional): Start date in the form "yyyy-mm-dd". Defaults to "1900-01-01", giving data from start of collection.
         end  (str, optional): End date in the form "yyyy-mm-dd". Defaults to None, giving data til end of collection.
         parameterCd (str, optional): Which parameter to fetch data for. Defaults to '00060' indicated mean level.
         drop_cols (list, optional): Column names to drop if they are present. Defaults to ["00060_cd", "site_no"] (useless metadata).
@@ -25,6 +26,9 @@ def get_historical_level(gauge_id, start=None, end=None, parameterCd='00060', dr
 
     # Rename columns as specified
     level_data.rename(columns=rename_dict, inplace=True)
+    
+    # Convert index to datetime objects
+    level_data.index = pd.to_datetime(level_data.index)
 
     # Return the formatted dataframe
     return level_data
