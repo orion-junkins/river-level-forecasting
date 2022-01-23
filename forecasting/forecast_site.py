@@ -6,19 +6,21 @@ class ForecastSite:
     """
     Basic data wrapper class to track individual forecast sites
     """
-    def __init__(self, gauge_id, weather_paths) -> None:
+    def __init__(self, gauge_id, weather_sources) -> None:
         self.gauge_id = gauge_id
-        self.weather_paths = weather_paths
+        self.weather_locs = weather_sources.keys()
+        self.weather_paths = weather_sources.values()
 
-        # Level dataframe (indexed by 'datetime', columns = ['level'])
-        self.hisotrical_level = get_historical_level(gauge_id)
-        self.recent_level = get_historical_level(start=date_days_ago(5))\
+        # Level dataframes (indexed by 'datetime', columns = ['level'])
+        self.hisotrical_level = get_historical_level(self.gauge_id)
+        self.recent_level = get_historical_level(self.gauge_id, start=date_days_ago(5))
 
-        # List of weather dataframes (indexed by 'datetime', columns = ['temp', 'rain', etc.])
-        self.historical_weather = get_all_historical_weather(self.weather_paths)
+        # Lists of weather dataframes (indexed by 'datetime', columns = ['temp', 'rain', etc.])
+        self.historical_weather = get_all_historical_weather(self.weather_paths) 
+        self.recent_weather = get_all_recent_weather(self.weather_locs, start=date_days_ago(5))
     
 
     def update_for_inference(self):
-        self.recent_level = get_historical_level(start=date_days_ago(5))
+        self.recent_level = get_historical_level(self.gauge_id, start=date_days_ago(5))
 
 
