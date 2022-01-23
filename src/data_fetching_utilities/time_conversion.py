@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta
 
-def convert_timestamp_to_datetime(timestamp, tz_offset=28800):
+def convert_timestamp_to_datetime(timestamp, tz_offset=0):
     """
     Convert a given Unix timestamp to a str datetime representation
 
@@ -42,3 +42,17 @@ def yesterday() -> str:
     yesterday = datetime.today()  - timedelta(days=1)
     yesterday = yesterday.strftime("%Y-%m-%d")
     return yesterday
+
+
+def date_days_ago(days):
+    """
+    Helper function for data retrieval. Gives string representation of date for given number of days in past
+    
+    Args:
+        days (int): number of days in past for which date is desired
+    Returns:
+        date (str): date for present - days
+    """
+    date = datetime.now()  - timedelta(days=days)
+    date = date.strftime("%Y-%m-%d")
+    return date
