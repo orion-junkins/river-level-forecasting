@@ -1,10 +1,9 @@
 #%%
-from src.model_builders import *
-from src.forecast_site import ForecastSite
-from src.forecaster import *
-fsite = ForecastSite("14377100", ["historical_weather_data/illinois-kerby/41.980609,-123.613583.csv"])
 # %%
 
+from forecasting.model_builders import build_conv_model
+from forecasting.forecast_site import ForecastSite
+from forecasting.forecaster import Forecaster
 
 # Example usage: 
 # Based on today's date, fetch all relevant water data

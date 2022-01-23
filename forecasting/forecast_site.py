@@ -1,6 +1,6 @@
-from data_fetching_utilities.time_conversion import date_days_ago
-from data_fetching_utilities.weather import *
-from data_fetching_utilities.level import *
+from forecasting.time_utils import date_days_ago
+from forecasting.data_fetching_utilities.weather import get_all_historical_weather
+from forecasting.data_fetching_utilities.level import get_historical_level
 
 class ForecastSite:
     """

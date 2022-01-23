@@ -5,8 +5,7 @@ import json
 import urllib.request, json 
 from datetime import datetime
 
-from open_weather_api_keys import api_key
-from time_conversion import *
+from forecasting.data_fetching_utilities.open_weather_api_keys import api_key
 
 # TODO investigate if any of these could be useful    
 OPEN_WEATHER_DEFAULT_DROP_COLS = ['dt', 'dt_iso', 'timezone', 'city_name', 'lat', 'lon', 'visibility', 'sea_level', 'grnd_level', 'wind_gust', 'weather_description', 'weather_icon', 'clouds_all', 'weather_id', 'weather_main', 'rain_3h', 'snow_3h']

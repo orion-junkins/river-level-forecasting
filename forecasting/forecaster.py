@@ -1,7 +1,7 @@
 """
 This module provides the high level Forecaster class. 
 """
-from dataset import *
+from forecasting.dataset import *
 
 class Forecaster:
     """
