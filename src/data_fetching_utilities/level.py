@@ -15,20 +15,20 @@ def get_historical_level(gauge_id, start="1900-01-01", end=None, parameterCd='00
         rename_dict (dict, optional): Dictionary of default:new defining column renamings. Defaults to {"00060":"level"}.
 
     Returns:
-        Pandas dataframe: Formatted dataframe of fetched data
+        df_level (Pandas dataframe): Formatted dataframe of fetched data
     """
     # Fetch level data
-    level_data = nwis.get_record(sites=gauge_id, service='iv', start=start, end=end, parameterCd=parameterCd)
+    df_level = nwis.get_record(sites=gauge_id, service='iv', start=start, end=end, parameterCd=parameterCd)
 
     # Filter out any columns that are present in the drop_cols list
-    drop_cols = list(filter(lambda x: x in level_data.columns, drop_cols))
-    level_data.drop(columns=drop_cols, inplace=True)
+    drop_cols = list(filter(lambda x: x in df_level.columns, drop_cols))
+    df_level.drop(columns=drop_cols, inplace=True)
 
     # Rename columns as specified
-    level_data.rename(columns=rename_dict, inplace=True)
+    df_level.rename(columns=rename_dict, inplace=True)
     
     # Convert index to datetime objects
-    level_data.index = pd.to_datetime(level_data.index)
+    df_level.index = pd.to_datetime(df_level.index)
 
     # Return the formatted dataframe
-    return level_data
+    return df_level
