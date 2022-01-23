@@ -1,4 +1,3 @@
-#%%
 import json
 import pandas as pd
 import json
@@ -9,6 +8,7 @@ from forecasting.data_fetching_utilities.open_weather_api_keys import api_key
 
 # TODO investigate if any of these could be useful    
 OPEN_WEATHER_DEFAULT_DROP_COLS = ['dt', 'dt_iso', 'timezone', 'city_name', 'lat', 'lon', 'visibility', 'sea_level', 'grnd_level', 'wind_gust', 'weather_description', 'weather_icon', 'clouds_all', 'weather_id', 'weather_main', 'rain_3h', 'snow_3h']
+
 
 def get_forecast(lat, lon, start=None, excludes="current,minutely,hourly,alerts", api_key=api_key):
     request_url = f"https://api.openweathermap.org/data/2.5/onecall?lat={lat}&lon={lon}&exclude={excludes}&appid={api_key}"
@@ -42,6 +42,7 @@ def get_single_historical(path, drop_cols=OPEN_WEATHER_DEFAULT_DROP_COLS):
     
     return df_weather
 
+
 def get_all_historical_weather(paths, drop_cols=OPEN_WEATHER_DEFAULT_DROP_COLS):
     dfs_historical = []
     for path in paths:
@@ -49,6 +50,3 @@ def get_all_historical_weather(paths, drop_cols=OPEN_WEATHER_DEFAULT_DROP_COLS):
         dfs_historical.append(df_historical)
     
     return dfs_historical
-
-dfs = get_all_historical_weather(["41.980609,-123.613583.csv", "41.980609,-123.613583.csv"])
-# %%
