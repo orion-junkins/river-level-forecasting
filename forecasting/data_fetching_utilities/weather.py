@@ -6,6 +6,7 @@ from datetime import datetime
 import regex as re
 
 from forecasting.data_fetching_utilities.open_weather_api_keys import api_key
+from forecasting.time_utils import *
 
 # TODO explore other features beyond this set
 DEFAULT_WEATHER_COLS = ['temp','pressure', 'humidity', 'wind_speed', 'wind_deg', 'rain_1h', 'snow_1h']
@@ -18,11 +19,11 @@ def fetch_hourly_forecast(lat, lon, api_key=api_key):
     return df
 
 
-def fetch_recent_historical(lat, lon, start, api_key=api_key):
-    request_url = f"http://history.openweathermap.org/data/2.5/history/city?lat={lat}&lon={lon}&units=imperial&type=hour&start={start}&appid={api_key}"
+def fetch_recent_historical(lat, lon, start, end=unix_timestamp_now(), api_key=api_key):
+    request_url = f"http://history.openweathermap.org/data/2.5/history/city?lat={lat}&lon={lon}&units=imperial&type=hour&start={start}&end={end}&appid={api_key}"
+    print(request_url)
     df = fetch_to_dataframe(request_url, ['list'])
     df = correct_columns(df)
-    print(request_url)
     return df
 
 
