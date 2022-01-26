@@ -8,9 +8,9 @@ class InferenceSet:
         self.data = forecast_site.all_inference_data
 
     def data_for_window(self, start, end=None, window_size_hours=5):
-        if type(start) is not 'datetime.datetime':
+        if type(start) != 'datetime.datetime':
             start = datetime.fromisoformat(start)
-        print(type(start))
+            
         if end is None:
             end = start + timedelta(hours=window_size_hours-1)
 
