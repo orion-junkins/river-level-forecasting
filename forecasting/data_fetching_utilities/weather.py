@@ -1,32 +1,66 @@
 import json
 import pandas as pd
+from pandas import DataFrame
 import json
 import urllib.request, json 
 from datetime import datetime
 import regex as re
 
 from forecasting.data_fetching_utilities.open_weather_api_keys import api_key
-from forecasting.time_utils import *
+from forecasting.general_utilities.time_utils import *
 
 # TODO explore other features beyond this set
 DEFAULT_WEATHER_COLS = ['temp','pressure', 'humidity', 'wind_speed', 'wind_deg', 'rain_1h', 'snow_1h']
 
 # Open Weather API wrapper functions
-def fetch_hourly_forecast(lat, lon, api_key=api_key):
+def fetch_hourly_forecast(lat, lon, api_key=api_key) -> DataFrame:
+    """
+    Access an hourly forecast for the next 96 hours.
+
+    Args:
+        lat (str): latitude for which weather is desired.
+        lon (str): longitude for which weather is desired.
+        api_key (str, optional): OpenWeatherMap API key. Update var in open_weather_api_key.py. Defaults to api_key.
+
+    Returns:
+        df (dataframe): Fetched dataframe of forecast
+    """
     request_url = f"http://pro.openweathermap.org/data/2.5/forecast/hourly?lat={lat}&lon={lon}&appid={api_key}"
     df = fetch_to_dataframe(request_url, ['list'])
     df = correct_columns(df)
     return df
 
 
-def fetch_recent_historical(lat, lon, start, end=unix_timestamp_now(), api_key=api_key):
+def fetch_recent_historical(lat, lon, start, end=unix_timestamp_now(), api_key=api_key) -> DataFrame:
+    """
+    Access hourly historical weather data for the given location and time range.
+
+    Args:
+        lat (str): latitude for which weather is desired.
+        lon (str): longitude for which weather is desired.
+        start (str): unix timestamp for the start of the window for which weather is desired.
+        end (str): unix timestamp for the end of the window for which weather is desired. Defaults to now.
+        api_key (str, optional): OpenWeatherMap API key. Update var in open_weather_api_key.py. Defaults to api_key.
+
+    Returns:
+        df (DataFrame): Fetched dataframe of forecast
+    """
     request_url = f"http://history.openweathermap.org/data/2.5/history/city?lat={lat}&lon={lon}&units=imperial&type=hour&start={start}&end={end}&appid={api_key}"
     df = fetch_to_dataframe(request_url, ['list'])
     df = correct_columns(df)
     return df
 
 
-def load_single_loc_historical(path):
+def load_single_loc_historical(path) -> DataFrame:
+    """
+    Load a file of historical data.
+
+    Args:
+        path (str): path to csv file.
+
+    Returns:
+        df (DataFrame): Fetched dataframe of weather.
+    """
     df = pd.read_csv(path)
     df['datetime'] = list(map(datetime.fromtimestamp, df['dt'])) 
     df.set_index('datetime', inplace=True)
@@ -45,6 +79,15 @@ def load_single_loc_historical(path):
 
 # Wrappers to query multiple locations at once [] -> []
 def get_all_forecasted_weather(locations) -> list:
+    """
+    Fetch forecasted weather for multiple locations.
+
+    Args:
+        locations (list): list of ('lat', 'lon') tuples.
+
+    Returns:
+        list: list of DataFrame objects, one per location in initial list.
+    """
     forecasts = []
     for loc in locations:
         lat = loc[0]
