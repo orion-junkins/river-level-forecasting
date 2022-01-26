@@ -17,7 +17,6 @@ else:
     illinois_kerby = pickle.load(pickle_in)
 
 #%%
-from forecasting.forecaster import Forecaster
 frcstr = Forecaster(illinois_kerby, build_conv_model)
 frcstr.fit(epochs=20)
 # %%
