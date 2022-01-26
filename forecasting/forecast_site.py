@@ -1,6 +1,8 @@
+from cmath import inf
 from forecasting.time_utils import date_days_ago, unix_timestamp_days_ago
 from forecasting.data_fetching_utilities.weather import *
 from forecasting.data_fetching_utilities.level import get_historical_level
+from forecasting.df_utils import *
 
 class ForecastSite:
     """
@@ -31,5 +33,21 @@ class ForecastSite:
 
     def update_for_inference(self):
         self.recent_level = get_historical_level(self.gauge_id, start=date_days_ago(5))
-        self.recent_weather = get_all_recent_weather(self.weather_locs, start=date_days_ago(5))
+        self.recent_weather = get_all_recent_weather(self.weather_locs, start=unix_timestamp_days_ago(5))
         self.forecasted_weather = get_all_forecasted_weather(self.weather_locs)
+
+    @property
+    def all_recent_weather(self):
+        return merge(self.recent_weather)
+    
+    @property
+    def all_forecasted_weather(self):
+        return merge(self.forecasted_weather)
+
+    @property
+    def all_inference_data(self):
+        recent_data = pd.concat([self.all_recent_weather, self.recent_level], axis=1, join='inner')
+        weather_frames = [recent_data, self.all_forecasted_weather]
+        inference_data = pd.concat(weather_frames)
+
+        return inference_data
