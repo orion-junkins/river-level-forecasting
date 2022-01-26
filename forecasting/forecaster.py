@@ -15,11 +15,14 @@ class Forecaster:
         
         self.current_data = self.historical_data.X_test_shaped #InferenceSet(weather_locations)
         self.forecasted_levels = []
-    def fit(self):
+
+
+    def fit(self, epochs=20, batch_size=10, shuffle=True):
+        """"""
         self.model.fit(self.historical_data.X_train_shaped, self.historical_data.y_train, 
-                        epochs = 20, 
-                        batch_size = 10, 
-                        shuffle = True)
+                        epochs = epochs, 
+                        batch_size = batch_size, 
+                        shuffle = shuffle)
 
     def forecast_for(self, index):
         """
