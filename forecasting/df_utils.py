@@ -1,10 +1,11 @@
 import pandas as pd
 from IPython.display import display
 
-def merge(df_list, verbose=True):
-    df_merged = df_list.pop(0)
+def merge(df_list, verbose=False):
+    temp_df_list = df_list.copy()
+    df_merged = temp_df_list.pop(0)
 
-    for df in df_list:
+    for df in temp_df_list:
         display(df)
         df_merged = pd.merge(df_merged, df, on="datetime")
 
