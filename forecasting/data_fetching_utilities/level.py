@@ -30,5 +30,7 @@ def get_historical_level(gauge_id, start="1900-01-01", end=None, parameterCd='00
     # Convert index to datetime objects
     df_level.index = pd.to_datetime(df_level.index)
 
+    df_level.index = df_level.index.tz_convert(None)
+
     # Return the formatted dataframe
     return df_level
