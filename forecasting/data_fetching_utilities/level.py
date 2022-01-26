@@ -1,7 +1,7 @@
 import dataretrieval.nwis as nwis
 import pandas as pd
 
-def get_historical_level(gauge_id, start="2019-01-01", end=None, parameterCd='00060', drop_cols=["00060_cd", "site_no"], rename_dict={"00060":"level"} ):
+def get_historical_level(gauge_id, start="1900-01-01", end=None, parameterCd='00060', drop_cols=["00060_cd", "site_no"], rename_dict={"00060":"level"} ):
     """
     Fetch level data for the given gauge ID. Fetches instant values from start to end.
     Drops and renames columns according to given args.
