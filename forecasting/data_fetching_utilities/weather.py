@@ -21,7 +21,6 @@ def fetch_hourly_forecast(lat, lon, api_key=api_key):
 
 def fetch_recent_historical(lat, lon, start, end=unix_timestamp_now(), api_key=api_key):
     request_url = f"http://history.openweathermap.org/data/2.5/history/city?lat={lat}&lon={lon}&units=imperial&type=hour&start={start}&end={end}&appid={api_key}"
-    print(request_url)
     df = fetch_to_dataframe(request_url, ['list'])
     df = correct_columns(df)
     return df
@@ -31,6 +30,9 @@ def load_single_loc_historical(path):
     df = pd.read_csv(path)
     df['datetime'] = list(map(datetime.fromtimestamp, df['dt'])) 
     df.set_index('datetime', inplace=True)
+    df.index = pd.DatetimeIndex(df.index)
+    df.index = df.index.tz_localize('utc')
+    df.index = df.index.tz_convert(None)
 
     df = correct_columns(df)
 
@@ -78,6 +80,10 @@ def fetch_to_dataframe(request_url, record_path):
     df = pd.json_normalize(data, record_path =record_path)
     df['datetime'] = list(map(datetime.fromtimestamp, df['dt'])) 
     df.set_index('datetime', inplace=True)
+    df.index = pd.DatetimeIndex(df.index)
+    df.index = df.index.tz_localize('utc')
+    df.index = df.index.tz_convert(None)
+
     return df
 
 
