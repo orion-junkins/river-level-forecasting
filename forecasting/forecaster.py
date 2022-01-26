@@ -13,7 +13,7 @@ class Forecaster:
         
         """
         self.training_set = TrainingSet(forecast_site)
-        self.inference_set = InferenceSet(forecast_site)
+        self.inference_set = InferenceSet(forecast_site, self.training_set.input_shape, self.training_set.scaler)
         self.model = model_builder(self.training_set.input_shape)
         
         self.forecasted_levels = []
@@ -26,11 +26,11 @@ class Forecaster:
                         batch_size = batch_size, 
                         shuffle = shuffle)
 
-    def forecast_for(self, index):
+    def forecast_for(self, timestamp):
         """
         Take in the index for which a forecast is desired
         """
-        x_in = self.current_data[index:index+1]
+        x_in = self.inference_set.data_for_window(timestamp)
         y_pred = np.array(self.model.predict(x_in))
         target_scaler = self.training_set.target_scaler
         y_pred = target_scaler.inverse_transform(y_pred)
