@@ -22,7 +22,7 @@ class ForecastSite:
         self.weather_paths = list(weather_sources.values())
 
         # Level dataframes (indexed by 'datetime', columns = ['level'])
-        #self.hisotrical_level = get_historical_level(self.gauge_id)
+        self.historical_level = get_historical_level(self.gauge_id)
         self.recent_level = get_historical_level(self.gauge_id, start=date_days_ago(5))
 
         # Lists of weather dataframes (indexed by 'datetime', columns = ['temp', 'rain', etc.])
@@ -45,9 +45,20 @@ class ForecastSite:
         return merge(self.forecasted_weather)
 
     @property
+    def all_historical_weather(self):
+        return merge(self.historical_weather)
+
+    @property
     def all_inference_data(self):
         recent_data = pd.concat([self.all_recent_weather, self.recent_level], axis=1, join='inner')
-        weather_frames = [recent_data, self.all_forecasted_weather]
-        inference_data = pd.concat(weather_frames)
+        all_frames = [recent_data, self.all_forecasted_weather]
+        inference_data = pd.concat(all_frames)
 
         return inference_data
+    
+    @property
+    def all_training_data(self):
+        training_data = self.all_historical_weather.join(self.historical_level, how='inner')
+        #training_data = pd.concat([self.all_historical_weather, self.historical_level], axis=1, join='inner')
+        return training_data
+        
