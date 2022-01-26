@@ -1,3 +1,7 @@
+"""
+Utility functions for fetching weather from the OpenWeatherMap API.
+Note that historical weather more than 1 year ago cannot currently be fetched through API queries. Use given helper to load CSV files accordingly.
+"""
 import json
 import pandas as pd
 from pandas import DataFrame
@@ -9,7 +13,6 @@ import regex as re
 from forecasting.data_fetching_utilities.open_weather_api_keys import api_key
 from forecasting.general_utilities.time_utils import *
 
-# TODO explore other features beyond this set
 DEFAULT_WEATHER_COLS = ['temp','pressure', 'humidity', 'wind_speed', 'wind_deg', 'rain_1h', 'snow_1h']
 
 # Open Weather API wrapper functions
@@ -96,9 +99,19 @@ def get_all_forecasted_weather(locations) -> list:
     return forecasts
 
 
-def get_all_recent_weather(weather_locs, start) -> list:
+def get_all_recent_weather(locations, start) -> list:
+    """
+    Get recent weather data for all locations up to present.
+
+    Args:
+        locations (list): list of ('lat', 'lon') tuples.
+        start (str): unix timestamp for the start of the window for which weather is desired.
+
+    Returns:
+        list: list of DataFrame objects, one per location in initial list.
+    """
     dfs_recent = []
-    for loc in weather_locs:
+    for loc in locations:
         lat = loc[0]
         lon = loc[1]
         df_recent = fetch_recent_historical(lat, lon, start)
@@ -107,6 +120,15 @@ def get_all_recent_weather(weather_locs, start) -> list:
 
     
 def get_all_historical_weather(paths) -> list:
+    """
+    Load a file of historical data for each path in the given list.
+
+    Args:
+        paths (list): paths to csv files.
+
+    Returns:
+        list: list of DataFrame objects, one per path in initial list.
+    """
     dfs_historical = []
     for path in paths:
         df_historical = load_single_loc_historical(path)
@@ -117,7 +139,17 @@ def get_all_historical_weather(paths) -> list:
 
 
 # Helper functions
-def fetch_to_dataframe(request_url, record_path):
+def fetch_to_dataframe(request_url, record_path) -> DataFrame:
+    """
+    Fetch data from the json file at the given url and process it into a dataframe.
+
+    Args:
+        request_url (str): path to file.
+        record_path (str): path within json file to desired data.
+
+    Returns:
+        df (DataFrame): processed dataframe.
+    """
     with urllib.request.urlopen(request_url) as url:
         data = json.loads(url.read().decode())
     df = pd.json_normalize(data, record_path =record_path)
@@ -131,6 +163,16 @@ def fetch_to_dataframe(request_url, record_path):
 
 
 def correct_columns(df, target_cols=DEFAULT_WEATHER_COLS):
+    """
+    Modify the given df so that columns align with the given list. Rename columns in select cases, remove excess columns, and add columns of Nan/0 where appropriate
+
+    Args:
+        df (DataFrame): dataframe to be altered
+        target_cols (list, optional): List of desired column names. Defaults to DEFAULT_WEATHER_COLS.
+
+    Returns:
+        df (DataFrame): corrected dataframe.
+    """
     # Rename any cols with 'main.' prefix
     df = df.rename(columns=lambda x: re.sub('main.','',x))
 
@@ -147,4 +189,3 @@ def correct_columns(df, target_cols=DEFAULT_WEATHER_COLS):
         df[col] = 0
 
     return df
-
