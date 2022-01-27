@@ -128,6 +128,5 @@ dmypy.json
 # Pyre type checker
 .pyre/
 
-
-# misc
-test.py
+# OpenWeather API Key storage
+open_weather_api_keys.py
