@@ -1,7 +1,7 @@
 #%%
 import pickle
 from forecasting.model_builders import build_conv_model
-from forecasting.forecast_site import DataFetcher
+from forecasting.data_fetcher import DataFetcher
 from forecasting.forecaster import Forecaster
 from fsite_data import *
 
