@@ -1,6 +1,9 @@
 import numpy as np
 from forecasting.dataset import Dataset
 from forecasting.prediction_set import PredictionSet
+import os
+import tensorflow as tf
+from tensorflow import keras
 
 class Forecaster:
     """
@@ -8,15 +11,18 @@ class Forecaster:
     Managers training data, inference data, model fitting and inference of trained model.
     Allows the user to query for specific forecasts or forecast ranges.
     """
-    def __init__(self, forecast_site, model_builder) -> None:
+    def __init__(self, forecast_site, model_builder, checkpoint_dir="training/") -> None:
         """
         Fetches data from provided forecast site and generates processed training and inference sets.
         Builds the specified model.
         """
+        print("Building dataset")
         self.dataset = Dataset(forecast_site)
-        self.forecast_set = PredictionSet(forecast_site, self.dataset.input_shape, self.dataset.scaler)
+        print("Building prediction set")
+        self.prediction_set = PredictionSet(forecast_site, self.dataset.input_shape, self.dataset.scaler)
+        print("Building Model")
         self.model = model_builder(self.dataset.input_shape)
-
+        self.checkpoint_path = os.path.join(checkpoint_dir, "cp.ckpt")
 
     def fit(self, epochs=20, batch_size=10, shuffle=True):
         """
@@ -27,11 +33,22 @@ class Forecaster:
             batch_size (int, optional): Number of samples per gradient update. Defaults to 10.
             shuffle (bool, optional): Whether to shuffle the training data before each epoch. Defaults to True.
         """
+        print("Fitting Model")
+
+        # Create a callback that saves the model's weights
+        cp_callback = tf.keras.callbacks.ModelCheckpoint(filepath=self.checkpoint_path,
+                                                        save_weights_only=True,
+                                                        verbose=1)
+
         self.model.fit(self.dataset.X_train_shaped, self.dataset.y_train, 
                         epochs = epochs, 
                         batch_size = batch_size, 
-                        shuffle = shuffle)
+                        shuffle = shuffle,
+                        callbacks=[cp_callback])
 
+    def load_trained(self):
+        print("Loading trained model")
+        self.model.load_weights(self.checkpoint_path)
 
     def forecast_for(self, timestamp):
         """
@@ -43,7 +60,7 @@ class Forecaster:
         Returns:
             y_pred (float): The predicted river level at the given timestamp
         """
-        x_in = self.forecast_set.x_in_for_window(timestamp)
+        x_in = self.prediction_set.x_in_for_window(timestamp)
         x_in = np.array([x_in])
         y_pred = np.array(self.model.predict(x_in))
 
@@ -60,4 +77,4 @@ class Forecaster:
         """
         Force an update to ensure inference data is up to date. Run at least hourly when forecasting.
         """
-        self.forecast_set.update()
+        self.prediction_set.update()
