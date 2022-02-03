@@ -6,10 +6,9 @@ from sklearn.model_selection import train_test_split
 class Dataset:
 
     def __init__(self, forecast_site) -> None:
-        print("starting")
         self.scaler = MinMaxScaler()
         self.target_scaler = MinMaxScaler()
-
+        
         self.data = self._pre_process(forecast_site.all_training_data)
         self.X, self.y = self._build_windowed_X_y()
         self.X_train, self.X_test, self.y_train, self.y_test = self._partition()
@@ -39,10 +38,8 @@ class Dataset:
     
 
     def _scale(self, data):
-         # For every feature column,
-        for column in data.columns[:-1]:
-            # fit and transform the data
-            data[[column]] = self.scaler.fit_transform(data[[column]])
+        # For every feature column,
+        data[data.columns] = self.scaler.fit_transform(data[data.columns])
 
         # Scale the target column
         target_col = data.columns[-1]
