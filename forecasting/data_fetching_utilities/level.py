@@ -1,3 +1,4 @@
+#%%
 import dataretrieval.nwis as nwis
 import pandas as pd
 
@@ -26,11 +27,19 @@ def get_historical_level(gauge_id, start="1900-01-01", end=None, parameterCd='00
 
     # Rename columns as specified
     df.rename(columns=rename_dict, inplace=True)
-    
+    print(df.index)
     # Convert index to datetime objects TODO: remove double conversion
-    df.index = pd.to_datetime(df.index, utc=True)
+    df.index = pd.to_datetime(df.index)
+    print(df.index)
+    df.index = df.index.map(lambda x: x.replace(tzinfo=None))
+    print(df.index)
     df.index = pd.DatetimeIndex(df.index)
-    df.index = df.index.tz_convert(None)
+    print(df.index)
+    # df.index = df.index.tz_convert("pst")
+
 
     # Return the formatted dataframe
     return df
+
+df = get_historical_level("14377100", start="2019-01-01")
+# %%
