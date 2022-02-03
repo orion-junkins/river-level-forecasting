@@ -27,19 +27,41 @@ def get_historical_level(gauge_id, start="1900-01-01", end=None, parameterCd='00
 
     # Rename columns as specified
     df.rename(columns=rename_dict, inplace=True)
-    print(df.index)
-    # Convert index to datetime objects TODO: remove double conversion
+
+    # Convert index to datetime objects with no timezone
     df.index = pd.to_datetime(df.index)
-    print(df.index)
     df.index = df.index.map(lambda x: x.replace(tzinfo=None))
-    print(df.index)
     df.index = pd.DatetimeIndex(df.index)
-    print(df.index)
-    # df.index = df.index.tz_convert("pst")
 
+    # Force frequency to hourly and fill in NaNs
+    df = handle_missing_data(df)
 
-    # Return the formatted dataframe
     return df
 
-df = get_historical_level("14377100", start="2019-01-01")
-# %%
+
+def handle_missing_data(df):
+    if df.index[0].minute != 0:
+        df.drop([df.index[0]], inplace=True)
+    assert(df.index[0].minute == 0)
+
+    # Remove duplicated entries
+    df = df.loc[~df.index.duplicated(), :]
+
+    # Set frequency as hourly
+    df = df.asfreq('H')
+
+    # Compute forward/back filled data
+    for_fill = df.fillna(method='ffill')
+    back_fill = df.fillna(method='bfill')
+    # For every column in the dataframe,
+    for col in df.columns:
+        # Average the forward and back filled values
+        df[col] = (for_fill[col] + back_fill[col])/2
+
+    # Drop any rows remaining which have NaN values (generally first and/or last rows)
+    df.dropna(inplace=True)
+
+    # Confirm imputation worked
+    assert(df.isna().sum().sum() == 0)
+
+    return df

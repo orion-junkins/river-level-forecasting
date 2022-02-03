@@ -31,6 +31,7 @@ def fetch_hourly_forecast(lat, lon, api_key=api_key) -> DataFrame:
     request_url = f"http://pro.openweathermap.org/data/2.5/forecast/hourly?lat={lat}&lon={lon}&appid={api_key}"
     df = fetch_to_dataframe(request_url, ['list'])
     df = correct_columns(df)
+    df = handle_missing_data(df)
     return df
 
 
@@ -51,6 +52,8 @@ def fetch_recent_historical(lat, lon, start, end=unix_timestamp_now(), api_key=a
     request_url = f"http://history.openweathermap.org/data/2.5/history/city?lat={lat}&lon={lon}&units=imperial&type=hour&start={start}&end={end}&appid={api_key}"
     df = fetch_to_dataframe(request_url, ['list'])
     df = correct_columns(df)
+
+    df = handle_missing_data(df)
     return df
 
 
@@ -76,6 +79,8 @@ def load_single_loc_historical(path) -> DataFrame:
     # Convert Nan precip values to 0.0
     df['rain_1h'].fillna(0.0, inplace=True)
     df['snow_1h'].fillna(0.0, inplace=True)
+
+    df = handle_missing_data(df)
     return df
 
 
@@ -187,5 +192,32 @@ def correct_columns(df, target_cols=DEFAULT_WEATHER_COLS):
     missing_cols = list(filter(lambda x: x not in df.columns, target_cols))
     for col in missing_cols:
         df[col] = 0
+
+    return df
+
+def handle_missing_data(df):
+    if df.index[0].minute != 0:
+        df.drop([df.index[0]], inplace=True)
+    assert(df.index[0].minute == 0)
+
+    # Remove duplicated entries
+    df = df.loc[~df.index.duplicated(), :]
+
+    # Set frequency as hourly
+    df = df.asfreq('H')
+
+    # Compute forward/back filled data
+    for_fill = df.fillna(method='ffill')
+    back_fill = df.fillna(method='bfill')
+    # For every column in the dataframe,
+    for col in df.columns:
+        # Average the forward and back filled values
+        df[col] = (for_fill[col] + back_fill[col])/2
+
+    # Drop any rows remaining which have NaN values (generally first and/or last rows)
+    df.dropna(inplace=True)
+
+    # Confirm imputation worked
+    assert(df.isna().sum().sum() == 0)
 
     return df
