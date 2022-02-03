@@ -3,14 +3,15 @@ import numpy as np
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.model_selection import train_test_split
 
-class TrainingSet:
+class Dataset:
 
     def __init__(self, forecast_site) -> None:
+        print("starting")
         self.scaler = MinMaxScaler()
         self.target_scaler = MinMaxScaler()
 
         self.data = self._pre_process(forecast_site.all_training_data)
-        self.X, self.y = self._build_X_y()
+        self.X, self.y = self._build_windowed_X_y()
         self.X_train, self.X_test, self.y_train, self.y_test = self._partition()
         
         # TODO Investigate best location in pipeline for reshaping
@@ -18,12 +19,12 @@ class TrainingSet:
         self.X_test_shaped = self.X_test.reshape(self.X_test.shape[0], self.X_test.shape[1], self.X_test.shape[2], 1)
         
         self.input_shape = self.X_train_shaped[0].shape
-
-        assert(self.data.isna().sum().sum())
+        
+        assert(self.data.isna().sum().sum() == 0)
 
 
     def _pre_process(self, training_data):
-        data = training_data
+        data = training_data.copy()
         data = self._shift_targets(data)
         data = self._scale(data)
         return data
@@ -50,7 +51,7 @@ class TrainingSet:
         return data
     
 
-    def _build_X_y(self, window_length=5):
+    def _build_windowed_X_y(self, window_length=5):
         X = self.data.iloc[:,:-1].values
         y = self.data.iloc[:,-1].values
 

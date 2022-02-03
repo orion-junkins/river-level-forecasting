@@ -1,6 +1,6 @@
 import numpy as np
-from forecasting.training_set import TrainingSet
-from forecasting.inference_set import InferenceSet
+from forecasting.dataset import Dataset
+from forecasting.prediction_set import PredictionSet
 
 class Forecaster:
     """
@@ -13,9 +13,9 @@ class Forecaster:
         Fetches data from provided forecast site and generates processed training and inference sets.
         Builds the specified model.
         """
-        self.training_set = TrainingSet(forecast_site)
-        self.inference_set = InferenceSet(forecast_site, self.training_set.input_shape, self.training_set.scaler)
-        self.model = model_builder(self.training_set.input_shape)
+        self.dataset = Dataset(forecast_site)
+        self.forecast_set = PredictionSet(forecast_site, self.dataset.input_shape, self.dataset.scaler)
+        self.model = model_builder(self.dataset.input_shape)
 
 
     def fit(self, epochs=20, batch_size=10, shuffle=True):
@@ -27,7 +27,7 @@ class Forecaster:
             batch_size (int, optional): Number of samples per gradient update. Defaults to 10.
             shuffle (bool, optional): Whether to shuffle the training data before each epoch. Defaults to True.
         """
-        self.model.fit(self.training_set.X_train_shaped, self.training_set.y_train, 
+        self.model.fit(self.dataset.X_train_shaped, self.dataset.y_train, 
                         epochs = epochs, 
                         batch_size = batch_size, 
                         shuffle = shuffle)
@@ -38,17 +38,17 @@ class Forecaster:
         Run inference for the given timestamp.
 
         Args:
-            timestamp (datetime): The date & time for which a forecast is desired. Must be a member of InferenceSet indices.
+            timestamp (datetime): The date & time for which a forecast is desired. Must be a member of PredictionSet indices.
 
         Returns:
             y_pred (float): The predicted river level at the given timestamp
         """
-        x_in = self.inference_set.x_in_for_window(timestamp)
+        x_in = self.forecast_set.x_in_for_window(timestamp)
         x_in = np.array([x_in])
         y_pred = np.array(self.model.predict(x_in))
 
         # Inverse transform result
-        target_scaler = self.training_set.target_scaler
+        target_scaler = self.dataset.target_scaler
         y_pred = target_scaler.inverse_transform(y_pred)
 
         # Convert to float from np.array
@@ -60,4 +60,4 @@ class Forecaster:
         """
         Force an update to ensure inference data is up to date. Run at least hourly when forecasting.
         """
-        self.inference_set.update()
+        self.forecast_set.update()
