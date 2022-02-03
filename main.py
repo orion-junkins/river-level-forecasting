@@ -1,14 +1,14 @@
 #%%
 import pickle
 from forecasting.model_builders import build_conv_model
-from forecasting.forecast_site import ForecastSite
+from forecasting.forecast_site import DataFetcher
 from forecasting.forecaster import Forecaster
 from fsite_data import *
 
 #%%
 rebuild_fsites = False  
 if rebuild_fsites:
-    illinois_kerby = ForecastSite("14377100", illinois_kerby_weather_sources)
+    illinois_kerby = DataFetcher("14377100", illinois_kerby_weather_sources)
     pickle_out = open("fsites/illinois_kerby.pickle", "wb")
     pickle.dump(illinois_kerby, pickle_out)
     pickle_out.close()
