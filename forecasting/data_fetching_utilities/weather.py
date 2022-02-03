@@ -195,6 +195,7 @@ def correct_columns(df, target_cols=DEFAULT_WEATHER_COLS):
 
     return df
 
+
 def handle_missing_data(df):
     if df.index[0].minute != 0:
         df.drop([df.index[0]], inplace=True)
