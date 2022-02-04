@@ -61,28 +61,28 @@ class DataFetcher:
 
 
     @property
-    def all_inference_data(self):
+    def all_current_data(self):
         """
         A single dataframe representing all data needed to perform inference. Specifically, recent weather, recent level, and forecasted level.
         Returns:
             df: Merged dataframe
         """
-        recent_data = pd.concat([self.all_recent_weather, self.recent_level], axis=1, join='inner') #TODO: Revise to use join
-        all_frames = [recent_data, self.all_forecasted_weather]
-        inference_data = pd.concat(all_frames) 
+        df_recent = pd.concat([self.all_recent_weather, self.recent_level], axis=1, join='inner') #TODO: Revise to use join
+        all_current_frames = [df_recent, self.all_forecasted_weather]
+        df_current = pd.concat(all_current_frames) 
 
-        return inference_data
+        return df_current
     
 
     @property
-    def all_training_data(self):
+    def all_historical_data(self):
         """
         A single dataframe representing all data needed to perform training. Specifically, historical weather, and historical level.
         Returns:
             df: Merged dataframe
         """
-        training_data = self.all_historical_weather.join(self.historical_level, how='inner')
-        return training_data
+        df_historical = self.all_historical_weather.join(self.historical_level, how='inner')
+        return df_historical
         
         
     def update_for_inference(self):
