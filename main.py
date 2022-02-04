@@ -1,5 +1,6 @@
 #%%
 import pickle
+from matplotlib import pyplot as plt
 from forecasting.model_builders import build_conv_model
 from forecasting.data_fetcher import DataFetcher
 from forecasting.forecaster import Forecaster
@@ -35,6 +36,3 @@ y_pred = model.predict(X_test)
 y_pred = frcstr.dataset.target_scaler.inverse_transform(y_pred)
 y_true = frcstr.dataset.target_scaler.inverse_transform(y_test)
 # %%
-plt.plot(y_true[5000:6000], color='blue')
-plt.plot(y_pred[5000:7000], color="green")
-plt.show()
