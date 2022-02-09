@@ -25,14 +25,5 @@ if retrain:
     frcstr.fit(epochs=50)
 else: 
     frcstr.load_trained()
-  # %%
+# %%
 frcstr.forecast_for("2022-02-01 16:00:00")
-# %%
-model = frcstr.model
-X_test = frcstr.dataset.X_test_shaped
-y_test = frcstr.dataset.y_test
-# %%
-y_pred = model.predict(X_test)
-y_pred = frcstr.dataset.target_scaler.inverse_transform(y_pred)
-y_true = frcstr.dataset.target_scaler.inverse_transform(y_test)
-# %%
