@@ -47,7 +47,9 @@ class DataFetcher:
         Returns:
             df: Merged dataframe.
         """
-        return merge(self.forecasted_weather)
+        df = merge(self.forecasted_weather)
+        df = handle_missing_data(df)
+        return df
 
 
     @property
@@ -57,7 +59,9 @@ class DataFetcher:
         Returns:
             df: Merged dataframe.
         """
-        return merge(self.historical_weather)
+        df = merge(self.historical_weather)
+        df = handle_missing_data(df)
+        return df
 
 
     @property
@@ -70,7 +74,7 @@ class DataFetcher:
         df_recent = pd.concat([self.all_recent_weather, self.recent_level], axis=1, join='inner') #TODO: Revise to use join
         all_current_frames = [df_recent, self.all_forecasted_weather]
         df_current = pd.concat(all_current_frames) 
-
+        df_current = handle_missing_data(df_current)
         return df_current
     
 
@@ -81,8 +85,9 @@ class DataFetcher:
         Returns:
             df: Merged dataframe
         """
-        df_historical = self.all_historical_weather.join(self.historical_level, how='inner')
-        return df_historical
+        df = self.all_historical_weather.join(self.historical_level, how='inner')
+        df = handle_missing_data(df)
+        return df
         
         
     def update_for_inference(self):
