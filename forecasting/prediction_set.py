@@ -51,15 +51,15 @@ class PredictionSet:
         if isinstance(start, str):
             start = datetime.fromisoformat(start)
         end = start + timedelta(hours=window_size_hours-1)
-        if start not in self.df.index:
+        if start not in self.X.index:
             print("ERROR: invalid start timestamp")
             return None
-        if end not in self.df.index:
+        if end not in self.X.index:
             print("ERROR: invalid end timestamp")
             return None
         print(start)
         print(end)
-        x_in = self.df.loc[start:end, :]
+        x_in = self.X.loc[start:end, :]
         print(x_in)
         print(x_in.shape)
         print(self.X_shape)
@@ -77,4 +77,4 @@ class PredictionSet:
         Force an update for forecast site data, re-fetch and re-process. Call hourly at minimum when forecasting.
         """
         self.data_fetcher.update_for_inference()
-        self.df = self._pre_process()
+        self.X, self.y = self._pre_process()
