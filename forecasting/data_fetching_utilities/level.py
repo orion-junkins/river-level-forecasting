@@ -65,3 +65,4 @@ def handle_missing_data(df):
     assert(df.isna().sum().sum() == 0)
 
     return df
+# %%
