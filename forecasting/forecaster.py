@@ -1,6 +1,7 @@
 import numpy as np
 from forecasting.dataset import Dataset
 from forecasting.prediction_set import PredictionSet
+from datetime import datetime, timedelta
 import os
 import tensorflow as tf
 from tensorflow import keras
@@ -44,9 +45,18 @@ class Forecaster:
                         shuffle = shuffle,
                         callbacks=[cp_callback])
 
+
     def load_trained(self):
         print("Loading trained model")
         self.model.load_weights(self.checkpoint_path)
+
+
+    def forecast_for_range(self, start, end):
+        cur_timestep = start
+        while cur_timestep < end:
+            level = self.forecast_for(cur_timestep)
+            self.prediction_set.record_level_for(cur_timestep, level)
+            cur_timestep = cur_timestep + timedelta(hours=1)
 
     def forecast_for(self, timestamp):
         """

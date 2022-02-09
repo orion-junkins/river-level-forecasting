@@ -66,6 +66,12 @@ class PredictionSet:
         x_in = x_in.values.reshape(self.X_shape)
         return x_in
     
+
+    def record_level_for(self, timestep, value):
+        self.y.iloc[timestep]['level'] = value
+        next_timestep = timestep + timedelta(hours=1)
+        self.X.iloc[next_timestep]['level_t_sub_1'] = value
+
     def update(self):
         """
         Force an update for forecast site data, re-fetch and re-process. Call hourly at minimum when forecasting.
