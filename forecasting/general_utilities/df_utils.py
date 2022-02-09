@@ -19,7 +19,7 @@ def merge(df_list, verbose=False):
     return df_merged
 
 
-def add_lag(df, timesteps=1, col_to_lag='level', lagged_col_name='level_yesterday'):
+def add_lag(df, timesteps=1, col_to_lag='level', lagged_col_name='level_t_sub_1'):
     df[lagged_col_name] = np.nan
     timesteps = df.shape[0]
     for t in range(1, timesteps):
