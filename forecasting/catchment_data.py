@@ -4,7 +4,7 @@ from forecasting.data_fetching_utilities.weather import *
 from forecasting.data_fetching_utilities.level import get_historical_level
 from forecasting.general_utilities.df_utils import *
 import os
-class Catchment:
+class CatchmentData:
     def __init__(self, name, usgs_gauge_id, level_forecast_url=None, weather_locs=None) -> None:
         self.name = name
         self.usgs_gauge_id = str(usgs_gauge_id)
