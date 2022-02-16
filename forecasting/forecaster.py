@@ -1,6 +1,5 @@
 import numpy as np
 from forecasting.dataset import Dataset
-from forecasting.general_utilities.time_utils import unix_timestamp_now
 from datetime import timedelta
 import os
 
@@ -10,7 +9,7 @@ class Forecaster:
     Managers training data, inference data, model fitting and inference of trained model.
     Allows the user to query for specific forecasts or forecast ranges.
     """
-    def __init__(self, catchment_data, model_builder, checkpoint_dir="trained_models") -> None:
+    def __init__(self, catchment_data, model_builder, checkpoint_dir="trained_models", verbose=True) -> None:
         """
         Fetches data from provided forecast site and generates processed training and inference sets.
         Builds the specified model.
@@ -22,11 +21,17 @@ class Forecaster:
 
         self.dataset = Dataset(catchment_data)
         self.models = self._build_all_models()
+
+        self.verbose = verbose
         
 
     def _build_all_models(self):
+        if self.verbose:
+            print("Building all models")
         models = []
         for model_num in range(self.dataset.num_X_sets):
+            if self.verbose:
+                print("Building model ", model_num)
             model = self.model_builder()
             models.append(model)
         return models
@@ -41,7 +46,8 @@ class Forecaster:
             batch_size (int, optional): Number of samples per gradient update. Defaults to 10.
             shuffle (bool, optional): Whether to shuffle the training data before each epoch. Defaults to True.
         """
-        print("Fitting Models")
+        if self.verbose:
+            print("Fitting all models")
 
         models = self.models
         X_trains = self.dataset.X_trains
@@ -50,7 +56,8 @@ class Forecaster:
         y_val= self.dataset.y_validation
         
         for index, (model, X_train, X_val) in enumerate(zip(models, X_trains, X_validations)):
-            print("Fitting model ", index)
+            if self.verbose:
+                print("Fitting model ", index)
             model.fit(series=y_train, past_covariates=X_train, 
                         val_series=y_val, val_past_covariates=X_val, 
                         verbose=True, epochs=epochs)
@@ -59,9 +66,11 @@ class Forecaster:
 
 
     def load_trained(self):
-        print("Loading models")
+        if self.verbose:
+            print("Loading previously trained models")
         for index, model in enumerate(self.models):
-            print("Loading model ", index)
+            if self.verbose:
+                print("Loading model ", index)
             model_save_path = os.path.join(self.model_save_dir, str(index) + '.pth.tar')
             model.load_model(model_save_path)
 
@@ -96,18 +105,22 @@ class Forecaster:
         y_pred = y_pred[0][0]  
         return y_pred
 
+
     def historical_forecasts(self):
         """
         Create historical forecasts for the validation series using all models. Return a list of Timeseries
         """
+        if self.verbose:
+            print("Generating historical forecasts")
         y_preds = []
         y_val = self.dataset.y_validation
-        for model, X_val in zip(self.models, self.dataset.X_validations):
-            print(model)
-            print(X_val)
+        for index, (model, X_val) in enumerate(zip(self.models, self.dataset.X_validations)):
+            if self.verbose:
+                print("Generating historical forecast for model ", index)
             y_pred = model.historical_forecasts(series=y_val, past_covariates=X_val, num_samples=1, start=0.5, forecast_horizon=48, stride=24, retrain=False, overlap_end=False, last_points_only=True, verbose=True)
             y_preds.append(y_pred)
         return y_preds
+
 
     def update_input_data(self) -> None:
         """
