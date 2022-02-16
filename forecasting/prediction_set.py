@@ -7,15 +7,15 @@ from forecasting.general_utilities.df_utils import *
 
 class PredictionSet:
 
-    def __init__(self, data_fetcher, dataset) -> None:
+    def __init__(self, catchment_data, dataset) -> None:
         """
         Produce a processed inference set for the given forecast site. Adheres to given shape/scaler.
         Args:
-            data_fetcher (DataFetcher): Forecast site from which data should be fetched.
-            X_shape (tuple): input shape for target model.
+            catchment_data (CatchmentData): Forecast site from which data should be fetched.
+            dataset (Dataset): primary Dataset instance. Needed for scalers and shape info.
             scaler (MinMaxScaler): Scaler used on model training data.
         """
-        self.data_fetcher = data_fetcher
+        self.catchment_data = catchment_data
         self.X_shape = dataset.input_shape
         self.scaler = dataset.scaler
         self.target_scaler = dataset.target_scaler
@@ -29,7 +29,7 @@ class PredictionSet:
         Returns:
             df (DataFrame): Processed dataframe.
         """
-        df = self.data_fetcher.all_current_data.copy()
+        df = self.catchment_data.all_current_data.copy()
         df = add_lag(df)
         X, y = split_X_y(df)
         X = scale(X, self.scaler, fit_scalers=False)
@@ -76,5 +76,5 @@ class PredictionSet:
         """
         Force an update for forecast site data, re-fetch and re-process. Call hourly at minimum when forecasting.
         """
-        self.data_fetcher.update_for_inference()
+        self.catchment_data.update_for_inference()
         self.X, self.y = self._pre_process()
