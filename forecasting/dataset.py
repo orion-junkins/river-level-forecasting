@@ -17,7 +17,11 @@ class Dataset:
         current_dfs = self.catchment_data.all_current_data.copy()
         self.Xs_current, self.y_current = self._pre_process(current_dfs, fit_X_scaler=False, fit_y_scaler=False)
 
+    @property
+    def num_X_sets(self):
+        return len(self.X_trains)
 
+        
     def _pre_process(self, dfs, fit_X_scaler=True, fit_y_scaler=True):
         """
         Fetch needed data and perform all standard preprocessing.

@@ -1,9 +1,8 @@
 import numpy as np
 from forecasting.dataset import Dataset
-from datetime import datetime, timedelta
+from forecasting.general_utilities.time_utils import unix_timestamp_now
+from datetime import timedelta
 import os
-import tensorflow as tf
-from tensorflow import keras
 
 class Forecaster:
     """
@@ -11,16 +10,29 @@ class Forecaster:
     Managers training data, inference data, model fitting and inference of trained model.
     Allows the user to query for specific forecasts or forecast ranges.
     """
-    def __init__(self, catchment_data, model_builder, checkpoint_dir="training/") -> None:
+    def __init__(self, catchment_data, model_builder, checkpoint_dir="trained_models") -> None:
         """
         Fetches data from provided forecast site and generates processed training and inference sets.
         Builds the specified model.
         """
-        self.dataset = Dataset(catchment_data)
-        self.models = [model_builder() for X_test in self.dataset.X_tests if X_test != None]
-        self.checkpoint_path = os.path.join(checkpoint_dir, "cp.ckpt")
+        self.name = catchment_data.name
+        self.model_builder = model_builder
+        self.model_save_dir = os.path.join(checkpoint_dir, self.name)
+        os.makedirs(self.model_save_dir, exist_ok=True)
 
-    def fit(self, epochs=2):
+        self.dataset = Dataset(catchment_data)
+        self.models = self._build_all_models()
+        
+
+    def _build_all_models(self):
+        models = []
+        for model_num in range(self.dataset.num_X_sets):
+            model = self.model_builder(self.name, model_num)
+            models.append(model)
+        return models
+
+        
+    def fit(self, epochs=1):
         """
         Wrapper for tf.keras.model.fit() to train internal model instance. Exposes select tuning parameters.
 
@@ -36,16 +48,22 @@ class Forecaster:
         X_validations = self.dataset.X_validations
         y_train = self.dataset.y_train
         y_val= self.dataset.y_validation
+        
         for index, (model, X_train, X_val) in enumerate(zip(models, X_trains, X_validations)):
             print("Fitting model ", index)
             model.fit(series=y_train, past_covariates=X_train, 
                         val_series=y_val, val_past_covariates=X_val, 
                         verbose=True, epochs=epochs)
+            model_save_path = os.path.join(self.model_save_dir, str(index) + '.pth.tar')
+            model.save_model(model_save_path) 
 
 
     def load_trained(self):
-        print("Loading trained model")
-        self.model.load_weights(self.checkpoint_path)
+        print("Loading models")
+        for index, model in enumerate(self.models):
+            print("Loading model ", index)
+            model_save_path = os.path.join(self.model_save_dir, str(index) + '.pth.tar')
+            model.load_model(model_save_path)
 
 
     def forecast_for_range(self, start, end):
