@@ -27,7 +27,7 @@ class Forecaster:
     def _build_all_models(self):
         models = []
         for model_num in range(self.dataset.num_X_sets):
-            model = self.model_builder(self.name, model_num)
+            model = self.model_builder()
             models.append(model)
         return models
 
@@ -73,6 +73,7 @@ class Forecaster:
             self.prediction_set.record_level_for(cur_timestep, level)
             cur_timestep = cur_timestep + timedelta(hours=1)
 
+
     def forecast_for(self, timestamp):
         """
         Run inference for the given timestamp.
@@ -95,6 +96,18 @@ class Forecaster:
         y_pred = y_pred[0][0]  
         return y_pred
 
+    def historical_forecasts(self):
+        """
+        Create historical forecasts for the validation series using all models. Return a list of Timeseries
+        """
+        y_preds = []
+        y_val = self.dataset.y_validation
+        for model, X_val in zip(self.models, self.dataset.X_validations):
+            print(model)
+            print(X_val)
+            y_pred = model.historical_forecasts(series=y_val, past_covariates=X_val, num_samples=1, start=0.5, forecast_horizon=48, stride=24, retrain=False, overlap_end=False, last_points_only=True, verbose=True)
+            y_preds.append(y_pred)
+        return y_preds
 
     def update_input_data(self) -> None:
         """
