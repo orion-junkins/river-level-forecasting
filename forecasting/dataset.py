@@ -1,13 +1,15 @@
 from sklearn.preprocessing import MinMaxScaler
 from darts import timeseries 
+from darts.dataprocessing.transformers import Scaler
+
 from forecasting.general_utilities.df_utils import *
 
 class Dataset:
 
     def __init__(self, catchment_data) -> None:
         self.catchment_data = catchment_data
-        self.scaler = MinMaxScaler()
-        self.target_scaler = MinMaxScaler()
+        self.scaler = Scaler(MinMaxScaler())
+        self.target_scaler = Scaler(MinMaxScaler())
 
         historical_dfs = self.catchment_data.all_historical_data.copy()
         self.Xs_historical, self.y_historical = self._pre_process(historical_dfs)
@@ -15,14 +17,14 @@ class Dataset:
         self.X_trains, self.X_tests, self.X_validations, self.y_train, self.y_test, self.y_validation = self._partition()
   
         current_dfs = self.catchment_data.all_current_data.copy()
-        self.Xs_current, self.y_current = self._pre_process(current_dfs, fit_X_scaler=False, fit_y_scaler=False)
+        self.Xs_current, self.y_current = self._pre_process(current_dfs, fit_scalers=False)
 
     @property
     def num_X_sets(self):
         return len(self.X_trains)
 
         
-    def _pre_process(self, dfs, fit_X_scaler=True, fit_y_scaler=True):
+    def _pre_process(self, dfs, fit_scalers=True):
         """
         Fetch needed data and perform all standard preprocessing.
         """
@@ -30,18 +32,23 @@ class Dataset:
         y = None
         for df in dfs:
             X_cur, y_cur = split_X_y(df)
-            X_cur = scale(X_cur, self.scaler, fit_scalers=fit_X_scaler)
-            fit_X_scaler = False # Only fit the scaler on the first iteration
             X_cur = timeseries.TimeSeries.from_dataframe(X_cur)
-            Xs.append(X_cur)
+            y_cur = timeseries.TimeSeries.from_dataframe(y_cur)
+            if fit_scalers:
+                self.scaler.fit(X_cur)
+                self.target_scaler.fit(y_cur)
+                fit_scalers = False # Only fit scalers once
 
+            X_cur = self.scaler.transform(X_cur)
+            Xs.append(X_cur)
             #assert(y == None or y == y_cur)
             y = y_cur
 
-        y = scale(y, self.target_scaler, fit_scalers=fit_y_scaler)
-        y =  timeseries.TimeSeries.from_dataframe(y_cur)
+ 
+        
+        y = self.target_scaler.transform(y)
 
-        return Xs,y
+        return Xs, y
 
     def _partition(self, test_size=0.1, validation_size=0.2):
         X_trains = []
