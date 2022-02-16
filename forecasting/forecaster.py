@@ -12,14 +12,12 @@ class Forecaster:
     Managers training data, inference data, model fitting and inference of trained model.
     Allows the user to query for specific forecasts or forecast ranges.
     """
-    def __init__(self, data_fetcher, model_builder, checkpoint_dir="training/") -> None:
+    def __init__(self, catchment_data, model_builder, checkpoint_dir="training/") -> None:
         """
         Fetches data from provided forecast site and generates processed training and inference sets.
         Builds the specified model.
         """
-        print("Building dataset")
-        self.dataset = Dataset(data_fetcher)
-        self.prediction_set = PredictionSet(data_fetcher, self.dataset)
+        self.dataset = Dataset(catchment_data)
         self.model = model_builder(self.dataset.input_shape)
         self.checkpoint_path = os.path.join(checkpoint_dir, "cp.ckpt")
 
