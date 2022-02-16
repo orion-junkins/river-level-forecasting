@@ -11,8 +11,9 @@ class Dataset:
 
         historical_dfs = self.catchment_data.all_historical_data.copy()
         self.Xs_historical, self.y_historical = self._pre_process(historical_dfs)
-        self.X_trains, self.X_tests, self.X_validations = self._partition()
 
+        self.X_trains, self.X_tests, self.X_validations, self.y_train, self.y_test, self.y_validation = self._partition()
+  
         current_dfs = self.catchment_data.all_current_data.copy()
         self.Xs_current, self.y_current = self._pre_process(current_dfs, fit_X_scaler=False, fit_y_scaler=False)
 
@@ -50,4 +51,7 @@ class Dataset:
             X_tests.append(X_test)
             X_validations.append(X_validation)
 
-        return (X_trains, X_tests, X_validations)
+        y_train, y_test = self.y_historical.split_after(1-test_size)
+        y_train, y_validation = y_train.split_after(1-validation_size)
+
+        return (X_trains, X_tests, X_validations, y_train, y_test, y_validation)
