@@ -14,6 +14,7 @@ class Forecaster:
         Fetches data from provided forecast site and generates processed training and inference sets.
         Builds the specified model.
         """
+        self.verbose = verbose
         self.name = catchment_data.name
         self.model_builder = model_builder
         self.model_save_dir = os.path.join(checkpoint_dir, self.name)
@@ -22,9 +23,7 @@ class Forecaster:
         self.dataset = Dataset(catchment_data)
         self.models = self._build_all_models()
 
-        self.verbose = verbose
         
-
     def _build_all_models(self):
         if self.verbose:
             print("Building all models")
