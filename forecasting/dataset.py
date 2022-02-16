@@ -24,9 +24,6 @@ class Dataset:
         Xs = []
         y = None
         for df in dfs:
-            print("adding lag")
-            df = add_lag(df)
-            print("done adding lag")
             X_cur, y_cur = split_X_y(df)
             X_cur = scale(X_cur, self.scaler, fit_scalers=fit_X_scaler)
             fit_X_scaler = False # Only fit the scaler on the first iteration
