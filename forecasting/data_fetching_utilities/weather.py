@@ -35,7 +35,6 @@ def fetch_hourly_forecast(loc, api_key=api_key) -> DataFrame:
 
     df = correct_columns(df)
     df = handle_missing_data(df)
-    df = df.add_suffix("_" + loc_to_str(loc))
     return df
 
 
@@ -58,7 +57,6 @@ def fetch_recent_historical(loc, start, end=unix_timestamp_now(), api_key=api_ke
 
     df = correct_columns(df)
     df = handle_missing_data(df)
-    df = df.add_suffix("_" + loc_to_str(loc))
 
     return df
 
@@ -84,7 +82,6 @@ def fetch_archived_historical(loc, dir_name) -> DataFrame:
 
     df = correct_columns(df)
     df = handle_missing_data(df)
-    df = df.add_suffix("_" + loc_to_str(loc))
 
     return df
 
