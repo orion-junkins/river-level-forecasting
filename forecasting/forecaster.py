@@ -1,6 +1,5 @@
 import numpy as np
 from forecasting.dataset import Dataset
-from forecasting.prediction_set import PredictionSet
 from datetime import datetime, timedelta
 import os
 import tensorflow as tf
@@ -18,10 +17,10 @@ class Forecaster:
         Builds the specified model.
         """
         self.dataset = Dataset(catchment_data)
-        self.model = model_builder(self.dataset.input_shape)
+        self.models = [model_builder() for X_test in self.dataset.X_tests if X_test != None]
         self.checkpoint_path = os.path.join(checkpoint_dir, "cp.ckpt")
 
-    def fit(self, epochs=20, batch_size=10, shuffle=True):
+    def fit(self, epochs=2):
         """
         Wrapper for tf.keras.model.fit() to train internal model instance. Exposes select tuning parameters.
 
@@ -30,18 +29,18 @@ class Forecaster:
             batch_size (int, optional): Number of samples per gradient update. Defaults to 10.
             shuffle (bool, optional): Whether to shuffle the training data before each epoch. Defaults to True.
         """
-        print("Fitting Model")
+        print("Fitting Models")
 
-        # Create a callback that saves the model's weights
-        cp_callback = tf.keras.callbacks.ModelCheckpoint(filepath=self.checkpoint_path,
-                                                        save_weights_only=True,
-                                                        verbose=1)
-
-        self.model.fit(self.dataset.X_train_shaped, self.dataset.y_train, 
-                        epochs = epochs, 
-                        batch_size = batch_size, 
-                        shuffle = shuffle,
-                        callbacks=[cp_callback])
+        models = self.models
+        X_trains = self.dataset.X_trains
+        X_validations = self.dataset.X_validations
+        y_train = self.dataset.y_train
+        y_val= self.dataset.y_validation
+        for index, (model, X_train, X_val) in enumerate(zip(models, X_trains, X_validations)):
+            print("Fitting model ", index)
+            model.fit(series=y_train, past_covariates=X_train, 
+                        val_series=y_val, val_past_covariates=X_val, 
+                        verbose=True, epochs=epochs)
 
 
     def load_trained(self):
