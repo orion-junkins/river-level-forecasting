@@ -4,30 +4,36 @@ from forecasting.general_utilities.df_utils import *
 
 class Dataset:
 
-    def __init__(self, data_fetcher) -> None:
+    def __init__(self, catchment_data, prediction_only=False) -> None:
+        self.catchment_data = catchment_data
         self.scaler = MinMaxScaler()
         self.target_scaler = MinMaxScaler()
-                
-        self.X_historical_processed, self.y_historical_processed = self._pre_process(data_fetcher.all_historical_data.copy())
-        self.X_historical_windowed, self.y_historical_windowed = get_all_windows(self.X_historical_processed, self.y_historical_processed)
-        self.X_train, self.X_test, self.y_train, self.y_test = partition(self.X_historical_windowed, self.y_historical_windowed)
 
-    def _pre_process(self, df):
-        df = add_lag(df)
-        X, y = split_X_y(df)
-        X = scale(X, self.scaler)
-        y = scale(y, self.target_scaler)
-        return (X, y)
+        historical_dfs = self.catchment_data.all_historical_data.copy()
+        self.Xs_historical, self.y_historical = self._pre_process(historical_dfs)
+
+        current_dfs = self.catchment_data.all_current_data.copy()
+        self.Xs_current, self.y_current = self._pre_process(current_dfs, fit_X_scaler=False, fit_y_scaler=False)
 
 
-    @property
-    def X_train_shaped(self):
-        return self.X_train.reshape(self.X_train.shape[0], self.X_train.shape[1], self.X_train.shape[2], 1)
-    @property
-    def X_test_shaped(self):
-        return self.X_test.reshape(self.X_test.shape[0], self.X_test.shape[1], self.X_test.shape[2], 1)
+    def _pre_process(self, dfs, fit_X_scaler=True, fit_y_scaler=True):
+        """
+        Fetch needed data and perform all standard preprocessing.
+        """
+        Xs = []
+        y = None
+        for df in dfs:
+            print("adding lag")
+            df = add_lag(df)
+            print("done adding lag")
+            X_cur, y_cur = split_X_y(df)
+            X_cur = scale(X_cur, self.scaler, fit_scalers=fit_X_scaler)
+            fit_X_scaler = False # Only fit the scaler on the first iteration
+            Xs.append(X_cur)
 
-    @property
-    def input_shape(self):
-        print(self.X_train_shaped[0].shape)
-        return self.X_train_shaped[0].shape
+            #assert(y == None or y == y_cur)
+            y = y_cur
+
+        y = scale(y, self.target_scaler, fit_scalers=fit_y_scaler)
+
+        return Xs,y
