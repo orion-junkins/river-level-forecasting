@@ -66,10 +66,10 @@ class CatchmentData:
         """
         """
         all_current_data = []
-        for recent, forecasted in zip(self.recent_weather, self.forecasted_weather):
-            weather_frames = [recent, forecasted]
+        for df_recent, df_forecasted in zip(self.recent_weather, self.forecasted_weather):
+            weather_frames = [df_recent, df_forecasted]
             df_weather = pd.concat(weather_frames) # Combine recent and forecasted weather into a single df
-            df = pd.concat([df_weather, self.recent_level], axis=1) # Add level data
+            df = pd.concat([df_weather, self.recent_level], axis=1, join='inner') # Add level data
             df = handle_missing_data(df)
             all_current_data.append(df)
         
@@ -79,13 +79,13 @@ class CatchmentData:
     @property
     def all_historical_data(self):
         """
-        A single dataframe representing all data needed to perform training. Specifically, historical weather, and historical level.
-        Returns:
-            df: Merged dataframe
         """
-        df = self.all_historical_weather.join(self.historical_level, how='inner')
-        df = handle_missing_data(df)
-        return df
+        all_historical_data = []
+        for df_weather in self.historical_weather:
+            df = pd.concat([df_weather, self.historical_level], axis=1, join='inner') # Add level data
+            df = handle_missing_data(df)
+            all_historical_data.append(df)
+        return all_historical_data
         
         
     def update_for_inference(self):
