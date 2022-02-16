@@ -21,9 +21,9 @@ class CatchmentData:
         self.recent_level = get_historical_level(self.usgs_gauge_id, start=date_days_ago(5))
 
         # Lists of weather dataframes (indexed by 'datetime', columns = ['temp', 'rain', etc.])
-        self.historical_weather = get_all_historical_weather(self.weather_locs, os.path.join("data", "historical", self.name)) 
-        self.recent_weather = get_all_recent_weather(self.weather_locs, start=unix_timestamp_days_ago(5))
-        self.forecasted_weather = get_all_forecasted_weather(self.weather_locs)
+        self.historical_weather = fetch_all_historical_weather(self.weather_locs, self.name) 
+        self.recent_weather = fetch_all_recent_weather(self.weather_locs, start=unix_timestamp_days_ago(5))
+        self.forecasted_weather = fetch_all_forecasted_weather(self.weather_locs)
 
 
     @property
@@ -64,15 +64,16 @@ class CatchmentData:
     @property
     def all_current_data(self):
         """
-        A single dataframe representing all data needed to perform inference. Specifically, recent weather, recent level, and forecasted level.
-        Returns:
-            df: Merged dataframe
         """
-        df_recent = pd.concat([self.all_recent_weather, self.recent_level], axis=1, join='inner') #TODO: Revise to use join
-        all_current_frames = [df_recent, self.all_forecasted_weather]
-        df_current = pd.concat(all_current_frames) 
-        df_current = handle_missing_data(df_current)
-        return df_current
+        all_current_data = []
+        for recent, forecasted in zip(self.recent_weather, self.forecasted_weather):
+            weather_frames = [recent, forecasted]
+            df_weather = pd.concat(weather_frames) # Combine recent and forecasted weather into a single df
+            df = pd.concat([df_weather, self.recent_level], axis=1) # Add level data
+            df = handle_missing_data(df)
+            all_current_data.append(df)
+        
+        return all_current_data
     
 
     @property
@@ -92,5 +93,5 @@ class CatchmentData:
         Force an update to ensure inference data is up to date. Run at least hourly when forecasting.
         """
         self.recent_level = get_historical_level(self.usgs_gauge_id, start=date_days_ago(5))
-        self.recent_weather = get_all_recent_weather(self.weather_locs, start=unix_timestamp_days_ago(5))
-        self.forecasted_weather = get_all_forecasted_weather(self.weather_locs)
+        self.recent_weather = fetch_all_recent_weather(self.weather_locs, start=unix_timestamp_days_ago(5))
+        self.forecasted_weather = fetch_all_forecasted_weather(self.weather_locs)
