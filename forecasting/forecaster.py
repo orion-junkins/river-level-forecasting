@@ -1,5 +1,6 @@
 import os
 import numpy as np
+import pandas as pd
 from datetime import timedelta
 from darts.models import BlockRNNModel
 
@@ -20,7 +21,7 @@ class Forecaster:
         self.name = catchment_data.name
         self.dataset = Dataset(catchment_data)
 
-        self.model_builder = model_builder
+        self.model_builder = model_type
         self.model_save_dir = os.path.join(checkpoint_dir, self.name)
         os.makedirs(self.model_save_dir, exist_ok=True)
 
@@ -131,8 +132,41 @@ class Forecaster:
                 print("Generating historical forecast for model ", index)
             y_pred = model.historical_forecasts(series=y_val, past_covariates=X_val, num_samples=1, start=0.5, forecast_horizon=48, stride=24, retrain=False, overlap_end=False, last_points_only=True, verbose=True)
             y_preds.append(y_pred)
-        return y_preds
+        y_preds_inverse_scaled = self._inverse_scale_all(y_preds)
+        df_y_preds = self._join_preds(y_preds_inverse_scaled)
+        return df_y_preds
 
+    def _join_preds(self, y_preds):
+        """
+        Consolidate a list of predicted timeseries into a single dataframe 
+
+        Args:
+            y_preds (_type_): _description_
+        """
+        df = pd.DataFrame()
+        for index, y_pred in enumerate(y_preds):
+            df_cur = y_pred.pd_dataframe()
+            df_cur = df_cur.rename(columns={"0": str(index)})
+            frames = [df, df_cur]
+            df = pd.concat(frames, axis=1)
+        return df
+
+    def _inverse_scale_all(self, y_preds):
+        """
+        scaled list of series -> inverse scaled list of series
+
+        Args:
+            y_preds (_type_): _description_
+
+        Returns:
+            _type_: _description_
+        """
+        inverse_scaled_y_preds = []
+        target_scaler = self.dataset.target_scaler
+        for series in y_preds:
+            series = target_scaler.inverse_transform(series)
+            inverse_scaled_y_preds.append(series)
+        return inverse_scaled_y_preds
 
     def update_input_data(self) -> None:
         """
