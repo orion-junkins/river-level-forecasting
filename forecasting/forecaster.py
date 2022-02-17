@@ -1,7 +1,9 @@
-import numpy as np
-from forecasting.dataset import Dataset
-from datetime import timedelta
 import os
+import numpy as np
+from datetime import timedelta
+from darts.models import BlockRNNModel
+
+from forecasting.dataset import Dataset
 
 class Forecaster:
     """
@@ -9,30 +11,53 @@ class Forecaster:
     Managers training data, inference data, model fitting and inference of trained model.
     Allows the user to query for specific forecasts or forecast ranges.
     """
-    def __init__(self, catchment_data, model_builder, checkpoint_dir="trained_models", verbose=True) -> None:
+    def __init__(self, catchment_data, model_builder=BlockRNNModel, overwrite_existing_models=False, checkpoint_dir="trained_models", verbose=True) -> None:
         """
         Fetches data from provided forecast site and generates processed training and inference sets.
         Builds the specified model.
         """
         self.verbose = verbose
         self.name = catchment_data.name
+        self.dataset = Dataset(catchment_data)
+
         self.model_builder = model_builder
         self.model_save_dir = os.path.join(checkpoint_dir, self.name)
         os.makedirs(self.model_save_dir, exist_ok=True)
 
-        self.dataset = Dataset(catchment_data)
-        self.models = self._build_all_models()
+        self.models=[]
+        if overwrite_existing_models:
+            self.models = self._build_new_models()
+        else:
+            self.models = self._load_existing_models()
+            
 
-        
-    def _build_all_models(self):
+    def _load_existing_models(self):
         if self.verbose:
-            print("Building all models")
+            print("Loading existing models")
         models = []
-        for model_num in range(self.dataset.num_X_sets):
+        for index in range(self.dataset.num_X_sets):
             if self.verbose:
-                print("Building model ", model_num)
-            model = self.model_builder()
+                print("Loading model for set", index)
+            model = self.model_builder.load_from_checkpoint(str(index), work_dir=self.model_save_dir)
             models.append(model)
+        if self.verbose:
+            print("All models loaded!")
+        return models
+
+
+    def _build_new_models(self):
+        if self.verbose:
+            print("Building new models. Overwritting any existing models.")
+        models = []
+        for index in range(self.dataset.num_X_sets):
+            if self.verbose:
+                print("Building model for set", index)
+            model = self.model_builder(input_chunk_length=120, output_chunk_length=72, 
+                                        work_dir=self.model_save_dir, model_name=str(index), 
+                                        force_reset=True, save_checkpoints=True)
+            models.append(model)
+        if self.verbose:
+            print("All models built!")
         return models
 
         
@@ -60,18 +85,6 @@ class Forecaster:
             model.fit(series=y_train, past_covariates=X_train, 
                         val_series=y_val, val_past_covariates=X_val, 
                         verbose=True, epochs=epochs)
-            model_save_path = os.path.join(self.model_save_dir, str(index) + '.pth.tar')
-            model.save_model(model_save_path) 
-
-
-    def load_trained(self):
-        if self.verbose:
-            print("Loading previously trained models")
-        for index, model in enumerate(self.models):
-            if self.verbose:
-                print("Loading model ", index)
-            model_save_path = os.path.join(self.model_save_dir, str(index) + '.pth.tar')
-            model.load_model(model_save_path)
 
 
     def forecast_for_range(self, start, end):
