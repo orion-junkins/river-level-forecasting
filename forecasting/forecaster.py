@@ -12,7 +12,7 @@ class Forecaster:
     Managers training data, inference data, model fitting and inference of trained model.
     Allows the user to query for specific forecasts or forecast ranges.
     """
-    def __init__(self, catchment_data, model_builder=BlockRNNModel, overwrite_existing_models=False, checkpoint_dir="trained_models", verbose=True) -> None:
+    def __init__(self, catchment_data, model_type=BlockRNNModel, overwrite_existing_models=False, parent_dir="trained_models", model_save_dir="model", verbose=True) -> None:
         """
         Fetches data from provided forecast site and generates processed training and inference sets.
         Builds the specified model.
@@ -22,15 +22,20 @@ class Forecaster:
         self.dataset = Dataset(catchment_data)
 
         self.model_builder = model_type
-        self.model_save_dir = os.path.join(checkpoint_dir, self.name)
-        os.makedirs(self.model_save_dir, exist_ok=True)
-
+        self.model_save_dir = os.path.join(parent_dir, self.name, model_save_dir)
         self.models=[]
-        if overwrite_existing_models:
+
+        if overwrite_existing_models or not self.checkpoint_dir_exists():
+            os.makedirs(self.model_save_dir, exist_ok=True)
             self.models = self._build_new_models()
         else:
             self.models = self._load_existing_models()
             
+
+    def checkpoint_dir_exists(self):
+        checkpoint_dir = os.path.join(self.model_save_dir, "checkpoints")
+        return os.path.exists(checkpoint_dir)
+
 
     def _load_existing_models(self):
         if self.verbose:
