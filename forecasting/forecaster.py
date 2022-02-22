@@ -2,9 +2,12 @@ import os
 import numpy as np
 import pandas as pd
 from datetime import timedelta
+
 from darts.models import BlockRNNModel
 from darts.utils.likelihood_models import GaussianLikelihood
 from forecasting.dataset import Dataset
+from forecasting.general_utilities.logging_utils import build_logger
+
 
 class Forecaster:
     """
@@ -12,12 +15,12 @@ class Forecaster:
     Managers training data, inference data, model fitting and inference of trained model.
     Allows the user to query for specific forecasts or forecast ranges.
     """
-    def __init__(self, catchment_data, model_type=BlockRNNModel, overwrite_existing_models=False, parent_dir="trained_models", model_save_dir="model", likelihood=GaussianLikelihood(), verbose=True) -> None:
+    def __init__(self, catchment_data, model_type=BlockRNNModel, overwrite_existing_models=False, log_level='INFO', parent_dir="trained_models", model_save_dir="model", likelihood=GaussianLikelihood(), verbose=True) -> None:
         """
         Fetches data from provided forecast site and generates processed training and inference sets.
         Builds the specified model.
         """
-        self.verbose = verbose
+        self.logger = build_logger(log_level=log_level)
         self.likelihood = likelihood
         self.name = catchment_data.name
         self.dataset = Dataset(catchment_data)
@@ -39,33 +42,27 @@ class Forecaster:
 
 
     def _load_existing_models(self):
-        if self.verbose:
-            print("Loading existing models")
+        self.logger.info("FROM LOGGER: Loading existing models")
         models = []
         for index in range(self.dataset.num_X_sets):
-            if self.verbose:
-                print("Loading model for set", index)
+            self.logger.info("Loading model for dataset %s" % index)
             model = self.model_builder.load_from_checkpoint(str(index), work_dir=self.model_save_dir)
             models.append(model)
-        if self.verbose:
-            print("All models loaded!")
+        self.logger.info("All models loaded!")
         return models
 
 
     def _build_new_models(self):
-        if self.verbose:
-            print("Building new models. Overwritting any existing models.")
+        self.logger.info("Building new models. Overwritting any existing models.")
         models = []
         for index in range(self.dataset.num_X_sets):
-            if self.verbose:
-                print("Building model for set", index)
+            self.logger.info("Building model for dataset %s" % index)
             model = self.model_builder(input_chunk_length=120, output_chunk_length=72, 
                                         work_dir=self.model_save_dir, model_name=str(index), 
                                         force_reset=True, save_checkpoints=True,
                                         likelihood=self.likelihood)
             models.append(model)
-        if self.verbose:
-            print("All models built!")
+        self.logger.info("All models built!")
         return models
 
         
@@ -78,8 +75,7 @@ class Forecaster:
             batch_size (int, optional): Number of samples per gradient update. Defaults to 10.
             shuffle (bool, optional): Whether to shuffle the training data before each epoch. Defaults to True.
         """
-        if self.verbose:
-            print("Fitting all models")
+        self.logger.info("Fitting all models")
 
         models = self.models
         X_trains = self.dataset.X_trains
@@ -88,8 +84,7 @@ class Forecaster:
         y_val= self.dataset.y_validation
         
         for index, (model, X_train, X_val) in enumerate(zip(models, X_trains, X_validations)):
-            if self.verbose:
-                print("Fitting model ", index)
+            self.logger.info("Fitting model %s" % index)
             model.fit(series=y_train, past_covariates=X_train, 
                         val_series=y_val, val_past_covariates=X_val, 
                         verbose=True, **kwargs)
@@ -130,14 +125,12 @@ class Forecaster:
         """
         Create historical forecasts for the validation series using all models. Return a list of Timeseries
         """
-        if self.verbose:
-            print("Generating historical forecasts")
+        self.logger.info("Generating historical forecasts")
         y_preds = []
         target_scaler = self.dataset.target_scaler
         y_val = self.dataset.y_validation
         for index, (model, X_val) in enumerate(zip(self.models, self.dataset.X_validations)):
-            if self.verbose:
-                print("Generating historical forecast for model ", index)
+            self.logger.info("Generating historical forecast for model %s" % index)
             y_pred = model.historical_forecasts(series=y_val, past_covariates=X_val, start=0.5, retrain=False, overlap_end=False, last_points_only=True, verbose=True , **kwargs)
             y_pred = target_scaler.inverse_transform(y_pred)
             # if y_pred.is_stochastic:
