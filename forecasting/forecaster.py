@@ -3,7 +3,7 @@ import numpy as np
 import pandas as pd
 from datetime import timedelta
 from darts.models import BlockRNNModel
-
+from darts.utils.likelihood_models import GaussianLikelihood
 from forecasting.dataset import Dataset
 
 class Forecaster:
@@ -12,12 +12,13 @@ class Forecaster:
     Managers training data, inference data, model fitting and inference of trained model.
     Allows the user to query for specific forecasts or forecast ranges.
     """
-    def __init__(self, catchment_data, model_type=BlockRNNModel, overwrite_existing_models=False, parent_dir="trained_models", model_save_dir="model", verbose=True) -> None:
+    def __init__(self, catchment_data, model_type=BlockRNNModel, overwrite_existing_models=False, parent_dir="trained_models", model_save_dir="model", likelihood=GaussianLikelihood(), verbose=True) -> None:
         """
         Fetches data from provided forecast site and generates processed training and inference sets.
         Builds the specified model.
         """
         self.verbose = verbose
+        self.likelihood = likelihood
         self.name = catchment_data.name
         self.dataset = Dataset(catchment_data)
 
@@ -60,14 +61,15 @@ class Forecaster:
                 print("Building model for set", index)
             model = self.model_builder(input_chunk_length=120, output_chunk_length=72, 
                                         work_dir=self.model_save_dir, model_name=str(index), 
-                                        force_reset=True, save_checkpoints=True)
+                                        force_reset=True, save_checkpoints=True,
+                                        likelihood=self.likelihood)
             models.append(model)
         if self.verbose:
             print("All models built!")
         return models
 
         
-    def fit(self, epochs=1):
+    def fit(self, **kwargs):
         """
         Wrapper for tf.keras.model.fit() to train internal model instance. Exposes select tuning parameters.
 
@@ -90,7 +92,7 @@ class Forecaster:
                 print("Fitting model ", index)
             model.fit(series=y_train, past_covariates=X_train, 
                         val_series=y_val, val_past_covariates=X_val, 
-                        verbose=True, epochs=epochs)
+                        verbose=True, **kwargs)
 
 
     def forecast_for_range(self, start, end):
@@ -124,22 +126,29 @@ class Forecaster:
         return y_pred
 
 
-    def historical_forecasts(self):
+    def historical_forecasts(self, **kwargs):
         """
         Create historical forecasts for the validation series using all models. Return a list of Timeseries
         """
         if self.verbose:
             print("Generating historical forecasts")
         y_preds = []
+        target_scaler = self.dataset.target_scaler
         y_val = self.dataset.y_validation
         for index, (model, X_val) in enumerate(zip(self.models, self.dataset.X_validations)):
             if self.verbose:
                 print("Generating historical forecast for model ", index)
-            y_pred = model.historical_forecasts(series=y_val, past_covariates=X_val, num_samples=1, start=0.5, forecast_horizon=48, stride=24, retrain=False, overlap_end=False, last_points_only=True, verbose=True)
+            y_pred = model.historical_forecasts(series=y_val, past_covariates=X_val, start=0.5, retrain=False, overlap_end=False, last_points_only=True, verbose=True , **kwargs)
+            y_pred = target_scaler.inverse_transform(y_pred)
+            # if y_pred.is_stochastic:
+            #     y_pred = y_pred.quantiles_df(quantiles=(0.05, 0.5, 0.95))
+            # else:
+            #     y_pred = y_pred.pd_dataframe()
             y_preds.append(y_pred)
-        y_preds_inverse_scaled = self._inverse_scale_all(y_preds)
-        df_y_preds = self._join_preds(y_preds_inverse_scaled)
-        return df_y_preds
+        #y_preds = self._inverse_scale_all(y_preds)
+        #df_y_preds = self._join_preds(y_preds_inverse_scaled)
+        return y_preds
+
 
     def _join_preds(self, y_preds):
         """
@@ -150,11 +159,15 @@ class Forecaster:
         """
         df = pd.DataFrame()
         for index, y_pred in enumerate(y_preds):
-            df_cur = y_pred.pd_dataframe()
+            if y_pred.is_stochastic:
+                df_cur = y_pred.quantiles_df(quantiles=(0.05, 0.5, 0.95))
+            else:
+                df_cur = y_pred.pd_dataframe()
             df_cur = df_cur.rename(columns={"0": str(index)})
             frames = [df, df_cur]
             df = pd.concat(frames, axis=1)
         return df
+
 
     def _inverse_scale_all(self, y_preds):
         """
