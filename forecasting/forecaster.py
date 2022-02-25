@@ -126,21 +126,26 @@ class Forecaster:
         Create historical forecasts for the validation series using all models. Return a list of Timeseries
         """
         self.logger.info("Generating historical forecasts")
-        y_preds = []
+        y_preds_min = []
+        y_preds_mid = []
+        y_preds_max = []
+
         target_scaler = self.dataset.target_scaler
         y_val = self.dataset.y_validation
         for index, (model, X_val) in enumerate(zip(self.models, self.dataset.X_validations)):
             self.logger.info("Generating historical forecast for model %s" % index)
             y_pred = model.historical_forecasts(series=y_val, past_covariates=X_val, start=0.5, retrain=False, overlap_end=False, last_points_only=True, verbose=True , **kwargs)
             y_pred = target_scaler.inverse_transform(y_pred)
-            # if y_pred.is_stochastic:
-            #     y_pred = y_pred.quantiles_df(quantiles=(0.05, 0.5, 0.95))
-            # else:
-            #     y_pred = y_pred.pd_dataframe()
-            y_preds.append(y_pred)
-        #y_preds = self._inverse_scale_all(y_preds)
-        #df_y_preds = self._join_preds(y_preds_inverse_scaled)
-        return y_preds
+            if y_pred.is_stochastic:
+                y_pred_min = y_pred.quantile_df(0.05).applymap(lambda x: x.item())
+                y_preds_min.append(y_pred_min)
+                y_pred_mid = y_pred.quantile_df(0.5).applymap(lambda x: x.item())
+                y_preds_mid.append(y_pred_mid)
+                y_pred_max = y_pred.quantile_df(0.95).applymap(lambda x: x.item())
+                y_preds_max.append(y_pred_max)
+            else:
+                y_preds_mid.append(y_pred)
+        return (y_preds_min, y_preds_mid, y_preds_max)
 
 
     def _join_preds(self, y_preds):
