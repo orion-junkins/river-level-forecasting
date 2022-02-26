@@ -3,9 +3,9 @@ from forecasting.general_utilities.time_utils import date_days_ago, unix_timesta
 from forecasting.data_fetching_utilities.weather import *
 from forecasting.data_fetching_utilities.level import get_historical_level
 from forecasting.general_utilities.df_utils import *
-import os
+
 class CatchmentData:
-    def __init__(self, name, usgs_gauge_id, level_forecast_url=None, weather_locs=None) -> None:
+    def __init__(self, name, usgs_gauge_id, level_forecast_url=None, weather_locs=None, window_size=40) -> None:
         self.name = name
         self.usgs_gauge_id = str(usgs_gauge_id)
         self.level_forecast_url = level_forecast_url
@@ -15,14 +15,15 @@ class CatchmentData:
         else:
             self.weather_locs = weather_locs
 
+        self.window_size = window_size
 
         # Level dataframes (indexed by 'datetime', columns = ['level'])
         self.historical_level = get_historical_level(self.usgs_gauge_id)
-        self.recent_level = get_historical_level(self.usgs_gauge_id, start=date_days_ago(5))
+        self.recent_level = get_historical_level(self.usgs_gauge_id, start=date_days_ago(self.window_size))
 
         # Lists of weather dataframes (indexed by 'datetime', columns = ['temp', 'rain', etc.])
         self.historical_weather = fetch_all_historical_weather(self.weather_locs, self.name) 
-        self.recent_weather = fetch_all_recent_weather(self.weather_locs, start=unix_timestamp_days_ago(5))
+        self.recent_weather = fetch_all_recent_weather(self.weather_locs, start=unix_timestamp_days_ago(self.window_size))
         self.forecasted_weather = fetch_all_forecasted_weather(self.weather_locs)
 
 
@@ -92,6 +93,6 @@ class CatchmentData:
         """
         Force an update to ensure inference data is up to date. Run at least hourly when forecasting.
         """
-        self.recent_level = get_historical_level(self.usgs_gauge_id, start=date_days_ago(5))
-        self.recent_weather = fetch_all_recent_weather(self.weather_locs, start=unix_timestamp_days_ago(5))
+        self.recent_level = get_historical_level(self.usgs_gauge_id, start=date_days_ago(self.window_size))
+        self.recent_weather = fetch_all_recent_weather(self.weather_locs, start=unix_timestamp_days_ago(self.window_size))
         self.forecasted_weather = fetch_all_forecasted_weather(self.weather_locs)
