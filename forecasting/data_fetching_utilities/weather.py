@@ -40,22 +40,41 @@ def fetch_hourly_forecast(loc, api_key=api_key) -> DataFrame:
     return df
 
 
-def fetch_recent_historical(loc, start, end=unix_timestamp_now(), api_key=api_key) -> DataFrame:
+def fetch_recent_historical(loc, start, api_key=api_key, max_requests=10) -> DataFrame:
     """
     Access hourly historical weather data for the given location and time range.
 
     Args:
         loc
         start (str): unix timestamp for the start of the window for which weather is desired.
-        end (str): unix timestamp for the end of the window for which weather is desired. Defaults to now.
         api_key (str, optional): OpenWeatherMap API key. Update var in open_weather_api_key.py. Defaults to api_key.
 
     Returns:
         df (DataFrame): Fetched dataframe of forecast
     """
     lat, lon = split_tuple(loc)
-    request_url = f"http://history.openweathermap.org/data/2.5/history/city?lat={lat}&lon={lon}&units=imperial&type=hour&start={start}&end={end}&appid={api_key}"
-    df = fetch_to_dataframe(request_url, ['list'])
+    frames = []
+
+    requests_made = 0
+    all_data_fetched = False
+
+    while not all_data_fetched and requests_made < max_requests:    
+        request_url = f"http://history.openweathermap.org/data/2.5/history/city?lat={lat}&lon={lon}&units=imperial&type=hour&start={start}&cnt=168&appid={api_key}"
+        cur_df = fetch_to_dataframe(request_url, ['list'])
+        final_dt = int(cur_df['dt'].max())
+        
+        if final_dt <= int(start):
+            all_data_fetched = True
+        else:
+            frames.append(cur_df)
+            start = final_dt
+        requests_made += 1
+        # print("last_fetched_value is: ", last_fetched_value)
+        # print("end is ", end)
+
+
+    print("requests made: ", requests_made)
+    df = pd.concat(frames)
     df = correct_columns(df)
     df = handle_missing_data(df)
 
