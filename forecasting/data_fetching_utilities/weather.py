@@ -10,6 +10,8 @@ import urllib.request, json
 from datetime import datetime
 import regex as re
 import os
+import sys
+import glob
 
 from forecasting.data_fetching_utilities.open_weather_api_keys import api_key
 from forecasting.general_utilities.time_utils import *
@@ -54,7 +56,6 @@ def fetch_recent_historical(loc, start, end=unix_timestamp_now(), api_key=api_ke
     lat, lon = split_tuple(loc)
     request_url = f"http://history.openweathermap.org/data/2.5/history/city?lat={lat}&lon={lon}&units=imperial&type=hour&start={start}&end={end}&appid={api_key}"
     df = fetch_to_dataframe(request_url, ['list'])
-
     df = correct_columns(df)
     df = handle_missing_data(df)
 
@@ -71,8 +72,23 @@ def fetch_archived_historical(loc, dir_name) -> DataFrame:
     Returns:
         df (DataFrame): Fetched dataframe of weather.
     """
-    path = os.path.join(DEFAULT_HISTORICAL_WEATHER_PATH, dir_name, loc_to_str(loc) + ".csv")
-    df = pd.read_csv(path)
+    
+    lat = str(round(loc[0], 6))
+    lat = re.sub('\.', '_', lat)
+    lon = str(round(loc[1], 6))
+    lon = re.sub('\.', '_', lon)
+    path = os.path.join(DEFAULT_HISTORICAL_WEATHER_PATH, dir_name)
+    filenames = [f for f in glob.glob(path + "\\*.csv") if lat in f and lon in f]
+    if len(filenames) > 1:
+        print("Too many matches for filename found")
+        print(filenames)
+        sys.exit(2)
+    if len(filenames) < 1:
+        print("No matches for filename found")
+        print(filenames)
+        sys.exit(2)
+    
+    df = pd.read_csv(filenames[0])
 
     df['datetime'] = list(map(datetime.fromtimestamp, df['dt'])) 
     df.set_index('datetime', inplace=True)
@@ -118,6 +134,7 @@ def fetch_all_recent_weather(weather_locs, start) -> list:
     dfs_recent = []
     for loc in weather_locs:
         df_recent = fetch_recent_historical(loc, start)
+        
         dfs_recent.append(df_recent)
     return dfs_recent
 
