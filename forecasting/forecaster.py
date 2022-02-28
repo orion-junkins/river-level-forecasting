@@ -138,6 +138,7 @@ class Forecaster:
             y_pred = model.historical_forecasts(series=y_val, past_covariates=X_val, start=0.5, retrain=False, overlap_end=False, last_points_only=True, verbose=True , **kwargs)
             y_pred = target_scaler.inverse_transform(y_pred)
             if y_pred.is_stochastic:
+                self.logger.info("Current forecast identified as stochastic")
                 y_pred_min = y_pred.quantile_df(0.05).applymap(lambda x: x.item())
                 y_preds_min.append(y_pred_min)
                 y_pred_mid = y_pred.quantile_df(0.5).applymap(lambda x: x.item())
@@ -145,6 +146,7 @@ class Forecaster:
                 y_pred_max = y_pred.quantile_df(0.95).applymap(lambda x: x.item())
                 y_preds_max.append(y_pred_max)
             else:
+                self.logger.info("Current forecast identified as deterministic")
                 y_preds_mid.append(y_pred)
         return (y_preds_min, y_preds_mid, y_preds_max)
 
