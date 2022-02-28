@@ -82,3 +82,7 @@ class Dataset:
 
 
     def split_X_y(self, df, target_col_name='level'):
+        y = pd.DataFrame(df[target_col_name])
+        df.drop(columns=[target_col_name], inplace=True)
+        X = df
+        return (X,y)
