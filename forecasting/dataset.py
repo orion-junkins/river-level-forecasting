@@ -11,16 +11,11 @@ class Dataset:
         self.scaler = Scaler(MinMaxScaler())
         self.target_scaler = Scaler(MinMaxScaler())
 
-
-        current_dfs = self.catchment_data.all_current_data.copy()
-        print("shape of current_dfs in Dataset init: ", current_dfs[0].shape)
-        self.Xs_current, self.y_current = self._pre_process(current_dfs, fit_scalers=False)
-
-
-
         historical_dfs = self.catchment_data.all_historical_data.copy()
         self.Xs_historical, self.y_historical = self._pre_process(historical_dfs)
 
+        current_dfs = self.catchment_data.all_current_data.copy()
+        self.Xs_current, self.y_current = self._pre_process(current_dfs, fit_scalers=False)
         self.X_trains, self.X_tests, self.X_validations, self.y_train, self.y_test, self.y_validation = self._partition()
   
         
@@ -36,10 +31,12 @@ class Dataset:
         Xs = []
         y = None
         for df in dfs:
-            X_cur, y_cur = split_X_y(df)
+            X_cur, y_cur = self.split_X_y(df)
             X_cur = self.add_engineered_features(X_cur)
             X_cur = timeseries.TimeSeries.from_dataframe(X_cur)
             y_cur = timeseries.TimeSeries.from_dataframe(y_cur)
+            y_cur = y_cur.drop_before(X_cur.start_time())
+
             if fit_scalers:
                 self.scaler.fit(X_cur)
                 self.target_scaler.fit(y_cur)
@@ -47,10 +44,7 @@ class Dataset:
 
             X_cur = self.scaler.transform(X_cur)
             Xs.append(X_cur)
-            #assert(y == None or y == y_cur)
             y = y_cur
-
- 
         
         y = self.target_scaler.transform(y)
 
@@ -77,13 +71,14 @@ class Dataset:
         df['day_of_year'] = df.index.day_of_year
 
         df['snow_10d'] = df['snow_1h'].rolling(window=10 * 24).sum()
-        # df['snow_30d'] = df['snow_1h'].rolling(window=30 * 24).sum()
+        df['snow_30d'] = df['snow_1h'].rolling(window=30 * 24).sum()
         df['rain_10d'] = df['rain_1h'].rolling(window=10 * 24).sum()
-        # df['rain_30d'] = df['rain_1h'].rolling(window=30 * 24).sum()
+        df['rain_30d'] = df['rain_1h'].rolling(window=30 * 24).sum()
 
         df['temp_10d'] = df['temp'].rolling(window=10 * 24).mean()
-        # df['temp_30d'] = df['temp'].rolling(window=30 * 24).mean()
-        print(df.shape)
+        df['temp_30d'] = df['temp'].rolling(window=30 * 24).mean()
         df.dropna(inplace=True)
-        print(df.shape)
         return df
+
+
+    def split_X_y(self, df, target_col_name='level'):
