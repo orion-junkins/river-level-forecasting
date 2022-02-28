@@ -15,7 +15,7 @@ class Forecaster:
     Managers training data, inference data, model fitting and inference of trained model.
     Allows the user to query for specific forecasts or forecast ranges.
     """
-    def __init__(self, catchment_data, model_type=BlockRNNModel, overwrite_existing_models=False, log_level='INFO', parent_dir="trained_models", model_save_dir="model", likelihood=GaussianLikelihood(), verbose=True) -> None:
+    def __init__(self, catchment_data, model_type=BlockRNNModel, model_params={}, overwrite_existing_models=False, log_level='INFO', parent_dir="trained_models", model_save_dir="model", likelihood=GaussianLikelihood(), verbose=True) -> None:
         """
         Fetches data from provided forecast site and generates processed training and inference sets.
         Builds the specified model.
@@ -26,6 +26,7 @@ class Forecaster:
         self.dataset = Dataset(catchment_data)
 
         self.model_builder = model_type
+        self.model_params = model_params
         self.model_save_dir = os.path.join(parent_dir, self.name, model_save_dir)
         self.models=[]
 
@@ -42,7 +43,7 @@ class Forecaster:
 
 
     def _load_existing_models(self):
-        self.logger.info("FROM LOGGER: Loading existing models")
+        self.logger.info("Loading existing models.")
         models = []
         for index in range(self.dataset.num_X_sets):
             self.logger.info("Loading model for dataset %s" % index)
@@ -57,7 +58,7 @@ class Forecaster:
         models = []
         for index in range(self.dataset.num_X_sets):
             self.logger.info("Building model for dataset %s" % index)
-            model = self.model_builder(input_chunk_length=120, output_chunk_length=72, 
+            model = self.model_builder(**self.model_params, 
                                         work_dir=self.model_save_dir, model_name=str(index), 
                                         force_reset=True, save_checkpoints=True,
                                         likelihood=self.likelihood)
