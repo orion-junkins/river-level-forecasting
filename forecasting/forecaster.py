@@ -145,28 +145,21 @@ class Forecaster:
                 y_preds_mid.append(y_pred_mid)
                 y_pred_max = y_pred.quantile_df(0.95).applymap(lambda x: x.item())
                 y_preds_max.append(y_pred_max)
+                df = self._join_preds(y_preds_min, y_preds_mid, y_preds_max)
             else:
                 self.logger.info("Current forecast identified as deterministic")
                 y_preds_mid.append(y_pred)
-        return (y_preds_min, y_preds_mid, y_preds_max)
+                df = self._join_preds(y_preds_mid, y_preds_mid, y_preds_mid)
+
+        return df
 
 
-    def _join_preds(self, y_preds):
-        """
-        Consolidate a list of predicted timeseries into a single dataframe 
-
-        Args:
-            y_preds (_type_): _description_
-        """
+    def _join_preds(self, y_preds_min, y_preds_mid, y_preds_max):
         df = pd.DataFrame()
-        for index, y_pred in enumerate(y_preds):
-            if y_pred.is_stochastic:
-                df_cur = y_pred.quantiles_df(quantiles=(0.05, 0.5, 0.95))
-            else:
-                df_cur = y_pred.pd_dataframe()
-            df_cur = df_cur.rename(columns={"0": str(index)})
-            frames = [df, df_cur]
-            df = pd.concat(frames, axis=1)
+        df['min'] = pd.concat(y_preds_min, axis=1).min(axis=1)
+        df['mean'] = pd.concat(y_preds_mid, axis=1).mean(axis=1)
+        df['max'] = pd.concat(y_preds_max, axis=1).mean(axis=1)
+
         return df
 
 
