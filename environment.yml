@@ -1,0 +1,26 @@
+name: darts
+channels:
+  - defaults
+dependencies:
+  - python=3.7
+  - u8darts
+  - ipykernel
+  - regex
+  - u8darts-all
+  - pandas
+  - scipy
+  - requests
+  - pandas-datareader
+  - boto3
+  - flask
+  - jupyter
+  - pillow
+  - h5py
+  - scikit-learn
+  - tqdm
+  - matplotlib
+  - pyyaml
+  - pip
+  - cudatoolkit
+  - pytorch
+prefix: C:\Users\orion\anaconda3\envs\darts
