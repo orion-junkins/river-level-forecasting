@@ -1,8 +1,7 @@
 from sklearn.preprocessing import MinMaxScaler
 from darts import timeseries 
 from darts.dataprocessing.transformers import Scaler
-
-from forecasting.general_utilities.df_utils import *
+import pandas as pd
 
 class Dataset:
 
