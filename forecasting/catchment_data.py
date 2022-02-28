@@ -2,7 +2,6 @@ from data.weather_locations import all_weather_locs
 from forecasting.general_utilities.time_utils import date_days_ago, unix_timestamp_days_ago
 from forecasting.data_fetching_utilities.weather import *
 from forecasting.data_fetching_utilities.level import get_historical_level
-from forecasting.general_utilities.df_utils import *
 
 class CatchmentData:
     def __init__(self, name, usgs_gauge_id, level_forecast_url=None, weather_locs=None, window_size=40) -> None:
@@ -25,41 +24,6 @@ class CatchmentData:
         self.historical_weather = fetch_all_historical_weather(self.weather_locs, self.name) 
         self.recent_weather = fetch_all_recent_weather(self.weather_locs, start=unix_timestamp_days_ago(self.window_size))
         self.forecasted_weather = fetch_all_forecasted_weather(self.weather_locs)
-
-
-    @property
-    def all_recent_weather(self):
-        """
-        A single dataframe representing all recent (5da) weather from all locations.
-        TODO: Ensure no clashes between column names
-        Returns:
-            df: Merged dataframe.
-        """
-        return merge(self.recent_weather)
-    
-
-    @property
-    def all_forecasted_weather(self):
-        """
-        A single dataframe representing all forecasted weather from all locations.
-        Returns:
-            df: Merged dataframe.
-        """
-        df = merge(self.forecasted_weather)
-        df = handle_missing_data(df)
-        return df
-
-
-    @property
-    def all_historical_weather(self):
-        """
-        A single dataframe representing all historical weather from all locations.
-        Returns:
-            df: Merged dataframe.
-        """
-        df = merge(self.historical_weather)
-        df = handle_missing_data(df)
-        return df
 
 
     @property
