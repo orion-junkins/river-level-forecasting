@@ -3,10 +3,8 @@ channels:
   - defaults
 dependencies:
   - python=3.7
-  - u8darts
   - ipykernel
   - regex
-  - u8darts-all
   - pandas
   - scipy
   - requests
@@ -23,4 +21,7 @@ dependencies:
   - pip
   - cudatoolkit
   - pytorch
+pip: 
+  - u8darts
+  - u8darts-all
 prefix: C:\Users\orion\anaconda3\envs\darts
