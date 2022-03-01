@@ -23,14 +23,14 @@ st.title('River Level Forecasting with ML')
 
 data_load_state = st.text('Loading data...')
 
-# st.subheader('24 hour advance prediction window')
-# hst_fcasts_24_4 = test_historical(24, 4)
-# st.line_chart(hst_fcasts_24_4)
+st.subheader('24 hour advance prediction window')
+hst_fcasts_24_4 = test_historical(24, 4)
+st.line_chart(hst_fcasts_24_4)
 
-# st.subheader('48 hour advance prediction window')
-# hst_fcasts_48_4 = test_historical(48, 4)
-# st.line_chart(hst_fcasts_48_4)
+st.subheader('48 hour advance prediction window')
+hst_fcasts_48_4 = test_historical(48, 4)
+st.line_chart(hst_fcasts_48_4)
 
 st.subheader('72 hour advance prediction window')
-hst_fcasts_72_4 = test_historical(72, 72)
+hst_fcasts_72_4 = test_historical(72, 4)
 st.line_chart(hst_fcasts_72_4)
