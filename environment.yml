@@ -21,7 +21,6 @@ dependencies:
   - pip
   - cudatoolkit
   - pytorch
-pip: 
   - u8darts
   - u8darts-all
 prefix: C:\Users\orion\anaconda3\envs\darts
