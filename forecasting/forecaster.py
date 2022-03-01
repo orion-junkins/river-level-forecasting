@@ -158,7 +158,7 @@ class Forecaster:
         df = pd.DataFrame()
         df['min'] = pd.concat(y_preds_min, axis=1).min(axis=1)
         df['mean'] = pd.concat(y_preds_mid, axis=1).mean(axis=1)
-        df['max'] = pd.concat(y_preds_max, axis=1).mean(axis=1)
+        df['max'] = pd.concat(y_preds_max, axis=1).max(axis=1)
 
         return df
 
