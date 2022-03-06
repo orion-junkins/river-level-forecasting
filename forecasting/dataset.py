@@ -10,12 +10,13 @@ class Dataset:
         self.scaler = Scaler(MinMaxScaler())
         self.target_scaler = Scaler(MinMaxScaler())
 
-        historical_dfs = self.catchment_data.all_historical_data.copy()
-        self.Xs_historical, self.y_historical = self._pre_process(historical_dfs)
-
-        current_dfs = self.catchment_data.all_current_data.copy()
-        self.Xs_current, self.y_current = self._pre_process(current_dfs, fit_scalers=False)
+        historical_weather, historical_level = self.catchment_data.all_historical_data
+        self.Xs_historical, self.y_historical = self._pre_process(historical_weather, historical_level)
         self.X_trains, self.X_tests, self.X_validations, self.y_train, self.y_test, self.y_validation = self._partition()
+
+        current_weather, recent_level = self.catchment_data.all_current_data
+        self.Xs_current, self.y_current = self._pre_process(current_weather, recent_level, fit_scalers=False)
+        
   
         
     @property
@@ -23,31 +24,34 @@ class Dataset:
         return len(self.X_trains)
 
         
-    def _pre_process(self, dfs, fit_scalers=True):
+    def _pre_process(self, Xs, y, fit_scalers=True):
         """
         Fetch needed data and perform all standard preprocessing.
         """
-        Xs = []
-        y = None
-        for df in dfs:
-            X_cur, y_cur = self.split_X_y(df)
+        y = timeseries.TimeSeries.from_dataframe(y)
+        if fit_scalers:
+            self.target_scaler.fit(y)
+
+        processed_Xs = []
+
+        for X_cur in Xs:
             X_cur = self.add_engineered_features(X_cur)
             X_cur = timeseries.TimeSeries.from_dataframe(X_cur)
-            y_cur = timeseries.TimeSeries.from_dataframe(y_cur)
-            y_cur = y_cur.drop_before(X_cur.start_time())
-
             if fit_scalers:
                 self.scaler.fit(X_cur)
-                self.target_scaler.fit(y_cur)
                 fit_scalers = False # Only fit scalers once
-
             X_cur = self.scaler.transform(X_cur)
-            Xs.append(X_cur)
-            y = y_cur
-        
+            processed_Xs.append(X_cur)        
+
+        if y.start_time() < processed_Xs[0].start_time():
+            y = y.drop_before(processed_Xs[0].start_time())
+
         y = self.target_scaler.transform(y)
 
-        return Xs, y
+        print(processed_Xs[0].start_time())
+        print(y.start_time())
+
+        return (processed_Xs, y)
 
     def _partition(self, test_size=0.2, validation_size=0.2):
         X_trains = []
@@ -79,9 +83,5 @@ class Dataset:
         df.dropna(inplace=True)
         return df
 
-
-    def split_X_y(self, df, target_col_name='level'):
-        y = pd.DataFrame(df[target_col_name])
-        df.drop(columns=[target_col_name], inplace=True)
-        X = df
-        return (X,y)
+    def update(self):
+        self.Xs_current, self.y_current = self._pre_process(current_dfs, fit_scalers=False)
