@@ -4,7 +4,7 @@ from forecasting.data_fetching_utilities.weather import *
 from forecasting.data_fetching_utilities.level import get_historical_level
 
 class CatchmentData:
-    def __init__(self, name, usgs_gauge_id, level_forecast_url=None, weather_locs=None, window_size=40) -> None:
+    def __init__(self, name, usgs_gauge_id, load_historical=True, level_forecast_url=None, weather_locs=None, window_size=40) -> None:
         self.name = name
         self.usgs_gauge_id = str(usgs_gauge_id)
         self.level_forecast_url = level_forecast_url
@@ -16,8 +16,10 @@ class CatchmentData:
 
         self.window_size = window_size
 
-        # Level dataframes (indexed by 'datetime', columns = ['level'])
-        self.historical_level = get_historical_level(self.usgs_gauge_id)
+        if load_historical:
+            self.historical_level = get_historical_level(self.usgs_gauge_id)
+            self.historical_weather = fetch_all_historical_weather(self.weather_locs, self.name) 
+        
         self.recent_level = get_historical_level(self.usgs_gauge_id, start=date_days_ago(self.window_size))
 
         # Lists of weather dataframes (indexed by 'datetime', columns = ['temp', 'rain', etc.])
