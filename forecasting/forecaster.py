@@ -154,6 +154,37 @@ class Forecaster:
         return df
 
 
+    def forecast_for_hours(self, n=24, num_samples=100):
+        """
+        """
+        self.logger.info("Generating future forecasts")
+        y_preds_min = []
+        y_preds_mid = []
+        y_preds_max = []
+
+        target_scaler = self.dataset.target_scaler
+        y = self.dataset.y_current
+        for index, (model, X) in enumerate(zip(self.models, self.dataset.Xs_current)):
+            self.logger.info("Generating future forecast for model %s" % index)
+            y_pred = model.predict(series=y, past_covariates=X, num_samples=num_samples)
+            y_pred = target_scaler.inverse_transform(y_pred)
+            if y_pred.is_stochastic:
+                self.logger.info("Current forecast identified as stochastic")
+                y_pred_min = y_pred.quantile_df(0.05).applymap(lambda x: x.item())
+                y_preds_min.append(y_pred_min)
+                y_pred_mid = y_pred.quantile_df(0.5).applymap(lambda x: x.item())
+                y_preds_mid.append(y_pred_mid)
+                y_pred_max = y_pred.quantile_df(0.95).applymap(lambda x: x.item())
+                y_preds_max.append(y_pred_max)
+                df = self._join_preds(y_preds_min, y_preds_mid, y_preds_max)
+            else:
+                self.logger.info("Current forecast identified as deterministic")
+                y_preds_mid.append(y_pred)
+                df = self._join_preds(y_preds_mid, y_preds_mid, y_preds_mid)
+
+        return df
+
+
     def _join_preds(self, y_preds_min, y_preds_mid, y_preds_max):
         df = pd.DataFrame()
         df['min'] = pd.concat(y_preds_min, axis=1).min(axis=1)
