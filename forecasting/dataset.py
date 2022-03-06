@@ -84,4 +84,6 @@ class Dataset:
         return df
 
     def update(self):
+        self.catchment_data.update_for_inference()
+        current_dfs = self.catchment_data.all_current_data.copy()
         self.Xs_current, self.y_current = self._pre_process(current_dfs, fit_scalers=False)
