@@ -132,10 +132,10 @@ class Forecaster:
         y_preds_max = []
 
         target_scaler = self.dataset.target_scaler
-        y_val = self.dataset.y_validation
-        for index, (model, X_val) in enumerate(zip(self.models, self.dataset.X_validations)):
+        y_test = self.dataset.y_test
+        for index, (model, X_test) in enumerate(zip(self.models, self.dataset.X_tests)):
             self.logger.info("Generating historical forecast for model %s" % index)
-            y_pred = model.historical_forecasts(series=y_val, past_covariates=X_val, start=0.5, retrain=False, overlap_end=False, last_points_only=True, verbose=True , **kwargs)
+            y_pred = model.historical_forecasts(series=y_test, past_covariates=X_test, start=0.5, retrain=False, overlap_end=False, last_points_only=True, verbose=True , **kwargs)
             y_pred = target_scaler.inverse_transform(y_pred)
             if y_pred.is_stochastic:
                 self.logger.info("Current forecast identified as stochastic")
