@@ -41,15 +41,21 @@ class Dataset:
                 self.scaler.fit(X_cur)
                 fit_scalers = False # Only fit scalers once
             X_cur = self.scaler.transform(X_cur)
-            processed_Xs.append(X_cur)        
+             
+            if X_cur.start_time() < y.start_time():
+                _, X_cur = X_cur.split_before(y.start_time())   
+            if X_cur.end_time() > y.end_time():
+                X_cur, _ = X_cur.split_after(y.end_time()) 
+
+            processed_Xs.append(X_cur)     
 
         if y.start_time() < processed_Xs[0].start_time():
-            y = y.drop_before(processed_Xs[0].start_time())
+            _, y = y.split_before(processed_Xs[0].start_time()) # y starts before X, drop y before X start
+        if y.end_time() > processed_Xs[0].end_time(): # y ends after X, drop y after X end
+            y, _ = y.split_after(processed_Xs[0].end_time())
 
         y = self.target_scaler.transform(y)
 
-        print(processed_Xs[0].start_time())
-        print(y.start_time())
 
         return (processed_Xs, y)
 
