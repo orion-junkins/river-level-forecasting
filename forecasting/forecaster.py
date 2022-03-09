@@ -61,6 +61,7 @@ class Forecaster:
             model = self.model_builder(**self.model_params, 
                                         work_dir=self.model_save_dir, model_name=str(index), 
                                         force_reset=True, save_checkpoints=True,
+                                        batch_size=8,
                                         likelihood=self.likelihood)
             models.append(model)
         self.logger.info("All models built!")
