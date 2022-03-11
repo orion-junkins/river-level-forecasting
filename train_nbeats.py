@@ -1,8 +1,12 @@
 import pandas as pd
+import sys
 from forecasting.catchment_data import CatchmentData
 import pickle
 from forecasting.forecaster import Forecaster
 from darts.models import NBEATSModel
+
+model_index_to_train = int(sys.argv[1])
+print("Training NBEATS model ", model_index_to_train)
 
 rebuild_catchment = False
 overwrite_existing_models = True
@@ -28,7 +32,7 @@ forecaster = Forecaster(catchment,
                                 model_save_dir="NBeats2",
                                 overwrite_existing_models=overwrite_existing_models)
 
-forecaster.fit(epochs=10)
+forecaster.fit(epochs=10, model_indexes=[model_index_to_train])
 
 
 def build_historical(forecaster, horizon, stride, name="test"):
