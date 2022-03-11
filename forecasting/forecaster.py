@@ -62,7 +62,11 @@ class Forecaster:
                                         work_dir=self.model_save_dir, model_name=str(index), 
                                         force_reset=True, save_checkpoints=True,
                                         batch_size=8,
-                                        likelihood=self.likelihood)
+                                        likelihood=self.likelihood,
+                                        pl_trainer_kwargs={
+                                            "accelerator": "gpu",
+                                            "gpus": [0]
+                                        })
             models.append(model)
         self.logger.info("All models built!")
         return models
