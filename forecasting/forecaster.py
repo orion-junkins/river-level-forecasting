@@ -72,7 +72,7 @@ class Forecaster:
         return models
 
         
-    def fit(self, **kwargs):
+    def fit(self, model_indexes=[0,1,2,3,4,5,6,7,8,9,10,11], **kwargs):
         """
         Wrapper for tf.keras.model.fit() to train internal model instance. Exposes select tuning parameters.
 
@@ -90,6 +90,9 @@ class Forecaster:
         y_val= self.dataset.y_validation
         
         for index, (model, X_train, X_val) in enumerate(zip(models, X_trains, X_validations)):
+            if index not in model_indexes:
+                continue
+            
             self.logger.info("Fitting model %s" % index)
             model.fit(series=y_train, past_covariates=X_train, 
                         val_series=y_val, val_past_covariates=X_val, 
