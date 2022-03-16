@@ -133,6 +133,7 @@ open_weather_api_keys.py
 
 
 test.py
-
+trained_models/
+*.out
 *.tar
 test.ipynb
