@@ -131,9 +131,8 @@ dmypy.json
 # OpenWeather API Key storage
 open_weather_api_keys.py
 
-# Misc
-trained_models/
-backup/
+
 test.py
+
 *.tar
 test.ipynb
