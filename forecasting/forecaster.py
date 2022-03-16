@@ -38,7 +38,7 @@ class Forecaster:
             
 
     def checkpoint_dir_exists(self):
-        checkpoint_dir = os.path.join(self.model_save_dir, "checkpoints")
+        checkpoint_dir = os.path.join(self.model_save_dir)
         return os.path.exists(checkpoint_dir)
 
 
@@ -47,7 +47,14 @@ class Forecaster:
         models = []
         for index in range(self.dataset.num_X_sets):
             self.logger.info("Loading model for dataset %s" % index)
-            model = self.model_builder.load_from_checkpoint(str(index), work_dir=self.model_save_dir)
+
+            cur_model_path = os.path.join(self.model_save_dir, str(index), "checkpoints")
+            if os.path.exists(cur_model_path):
+                self.logger.info("Checkpoints dir found. Loading model.")
+                model = self.model_builder.load_from_checkpoint(str(index), work_dir=self.model_save_dir)
+            else:
+                self.logger.info("Checkpoints dir NOT found. No model will be loaded.")
+                model = None
             models.append(model)
         self.logger.info("All models loaded!")
         return models
@@ -72,7 +79,7 @@ class Forecaster:
         return models
 
         
-    def fit(self, model_indexes=[0,1,2,3,4,5,6,7,8,9,10,11], **kwargs):
+    def fit(self, model_indexes=[0,1,2,3,4,5,6,7,8,9,10,11], epochs=20):
         """
         Wrapper for tf.keras.model.fit() to train internal model instance. Exposes select tuning parameters.
 
@@ -81,22 +88,39 @@ class Forecaster:
             batch_size (int, optional): Number of samples per gradient update. Defaults to 10.
             shuffle (bool, optional): Whether to shuffle the training data before each epoch. Defaults to True.
         """
-        self.logger.info("Fitting all models")
+        model_list = str(model_indexes)
+        self.logger.info(f"Fitting models: {model_list}")
 
         models = self.models
         X_trains = self.dataset.X_trains
         X_validations = self.dataset.X_validations
         y_train = self.dataset.y_train
         y_val= self.dataset.y_validation
-        
-        for index, (model, X_train, X_val) in enumerate(zip(models, X_trains, X_validations)):
-            if index not in model_indexes:
-                continue
+
+        for index in model_indexes:
+            index = int(index)
+            cur_model_path = os.path.join(self.model_save_dir, str(index), "checkpoints")
+            if not os.path.exists(cur_model_path):
+                self.logger.info(f"Model {index} not found. Building new model.")
+                model = self.model_builder(**self.model_params, 
+                                        work_dir=self.model_save_dir, model_name=str(index), 
+                                        force_reset=True, save_checkpoints=True,
+                                        batch_size=16,
+                                        likelihood=self.likelihood,
+                                        pl_trainer_kwargs={
+                                            "accelerator": "gpu",
+                                            "gpus": [0]
+                                        })
+            else:
+                model = self.models[index]
             
+            X_train = X_trains[index]
+            X_val =X_validations[index]
+
             self.logger.info("Fitting model %s" % index)
             model.fit(series=y_train, past_covariates=X_train, 
                         val_series=y_val, val_past_covariates=X_val, 
-                        verbose=True, **kwargs)
+                        verbose=True, epochs=epochs)
 
 
     def forecast_for_range(self, start, end):
