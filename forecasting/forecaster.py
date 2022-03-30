@@ -198,7 +198,7 @@ class Forecaster:
         y = self.dataset.y_current
         for index, (model, X) in enumerate(zip(self.models, self.dataset.Xs_current)):
             self.logger.info("Generating future forecast for model %s" % index)
-            y_pred = model.predict(series=y, past_covariates=X, num_samples=num_samples)
+            y_pred = model.predict(n=n, series=y, past_covariates=X, num_samples=num_samples)
             y_pred = target_scaler.inverse_transform(y_pred)
             if y_pred.is_stochastic:
                 self.logger.info("Current forecast identified as stochastic")
