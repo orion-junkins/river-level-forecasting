@@ -131,19 +131,10 @@ dmypy.json
 # OpenWeather API Key storage
 open_weather_api_keys.py
 
-# Server only scripts
-driver*
-generate_historical*
-grid_search*
-train_model*
-build_forecaster.py
-
 # Serverside directories with large files
 trained_models/
-backup/
 
 #Misc
 *.out
 *.tar
-test.ipynb
-enable_git.sh
+*.pickle
