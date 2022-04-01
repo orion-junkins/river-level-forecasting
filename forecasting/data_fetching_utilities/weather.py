@@ -16,7 +16,7 @@ import glob
 from forecasting.data_fetching_utilities.open_weather_api_keys import api_key
 from forecasting.general_utilities.time_utils import *
 
-DEFAULT_WEATHER_COLS = ['temp','pressure', 'humidity', 'wind_speed', 'wind_deg', 'rain_1h', 'snow_1h']
+DEFAULT_WEATHER_COLS = ['temp', 'humidity', 'rain_1h', 'snow_1h']
 DEFAULT_HISTORICAL_WEATHER_PATH = os.path.join("data", "historical")
 
 # Single Location fetchers
@@ -91,13 +91,12 @@ def fetch_archived_historical(loc, dir_name) -> DataFrame:
     Returns:
         df (DataFrame): Fetched dataframe of weather.
     """
-    
     lat = str(round(loc[0], 6))
     lat = re.sub('\.', '_', lat)
     lon = str(round(loc[1], 6))
     lon = re.sub('\.', '_', lon)
     path = os.path.join(DEFAULT_HISTORICAL_WEATHER_PATH, dir_name)
-    filenames = [f for f in glob.glob(path + "\\*.csv") if lat in f and lon in f]
+    filenames = [f for f in glob.glob(path + "/*.csv") if lat in f and lon in f]
     if len(filenames) > 1:
         print("Too many matches for filename found")
         print(filenames)
