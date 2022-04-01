@@ -16,7 +16,7 @@ class Dataset:
         self.X_trains, self.X_tests, self.X_validations, self.y_train, self.y_test, self.y_validation = self._partition()
 
         current_weather, recent_level = self.catchment_data.all_current_data
-        self.Xs_current, self.y_current = self._pre_process(current_weather, recent_level, fit_scalers=False)
+        self.Xs_current, self.y_current = self._pre_process(current_weather, recent_level, allow_future_X=True, fit_scalers=False)
 
         self.merged_X_train = self._merge(self.X_trains)
         self.merged_X_test = self._merge(self.X_tests)
@@ -41,7 +41,7 @@ class Dataset:
         return len(self.X_trains)
 
         
-    def _pre_process(self, Xs, y, fit_scalers=True):
+    def _pre_process(self, Xs, y, allow_future_X=False, fit_scalers=True):
         """
         Fetch needed data and perform all standard preprocessing.
         """
@@ -60,14 +60,17 @@ class Dataset:
             X_cur = self.scaler.transform(X_cur)
              
             if X_cur.start_time() < y.start_time():
-                _, X_cur = X_cur.split_before(y.start_time())   
-            if X_cur.end_time() > y.end_time():
-                X_cur, _ = X_cur.split_after(y.end_time()) 
+                _, X_cur = X_cur.split_before(y.start_time())    # X starts before y, drop X before y start
+
+            if not allow_future_X:
+                if X_cur.end_time() > y.end_time():
+                    X_cur, _ = X_cur.split_after(y.end_time())  # X ends after y, drop X after y end
 
             processed_Xs.append(X_cur)     
 
         if y.start_time() < processed_Xs[0].start_time():
             _, y = y.split_before(processed_Xs[0].start_time()) # y starts before X, drop y before X start
+
         if y.end_time() > processed_Xs[0].end_time(): # y ends after X, drop y after X end
             y, _ = y.split_after(processed_Xs[0].end_time())
 
@@ -86,6 +89,7 @@ class Dataset:
 
             X_trains.append(X_train)
             X_tests.append(X_test)
+
             X_validations.append(X_validation)
 
         y_train, y_test = self.y_historical.split_after(1-test_size)
