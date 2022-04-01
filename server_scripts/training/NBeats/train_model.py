@@ -8,7 +8,7 @@ from darts.models import NBEATSModel
 model_save_dir = sys.argv[1]
 model_index_to_train = sys.argv[2]
 
-print("Training BlockRNN model ", model_index_to_train)
+print("Training model ", model_index_to_train)
 
 overwrite_existing_models = False 
 
@@ -17,13 +17,16 @@ best_params = {
         "output_chunk_length" : 96
     }
 
+print("Loading catchment")
 pickle_in = open("data/catchment.pickle", "rb")
 catchment = pickle.load(pickle_in)
 
+print("Building forecaster")
 forecaster = Forecaster(catchment, 
                                 model_type=NBEATSModel, 
                                 model_params=best_params, 
                                 model_save_dir=model_save_dir,
                                 overwrite_existing_models=overwrite_existing_models)
 
+print("fitting")
 forecaster.fit(epochs=20, model_indexes=[model_index_to_train])

@@ -18,11 +18,11 @@ best_params = {"input_chunk_length" : 120,"output_chunk_length" : 96}
 
 
 # catchment.update_for_inference()
-from darts.models import NBEATSModel
+from darts.models import BlockRNNModel
 forecaster = Forecaster(catchment, 
-                                model_type=NBEATSModel, 
+                                model_type=BlockRNNModel, 
                                 model_params=best_params, 
-                                model_save_dir="NBeats6",
+                                model_save_dir="BlockckRNN2",
                                 overwrite_existing_models=False)
 
 
