@@ -51,6 +51,17 @@ class Forecaster:
                 self.logger.info(f"loading merged model from {cur_model_path}")
                 self.merged_model = self.model_builder.load_from_checkpoint("merged", work_dir=self.model_save_dir)
 
+        if overwrite_existing_models:
+            self.merged_model = self.model_builder(**self.model_params, 
+                                        work_dir=self.model_save_dir, model_name=str("merged"), 
+                                        force_reset=True, save_checkpoints=True,
+                                        likelihood=self.likelihood,
+                                        pl_trainer_kwargs={"accelerator": "gpu", "gpus": -1, "auto_select_gpus": True} ) # Use all available GPUs
+        else:
+            cur_model_path = os.path.join(self.model_save_dir, "merged", "checkpoints")
+            self.logger.info(f"loading merged model from {cur_model_path}")
+            self.merged_model = self.model_builder.load_from_checkpoint("merged", work_dir=self.model_save_dir)
+
 
     def checkpoint_dir_exists(self):
         checkpoint_dir = os.path.join(self.model_save_dir)
