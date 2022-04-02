@@ -2,6 +2,7 @@
 import pickle
 from forecasting.catchment_data import CatchmentData
 from forecasting.forecaster import Forecaster
+from datetime import datetime
 
 rebuild_catchment = False
 if rebuild_catchment:
@@ -21,11 +22,17 @@ best_params = {"input_chunk_length" : 120,"output_chunk_length" : 96}
 from darts.models import BlockRNNModel
 forecaster = Forecaster(catchment, 
                                 model_type=BlockRNNModel, 
-                                model_params=best_params, 
-                                model_save_dir="BlockckRNN2",
+                                model_params=best_params,
+                                merged_model=False, 
+                                model_save_dir="BlockRNN",
                                 overwrite_existing_models=False)
 
 
 fcast = forecaster.forecast_for_hours(n=72)
 
 print(fcast)
+
+now = datetime.now().strftime("%d-%m-%Y_%H:%M:%S")
+pickle_out = open(f"data_out/{now}future_forecast.pickle", "wb")
+pickle.dump(catchment, pickle_out)
+pickle_out.close()

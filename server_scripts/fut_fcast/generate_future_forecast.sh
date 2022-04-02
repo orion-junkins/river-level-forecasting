@@ -7,4 +7,4 @@
 #SBATCH -t 4-00:00:00		#4 day timeout
 #SBATCH --export=ALL
 source ~/miniconda3/bin/activate darts		# activate env.
-python forecast_test.py
+python generate_future_forecast.py
