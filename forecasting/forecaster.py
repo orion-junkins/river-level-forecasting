@@ -15,7 +15,7 @@ class Forecaster:
     Managers training data, inference data, model fitting and inference of trained model.
     Allows the user to query for specific forecasts or forecast ranges.
     """
-    def __init__(self, catchment_data, model_type=BlockRNNModel, model_params={}, overwrite_existing_models=False, log_level='INFO', parent_dir="trained_models", model_save_dir="model", likelihood=None, verbose=True) -> None:
+    def __init__(self, catchment_data, merged_model=False, model_type=BlockRNNModel, model_params={}, overwrite_existing_models=False, log_level='INFO', parent_dir="trained_models", model_save_dir="model", likelihood=None, verbose=True) -> None:
         """
         Fetches data from provided forecast site and generates processed training and inference sets.
         Builds the specified model.
@@ -35,21 +35,21 @@ class Forecaster:
             self.models = self._build_new_models()
         else:
             self.models = self._load_existing_models()
-
-        if overwrite_existing_models:
-            self.merged_model = self.model_builder(**self.model_params, 
-                                        work_dir=self.model_save_dir, model_name=str("merged"), 
-                                        force_reset=True, save_checkpoints=True,
-                                        batch_size=8,
-                                        likelihood=self.likelihood,
-                                        pl_trainer_kwargs={
-                                            "accelerator": "gpu",
-                                            "gpus": [0]
-                                        })
-        else:
-            cur_model_path = os.path.join(self.model_save_dir, "merged", "checkpoints")
-            self.logger.info(f"loading merged model from {cur_model_path}")
-            self.merged_model = self.model_builder.load_from_checkpoint("merged", work_dir=self.model_save_dir)
+        if merged_model:
+            if overwrite_existing_models:
+                self.merged_model = self.model_builder(**self.model_params, 
+                                            work_dir=self.model_save_dir, model_name=str("merged"), 
+                                            force_reset=True, save_checkpoints=True,
+                                            batch_size=8,
+                                            likelihood=self.likelihood,
+                                            pl_trainer_kwargs={
+                                                "accelerator": "gpu",
+                                                "gpus": [0]
+                                            })
+            else:
+                cur_model_path = os.path.join(self.model_save_dir, "merged", "checkpoints")
+                self.logger.info(f"loading merged model from {cur_model_path}")
+                self.merged_model = self.model_builder.load_from_checkpoint("merged", work_dir=self.model_save_dir)
 
 
     def checkpoint_dir_exists(self):
@@ -63,10 +63,10 @@ class Forecaster:
         for index in range(self.dataset.num_X_sets):
             self.logger.info("Loading model for dataset %s" % index)
 
-            cur_model_path = os.path.join(self.model_save_dir, str(index), "checkpoints")
+            cur_model_path = os.path.join(self.model_save_dir,  "checkpoints", str(index))
             if os.path.exists(cur_model_path):
                 self.logger.info("Checkpoints dir found. Loading model.")
-                model = self.model_builder.load_from_checkpoint(str(index), work_dir=self.model_save_dir)
+                model = self.model_builder.load_from_checkpoint("checkpoints\\" + str(index), work_dir=self.model_save_dir)
             else:
                 self.logger.info("Checkpoints dir NOT found. No model will be loaded.")
                 model = None
