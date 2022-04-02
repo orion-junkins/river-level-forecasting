@@ -40,12 +40,8 @@ class Forecaster:
             self.merged_model = self.model_builder(**self.model_params, 
                                         work_dir=self.model_save_dir, model_name=str("merged"), 
                                         force_reset=True, save_checkpoints=True,
-                                        batch_size=8,
                                         likelihood=self.likelihood,
-                                        pl_trainer_kwargs={
-                                            "accelerator": "gpu",
-                                            "gpus": [0]
-                                        })
+                                        pl_trainer_kwargs={"accelerator": "gpu", "gpus": -1, "auto_select_gpus": True} ) # Use all available GPUs
         else:
             cur_model_path = os.path.join(self.model_save_dir, "merged", "checkpoints")
             self.logger.info(f"loading merged model from {cur_model_path}")
