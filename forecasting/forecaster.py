@@ -15,7 +15,7 @@ class Forecaster:
     Managers training data, inference data, model fitting and inference of trained model.
     Allows the user to query for specific forecasts or forecast ranges.
     """
-    def __init__(self, catchment_data, merged_model=False, model_type=BlockRNNModel, model_params={}, overwrite_existing_models=False, log_level='INFO', parent_dir="trained_models", model_save_dir="model", likelihood=None, verbose=True) -> None:
+    def __init__(self, catchment_data, model_type=BlockRNNModel, model_params={}, overwrite_existing_models=False, log_level='INFO', parent_dir="trained_models", model_save_dir="model", likelihood=None, verbose=True) -> None:
         """
         Fetches data from provided forecast site and generates processed training and inference sets.
         Builds the specified model.
@@ -35,33 +35,7 @@ class Forecaster:
             self.models = self._build_new_models()
         else:
             self.models = self._load_existing_models()
-        if merged_model:
-            if overwrite_existing_models:
-                self.merged_model = self.model_builder(**self.model_params, 
-                                            work_dir=self.model_save_dir, model_name=str("merged"), 
-                                            force_reset=True, save_checkpoints=True,
-                                            batch_size=8,
-                                            likelihood=self.likelihood,
-                                            pl_trainer_kwargs={
-                                                "accelerator": "gpu",
-                                                "gpus": [0]
-                                            })
-            else:
-                cur_model_path = os.path.join(self.model_save_dir, "merged", "checkpoints")
-                self.logger.info(f"loading merged model from {cur_model_path}")
-                self.merged_model = self.model_builder.load_from_checkpoint("merged", work_dir=self.model_save_dir)
-
-        if overwrite_existing_models:
-            self.merged_model = self.model_builder(**self.model_params, 
-                                        work_dir=self.model_save_dir, model_name=str("merged"), 
-                                        force_reset=True, save_checkpoints=True,
-                                        likelihood=self.likelihood,
-                                        pl_trainer_kwargs={"accelerator": "gpu", "gpus": -1, "auto_select_gpus": True} ) # Use all available GPUs
-        else:
-            cur_model_path = os.path.join(self.model_save_dir, "merged", "checkpoints")
-            self.logger.info(f"loading merged model from {cur_model_path}")
-            self.merged_model = self.model_builder.load_from_checkpoint("merged", work_dir=self.model_save_dir)
-
+       
 
     def checkpoint_dir_exists(self):
         checkpoint_dir = os.path.join(self.model_save_dir)
@@ -103,17 +77,6 @@ class Forecaster:
             models.append(model)
         self.logger.info("All models built!")
         return models
-
-
-    def fit_merged(self, epochs=20):
-        self.logger.info("Fitting merged model")
-        X_train = self.dataset.merged_X_train
-        X_validation = self.dataset.merged_X_validation
-        y_train = self.dataset.y_train
-        y_val= self.dataset.y_validation
-        self.merged_model.fit(series=y_train, past_covariates=X_train, 
-                        val_series=y_val, val_past_covariates=X_validation, 
-                        verbose=True, epochs=epochs)
 
 
     def fit(self, model_indexes=[0,1,2,3,4,5,6,7,8,9,10,11], epochs=20):
@@ -196,28 +159,6 @@ class Forecaster:
                 self.logger.info("Current forecast identified as deterministic")
                 y_preds_mid.append(y_pred)
                 df = self._join_preds(y_preds_mid, y_preds_mid, y_preds_mid)
-
-        return df
-
-
-    def merged_forecast_for_hours(self, n=24):
-        """
-        """
-        self.logger.info("Generating future forecasts with merged model")
-
-        target_scaler = self.dataset.target_scaler
-        X = self.dataset.merged_X_current
-        y = self.dataset.y_current
-        
-        y_pred = self.merged_model.predict(n=n, series=y, past_covariates=X)
-        y_pred = target_scaler.inverse_transform(y_pred)
-
-        if y_pred.is_stochastic:
-            self.logger.info("Current forecast identified as stochastic")
-            df = y_pred.quantiles_df()
-        else:
-            self.logger.info("Current forecast identified as deterministic")
-            df = y_pred.pd_dataframe()
 
         return df
 

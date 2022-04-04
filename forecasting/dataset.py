@@ -18,23 +18,6 @@ class Dataset:
         current_weather, recent_level = self.catchment_data.all_current_data
         self.Xs_current, self.y_current = self._pre_process(current_weather, recent_level, allow_future_X=True, fit_scalers=False)
 
-        self.merged_X_train = self._merge(self.X_trains)
-        self.merged_X_test = self._merge(self.X_tests)
-        self.merged_X_validation = self._merge(self.X_validations)
-        self.merged_X_current = self._merge(self.Xs_current)
-  
-    def _merge(self, Xs):
-        frames = []
-        for index, X_cur in enumerate(Xs):
-            # Convert to df and add index as column name suffix
-            cur_df = X_cur.pd_dataframe().rename(columns=lambda col: col+'_'+str(index))
-            frames.append(cur_df)
-
-        df = pd.concat(frames, axis=1)
-        ts = TimeSeries.from_dataframe(df)
-
-        return ts
-
         
     @property
     def num_X_sets(self):
