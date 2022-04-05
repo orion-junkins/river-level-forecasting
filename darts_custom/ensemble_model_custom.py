@@ -63,6 +63,7 @@ class EnsembleModelCustom(GlobalForecastingModel):
         self.models = models
         self.is_single_series = None
 
+
     def fit(
         self,
         series: Union[TimeSeries, Sequence[TimeSeries]],
@@ -92,8 +93,6 @@ class EnsembleModelCustom(GlobalForecastingModel):
 
         if past_covariates is not None:
             error = self.is_single_series != isinstance(past_covariates[0], TimeSeries)
-            print(isinstance(past_covariates[0], TimeSeries))
-            print(past_covariates)
 
         if future_covariates is not None:
             error = self.is_single_series != isinstance(future_covariates, TimeSeries)
@@ -108,13 +107,16 @@ class EnsembleModelCustom(GlobalForecastingModel):
 
         return self
 
+
     def _stack_ts_seq(self, predictions):
         # stacks list of predictions into one multivariate timeseries
         return reduce(lambda a, b: a.stack(b), predictions)
 
+
     def _stack_ts_multiseq(self, predictions_list):
         # stacks multiple sequences of timeseries elementwise
         return [self._stack_ts_seq(ts_list) for ts_list in zip(*predictions_list)]
+
 
     def _make_multiple_predictions(
         self,
@@ -134,13 +136,12 @@ class EnsembleModelCustom(GlobalForecastingModel):
             )
             for model,cur_past_covariates in zip(self.models, past_covariates)
         ]
-        print("Predictions from emc make_multiple_predictions: ")
-        print(predictions)
 
         if self.is_single_series:
             return self._stack_ts_seq(predictions)
         else:
             return self._stack_ts_multiseq(predictions)
+
 
     def predict(
         self,
@@ -166,12 +167,9 @@ class EnsembleModelCustom(GlobalForecastingModel):
             future_covariates=future_covariates,
             num_samples=num_samples,
         )
-        print("predictions after stacking ")
-        print(predictions)
-        # if self.is_single_series:
-        #     return self.ensemble(predictions)
-        # else:
+
         return self.ensemble(predictions, series)
+
 
     @abstractmethod
     def ensemble(
@@ -196,6 +194,7 @@ class EnsembleModelCustom(GlobalForecastingModel):
             The predicted ``TimeSeries`` or sequence of ``TimeSeries`` obtained by ensembling the individual predictions
         """
         pass
+
 
     @property
     def min_train_series_length(self) -> int:
