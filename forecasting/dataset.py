@@ -18,7 +18,13 @@ class Dataset:
         current_weather, recent_level = self.catchment_data.all_current_data
         self.Xs_current, self.y_current = self._pre_process(current_weather, recent_level, allow_future_X=True, fit_scalers=False)
 
-        
+    
+    @property
+    def num_training_samples(self):
+
+        return len(self.X_trains[0])
+
+
     @property
     def num_X_sets(self):
         return len(self.X_trains)
