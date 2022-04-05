@@ -133,6 +133,7 @@ open_weather_api_keys.py
 
 # Serverside directories with large files
 trained_models/
+trained_catchment_models/
 
 #Misc
 *.out
