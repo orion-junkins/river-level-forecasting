@@ -21,34 +21,20 @@ else:
     catchment = pickle.load(pickle_in)
 
 
-
 model_builder = BlockRNNModel
-
-# gridsearch optimized params for a Darts BlockRNNModel
-params = {'pl_trainer_kwargs': {'accelerator': 'gpu', 'gpus': [0]}, 
-    'n_epochs': 10, 
-    'input_chunk_length': 120, 
-    'output_chunk_length': 96, 
-    'model': 'GRU', 
-    'hidden_size': 50, 
-    'n_rnn_layers': 5, 
-    'dropout': 0.01}
-
 
 # Define desired number of models (must be the same as the number of catchments)
 NUM_MODELS = 12
 
-WORK_DIR = os.path.join("trained_catchment_models", sys.argv[1])
+WORK_DIR = os.path.join("trained_catchment_models", "gridsearched_gru")
 
 catchment_models = []
 
 for i in range(NUM_MODELS):
-    model = model_builder(work_dir=WORK_DIR, model_name=str(i), force_reset=True, save_checkpoints=True, **params)
+    model = model_builder.load_from_checkpoint(model_name=str(i), work_dir=WORK_DIR)
     catchment_models.append(model)
 #%%
 frcstr = Forecaster(catchment, catchment_models)
-
-frcstr.fit()
 
 print(frcstr.forecast_for_hours())
 
