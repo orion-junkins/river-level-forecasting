@@ -52,7 +52,12 @@ class Forecaster:
         y = self.dataset.y_current
         Xs = self.dataset.Xs_current
         y_pred = self.ensemble_model.predict(n=n, series=y, past_covariates=Xs, num_samples=num_samples)
-        df = y_pred.pd_dataframe
+
+        target_scaler = self.dataset.target_scaler
+
+        y_pred = target_scaler.inverse_transform(y_pred)
+        
+        df = y_pred.pd_dataframe()
         return df
 
 
