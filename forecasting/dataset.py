@@ -101,5 +101,5 @@ class Dataset:
 
     def update(self):
         self.catchment_data.update_for_inference()
-        current_dfs = self.catchment_data.all_current_data.copy()
-        self.Xs_current, self.y_current = self._pre_process(current_dfs, fit_scalers=False)
+        current_weather, recent_level = self.catchment_data.all_current_data
+        self.Xs_current, self.y_current = self._pre_process(current_weather, recent_level, allow_future_X=True, fit_scalers=False)
