@@ -65,4 +65,4 @@ class Forecaster:
         """
         Force an update to ensure inference data is up to date. Run at least hourly when forecasting.
         """
-        self.prediction_set.update()
+        self.dataset.update()
