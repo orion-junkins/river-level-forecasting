@@ -51,14 +51,16 @@ class Forecaster:
         """
         y = self.dataset.y_current
         Xs = self.dataset.Xs_current
-        y_pred = self.ensemble_model.predict(n=n, series=y, past_covariates=Xs, num_samples=num_samples)
+        y_pred_ensembled, y_preds_raw = self.ensemble_model.predict(n=n, series=y, past_covariates=Xs, num_samples=num_samples)
 
         target_scaler = self.dataset.target_scaler
 
-        y_pred = target_scaler.inverse_transform(y_pred)
+        y_pred_ensembled = target_scaler.inverse_transform(y_pred_ensembled)
+        y_preds_raw = target_scaler.inverse_transform(y_preds_raw)
         
-        df = y_pred.pd_dataframe()
-        return df
+        y_pred_ensembled_df = y_pred_ensembled.pd_dataframe()
+        y_preds_raw_df = y_preds_raw.pd_dataframe()
+        return (y_pred_ensembled_df, y_preds_raw_df)
 
 
     def update_input_data(self) -> None:

@@ -168,7 +168,8 @@ class EnsembleModelCustom(GlobalForecastingModel):
             num_samples=num_samples,
         )
 
-        return self.ensemble(predictions, series)
+        ensembled_prediction = self.ensemble(predictions, series)
+        return (ensembled_prediction, predictions)
 
 
     @abstractmethod
