@@ -35,7 +35,7 @@ class Forecaster:
         self.logger.info("Generating historical forecasts")
         if use_testing_holdout:
             y = self.dataset.y_test
-            Xs = self.dataset.X_validations
+            Xs = self.dataset.X_tests
         else:
             y = self.dataset.y_validation
             Xs = self.dataset.X_validations
