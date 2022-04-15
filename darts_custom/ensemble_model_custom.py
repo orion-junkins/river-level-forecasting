@@ -143,7 +143,7 @@ class EnsembleModelCustom(GlobalForecastingModel):
             return self._stack_ts_multiseq(predictions)
 
 
-    def predict(
+    def predict_raw(
         self,
         n: int,
         series: Optional[Union[TimeSeries, Sequence[TimeSeries]]] = None,
@@ -168,10 +168,25 @@ class EnsembleModelCustom(GlobalForecastingModel):
             num_samples=num_samples,
         )
 
+        return predictions
+
+
+    def predict(
+        self,
+        n: int,
+        series: Optional[Union[TimeSeries, Sequence[TimeSeries]]] = None,
+        past_covariates: Optional[List[Union[TimeSeries, Sequence[TimeSeries]]]] = [None],
+        future_covariates: Optional[Union[TimeSeries, Sequence[TimeSeries]]] = None,
+        num_samples: int = 1,
+    ) -> Union[TimeSeries, Sequence[TimeSeries]]:
+
+        predictions = self.predict_raw(n=n, series=series, past_covariates=past_covariates, future_covariates=future_covariates, num_samples=num_samples)
+       
         ensembled_prediction = self.ensemble(predictions, series)
-        return (ensembled_prediction, predictions)
-
-
+       
+        return ensembled_prediction
+    
+    
     @abstractmethod
     def ensemble(
         self,
