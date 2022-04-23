@@ -1,24 +1,28 @@
-#%%
 import os
 import pickle
-import boto3
+from forecasting.general_utilities.aws_utils import pickle_to_aws
 
-IN_PATH = os.path.join("data", "forecast_ensemble.pickle")
-OUT_PATH = os.path.join("data", "historical_forecast_df.pickle")
+# Provide name of model and catchment. 
+MODEL_NAME = "RNN_GRU_12_6_MLP"
 
-pickle_in = open(IN_PATH, "rb")
+# Provide name of catchment
+CATCHMENT_NAME = "illinois-kerby"
+
+# Specify desired horizon and stride
+HORIZON = 24
+STRIDE = 1
+
+# Define paths to access trained forecaster
+TRAINED_MODEL_DIR = "trained_models"
+ENSEMBLE_MODEL_DIR = os.path.join(TRAINED_MODEL_DIR, CATCHMENT_NAME, MODEL_NAME)
+FRCSTR_FILE = os.path.join(TRAINED_MODEL_DIR, CATCHMENT_NAME, MODEL_NAME, MODEL_NAME + "_frcstr.pickle")
+
+# Load trained forecaster
+pickle_in = open(FRCSTR_FILE, "rb")
 frcstr = pickle.load(pickle_in)
 
-hst_fcasts = frcstr.historical_forecasts()
+# Produce historical forecast
+hst_fcast = frcstr.get_historical(forecast_horizon=24, stride=1)
 
-pickle_out = open(OUT_PATH, "wb")
-pickle.dump(hst_fcasts, pickle_out)
-pickle_out.close()
-#%%
-def pickle_to_aws(y, river_gauge_name, file_prefix):
-    pickle_out = open(OUT_PATH, "wb")
-    pickle.dump(y, pickle_out)
-    pickle_out.close()
-    s3 = boto3.client('s3')
-    s3.upload_file(OUT_PATH, f'generated-forecasts', f'{river_gauge_name}/{file_prefix}_dataframe.pickle')
-
+# Store the produced forecast locally and dispatch to AWS
+pickle_to_aws(hst_fcast, river_gauge_name=CATCHMENT_NAME, model_name=MODEL_NAME, filename=f"historical_forecast_h{HORIZON}_s{STRIDE}")

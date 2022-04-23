@@ -1,16 +1,15 @@
-#%%
 import os
-import sys
 import pickle
-
 from forecasting.general_utilities.aws_utils import pickle_to_aws
 
-# Provide name of model and catchment. 
-MODEL_NAME = "GRU_RandomForest_24_0" #sys.argv[1]
+# Provide name of model
+MODEL_NAME = "RNN_GRU_12_6_MLP"
+
+# Provide name of catchment
 CATCHMENT_NAME = "illinois-kerby"
 
 # Specify duration of forecast desired
-HOURS_TO_FORECAST = 24
+HOURS_TO_FORECAST = 96
 
 # Define paths to access trained forecaster
 TRAINED_MODEL_DIR = "trained_models"
@@ -21,18 +20,8 @@ FRCSTR_FILE = os.path.join(ENSEMBLE_MODEL_DIR, MODEL_NAME + "_frcstr.pickle")
 pickle_in = open(FRCSTR_FILE, "rb")
 frcstr = pickle.load(pickle_in)
 
-# Update the forecaster to grab up to date data
-# frcstr.update_input_data()
+# Get forecast
+cur_fcast = frcstr.get_forecast(hours_to_forecast=HOURS_TO_FORECAST, update_dataset=True)
 
-# Generate forecast
-y_forecasted = frcstr.forecast_for_hours(HOURS_TO_FORECAST)
-
-# Grab recent data
-y_recent = frcstr.dataset.y_current # abstract into Forecaster.recent_level()
-target_scaler = frcstr.dataset.target_scaler
-y_recent = target_scaler.inverse_transform(y_recent)
-y_recent = y_recent.pd_dataframe()
-#%%
-# Dispatch data to AWS as .pickle files
-pickle_to_aws(y_recent, river_gauge_name=CATCHMENT_NAME, file_prefix="recent")
-pickle_to_aws(y_forecasted, river_gauge_name=CATCHMENT_NAME, file_prefix="forecasted")
+# Store the produced forecast locally and dispatch to AWS
+pickle_to_aws(cur_fcast, river_gauge_name=CATCHMENT_NAME, model_name=MODEL_NAME, filename="current_forecast")
