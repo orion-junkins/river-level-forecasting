@@ -1,9 +1,7 @@
 import os
 import sys
 import pickle
-from sklearn.ensemble import RandomForestRegressor
-from sklearn.neural_network import MLPRegressor
-from darts.models import BlockRNNModel
+from darts.models import RNNModel
 from forecasting.forecaster import Forecaster
 
 # Provide name of model and catchment. These will determine model save directory names.
@@ -28,18 +26,18 @@ pickle_in = open(CATCHMENT_DATA_FILEPATH, "rb")
 catchment = pickle.load(pickle_in)
 
 # Define model type for catchment models
-model_builder = BlockRNNModel
+model_builder = RNNModel
 
 # Define parameters for model
-# gridsearch optimized params for a Darts BlockRNNModel
 best_params = {'pl_trainer_kwargs': {'accelerator': 'gpu', 'gpus': [0]}, 
-    'n_epochs': 10, 
-    'input_chunk_length': 120, 
-    'output_chunk_length': 24, 
-    'model': 'GRU', 
-    'hidden_size': 50, 
-    'n_rnn_layers': 5, 
-    'dropout': 0.01}
+                'n_epochs': 10, 
+                'input_chunk_length': 72, 
+                'training_length': 120, 
+                'model': 'GRU', 
+                'hidden_dim': 50, 
+                'n_rnn_layers': 5, 
+                'dropout': 0.01}
+
 
 test_params = {'pl_trainer_kwargs': {'accelerator': 'gpu', 'gpus': [0]}, 
     'n_epochs': 0, 
@@ -62,8 +60,8 @@ for i in range(NUM_MODELS):
                             **best_params)
     catchment_models.append(model)
 
-# Create desired regression model
-regression_model = MLPRegressor(hidden_layer_sizes=(100,100))
+# Create desired regression model. Set to None for basic Linear Regression.
+regression_model = None
 
 # Create forecaster
 frcstr = Forecaster(catchment, catchment_models, regression_model=regression_model)
