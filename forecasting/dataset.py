@@ -68,7 +68,7 @@ class Dataset:
 
         return (processed_Xs, y)
 
-    def _partition(self, test_size=0.2, validation_size=0.2):
+    def _partition(self, test_size=0.05, validation_size=0.05):
         X_trains = []
         X_tests = []
         X_validations = []
