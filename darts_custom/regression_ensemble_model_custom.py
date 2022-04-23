@@ -121,16 +121,11 @@ class RegressionEnsembleModelCustom(EnsembleModelCustom):
             future_covariates=future_covariates,
             num_samples=1,
         )
-        print("Preds from with r e m c fit")
-        print(predictions)
-        print(predictions[0])
-        print(predictions[0].pd_dataframe())
+
         # train the regression model on the individual models' predictions
-        print("FITTING REG MODEL")
         self.regression_model.fit(
             series=regression_target, future_covariates=predictions
         )
-        print("REG MODEL FIT")
 
         # prepare the forecasting models for further predicting by fitting them with the entire data
 

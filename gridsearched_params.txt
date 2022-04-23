@@ -1,0 +1,19 @@
+NBEATS
+{'pl_trainer_kwargs': {'accelerator': 'gpu', 'gpus': [0]}, 'n_epochs': 10, 'input_chunk_length': 120, 'output_chunk_length': 24, 'num_stacks': 25, 'num_blocks': 3, 'num_layers': 4, 'layer_widths': 256}
+99.99177983278106
+
+{'pl_trainer_kwargs': {'accelerator': 'gpu', 'gpus': [0]}, 'n_epochs': 10, 'input_chunk_length': 120, 'output_chunk_length': 24, 'num_stacks': 50, 'num_blocks': 2, 'num_layers': 4, 'layer_widths': 512}
+99.99999999999942
+
+{'pl_trainer_kwargs': {'accelerator': 'gpu', 'gpus': [0]}, 'n_epochs': 10, 'input_chunk_length': 120, 'output_chunk_length': 24, 'num_stacks': 50, 'num_blocks': 1, 'num_layers': 4, 'layer_widths': 512}
+85.57193412049345
+
+BlockRNNModel
+{'pl_trainer_kwargs': {'accelerator': 'gpu', 'gpus': [0]}, 
+    'n_epochs': 10, 
+    'input_chunk_length': 120, 
+    'output_chunk_length': 6, 
+    'model': 'GRU', 
+    'hidden_size': 50, 
+    'n_rnn_layers': 5, 
+    'dropout': 0.01}
