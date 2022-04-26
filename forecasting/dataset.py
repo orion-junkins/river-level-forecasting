@@ -1,11 +1,8 @@
 from sklearn.preprocessing import MinMaxScaler
 from darts import timeseries 
 from darts.dataprocessing.transformers import Scaler
-from darts import TimeSeries
-import pandas as pd
 
 class Dataset:
-
     def __init__(self, catchment_data) -> None:
         self.catchment_data = catchment_data
         self.scaler = Scaler(MinMaxScaler())
@@ -16,12 +13,12 @@ class Dataset:
         self.X_trains, self.X_tests, self.X_validations, self.y_train, self.y_test, self.y_validation = self._partition()
 
         current_weather, recent_level = self.catchment_data.all_current_data
-        self.Xs_current, self.y_current = self._pre_process(current_weather, recent_level, allow_future_X=True, fit_scalers=False)
+        self.Xs_current, self.y_current = self._pre_process(current_weather, recent_level, allow_future_X=True)
+        self.Xs_current, self.y_current = self.scale_data(self.Xs_current, self.y_current)
 
     
     @property
     def num_training_samples(self):
-
         return len(self.X_trains[0])
 
 
@@ -30,24 +27,18 @@ class Dataset:
         return len(self.X_trains)
 
         
-    def _pre_process(self, Xs, y, allow_future_X=False, fit_scalers=True):
+    def _pre_process(self, Xs, y, allow_future_X=False):
         """
         Fetch needed data and perform all standard preprocessing.
         """
         y = timeseries.TimeSeries.from_dataframe(y)
-        if fit_scalers:
-            self.target_scaler.fit(y)
 
         processed_Xs = []
 
         for X_cur in Xs:
             X_cur = self.add_engineered_features(X_cur)
             X_cur = timeseries.TimeSeries.from_dataframe(X_cur)
-            if fit_scalers:
-                self.scaler.fit(X_cur)
-                fit_scalers = False # Only fit scalers once
-            X_cur = self.scaler.transform(X_cur)
-             
+
             if X_cur.start_time() < y.start_time():
                 _, X_cur = X_cur.split_before(y.start_time())    # X starts before y, drop X before y start
 
@@ -63,12 +54,19 @@ class Dataset:
         if y.end_time() > processed_Xs[0].end_time(): # y ends after X, drop y after X end
             y, _ = y.split_after(processed_Xs[0].end_time())
 
-        y = self.target_scaler.transform(y)
-
-
         return (processed_Xs, y)
 
-    def _partition(self, test_size=0.05, validation_size=0.05):
+
+    def scale_data(self, Xs, y, fit_scalers=False):
+        if fit_scalers:
+            self.scaler = self.scaler.fit(Xs)
+            self.target_scaler = self.target_scaler.fit(y)
+        Xs = self.scaler.transform(Xs)
+        y = self.target_scaler.transform(y)
+        return (Xs, y)
+        
+
+    def _partition(self, test_size=0.2, validation_size=0.2):
         X_trains = []
         X_tests = []
         X_validations = []
@@ -84,8 +82,13 @@ class Dataset:
         y_train, y_test = self.y_historical.split_after(1-test_size)
         y_train, y_validation = y_train.split_after(1-validation_size)
 
+        X_trains, y_train = self.scale_data(X_trains, y_train, fit_scalers=True)
+        X_validations, y_validation = self.scale_data(X_validations, y_validation)
+        X_tests, y_test = self.scale_data(X_tests, y_test)
+
         return (X_trains, X_tests, X_validations, y_train, y_test, y_validation)
     
+
     def add_engineered_features(self, df):
         df['day_of_year'] = df.index.day_of_year
 
@@ -99,7 +102,9 @@ class Dataset:
         df.dropna(inplace=True)
         return df
 
+
     def update(self):
         self.catchment_data.update_for_inference()
         current_weather, recent_level = self.catchment_data.all_current_data
-        self.Xs_current, self.y_current = self._pre_process(current_weather, recent_level, allow_future_X=True, fit_scalers=False)
+        self.Xs_current, self.y_current = self._pre_process(current_weather, recent_level, allow_future_X=True)
+        self.Xs_current, self.y_current = self.scale_data(self.Xs_current, self.y_current)
