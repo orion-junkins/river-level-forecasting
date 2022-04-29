@@ -32,7 +32,7 @@ def fetch_hourly_forecast(loc, api_key=api_key) -> DataFrame:
         df (dataframe): Fetched dataframe of forecast
     """
     lat, lon = split_tuple(loc)
-    request_url = f"http://pro.openweathermap.org/data/2.5/forecast/hourly?lat={lat}&lon={lon}&appid={api_key}"
+    request_url = f"http://pro.openweathermap.org/data/2.5/forecast/hourly?lat={lat}&lon={lon}&units=imperial&appid={api_key}"
     df = fetch_to_dataframe(request_url, ['list'])
 
     df = correct_columns(df)
