@@ -23,7 +23,7 @@ class Forecaster:
         self.catchment_models = catchment_models
 
         regression_train_n_points = int(ensemble_train_size * self.dataset.num_training_samples)
-        self.ensemble_model = RegressionEnsembleModelCustom(catchment_models, likelihood_model, regression_model=regression_model, regression_train_n_points=regression_train_n_points)
+        self.ensemble_model = RegressionEnsembleModelCustom(catchment_models, likelihood_model, regression_train_n_points=regression_train_n_points)
 
 
     def fit(self):
@@ -172,11 +172,11 @@ class Forecaster:
         if data_partition == "current":
             Xs = self.dataset.Xs_current
         elif data_partition == "train":
-            Xs = self.dataset.X_trains
+            Xs = self.dataset.Xs_train
         elif data_partition == "validation":
-            Xs = self.dataset.X_validations
+            Xs = self.dataset.Xs_validation
         elif data_partition == "test":
-            Xs = self.dataset.X_tests
+            Xs = self.dataset.Xs_test
         else:
             self.logger.error("Invalid argument")
             sys.exit()

@@ -10,7 +10,7 @@ class Dataset:
 
         historical_weather, historical_level = self.catchment_data.all_historical_data
         self.Xs_historical, self.y_historical = self._pre_process(historical_weather, historical_level)
-        self.X_trains, self.X_tests, self.X_validations, self.y_train, self.y_test, self.y_validation = self._partition()
+        self.Xs_train, self.Xs_test, self.Xs_validation, self.y_train, self.y_test, self.y_validation = self._partition()
 
         current_weather, recent_level = self.catchment_data.all_current_data
         self.Xs_current, self.y_current = self._pre_process(current_weather, recent_level, allow_future_X=True)
@@ -19,12 +19,12 @@ class Dataset:
     
     @property
     def num_training_samples(self):
-        return len(self.X_trains[0])
+        return len(self.Xs_train[0])
 
 
     @property
     def num_X_sets(self):
-        return len(self.X_trains)
+        return len(self.Xs_train)
 
         
     def _pre_process(self, Xs, y, allow_future_X=False):
@@ -67,26 +67,26 @@ class Dataset:
         
 
     def _partition(self, test_size=0.2, validation_size=0.2):
-        X_trains = []
-        X_tests = []
-        X_validations = []
+        Xs_train = []
+        Xs_test = []
+        Xs_validation = []
         for X in self.Xs_historical:
             X_train, X_test = X.split_after(1-test_size)
             X_train, X_validation = X_train.split_after(1-validation_size)
 
-            X_trains.append(X_train)
-            X_tests.append(X_test)
+            Xs_train.append(X_train)
+            Xs_test.append(X_test)
 
-            X_validations.append(X_validation)
+            Xs_validation.append(X_validation)
 
         y_train, y_test = self.y_historical.split_after(1-test_size)
         y_train, y_validation = y_train.split_after(1-validation_size)
 
-        X_trains, y_train = self.scale_data(X_trains, y_train, fit_scalers=True)
-        X_validations, y_validation = self.scale_data(X_validations, y_validation)
-        X_tests, y_test = self.scale_data(X_tests, y_test)
+        Xs_train, y_train = self.scale_data(Xs_train, y_train, fit_scalers=True)
+        Xs_validation, y_validation = self.scale_data(Xs_validation, y_validation)
+        Xs_test, y_test = self.scale_data(Xs_test, y_test)
 
-        return (X_trains, X_tests, X_validations, y_train, y_test, y_validation)
+        return (Xs_train, Xs_test, Xs_validation, y_train, y_test, y_validation)
     
 
     def add_engineered_features(self, df):
