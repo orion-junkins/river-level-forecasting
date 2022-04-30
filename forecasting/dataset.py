@@ -66,7 +66,7 @@ class Dataset:
         return (Xs, y)
         
 
-    def _partition(self, test_size=0.2, validation_size=0.2):
+    def _partition(self, test_size=0.1, validation_size=0.2):
         Xs_train = []
         Xs_test = []
         Xs_validation = []
