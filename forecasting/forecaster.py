@@ -4,7 +4,7 @@ from forecasting.dataset import Dataset
 from forecasting.general_utilities.logging_utils import build_logger
 from sklearn.linear_model import LinearRegression
 from collections import defaultdict
-
+import numpy as np
 
 class Forecaster:
     """
@@ -24,7 +24,7 @@ class Forecaster:
         self.catchment_models = catchment_models
         self.ensemble_model = LinearRegression()
         
-        self.historical_forecasts = defaultdict(None)
+        self.built_historical_forecasts = defaultdict(None)
 
     def fit(self, epochs=1):
         # Fit catchment_models on Xs
@@ -141,9 +141,38 @@ class Forecaster:
         y_ensembled = self.ensemble_model.predict(X)
         historical_forecasts['level_pred'] = y_ensembled
 
-        self.historical_forecasts[data_partition] = historical_forecasts
-        
+        self.built_historical_forecasts[data_partition] = historical_forecasts
+
         return historical_forecasts
+
+
+    def score(self, data_partition = "test"):
+        if self.built_historical_forecasts[data_partition] == None:
+            self.historical_forecasts(data_partition=data_partition)
+
+        y_all = self.historical_forecasts[data_partition]
+        y_true = y_all['level_true']
+        y_hats = y_all.drop(columns=['level_true'])
+        
+        mae_df = pd.DataFrame()
+        mape_df = pd.DataFrame()
+
+        for col in y_hats.columns:
+            y_hat = y_hats[col]
+            ensembled_mae = self.mae(y_true, y_hat)
+            mae_df[col] = ensembled_mae
+            ensembled_mape = self.mape(y_true, y_hat)
+            mape_df[col] = ensembled_mape
+        
+        return (mae_df, mape_df)
+
+
+    def mae(self, y, y_hat):
+        return np.mean(np.abs(y - y_hat))
+
+
+    def mape(self, y, y_hat):
+        return np.mean(np.abs((y - y_hat)/y)*100)
 
 
     # Utilities & Helpers
