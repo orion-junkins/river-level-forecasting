@@ -24,18 +24,21 @@ class Forecaster:
         self.catchment_models = catchment_models
         self.ensemble_model = LinearRegression()
         
+        self.historical_trib_forecasts = None
         self.built_historical_forecasts = defaultdict(None)
+
 
     def fit(self, epochs=1):
         # Fit catchment_models on Xs
         self.fit_catchment_models(epochs=epochs)
 
         # Predict validation set
-        historical_forecasts = self.historical_catchment_forecasts()
-        historical_forecasts.dropna(inplace=True)
+        historical_trib_forecasts = self.historical_catchment_forecasts()
+        historical_trib_forecasts.dropna(inplace=True)
+        self.historical_trib_forecasts = historical_trib_forecasts
+
         # Fit ensemble model on predictions
-        self.fit_ensemble_model(historical_forecasts)
-        return historical_forecasts
+        self.fit_ensemble_model(historical_trib_forecasts)
 
 
     def fit_catchment_models(self, epochs=10):
