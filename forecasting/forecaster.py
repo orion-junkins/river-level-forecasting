@@ -2,8 +2,9 @@ import sys
 import pandas as pd
 from forecasting.dataset import Dataset
 from forecasting.general_utilities.logging_utils import build_logger
-from darts_custom.regression_ensemble_model_custom import RegressionEnsembleModelCustom
 from sklearn.linear_model import LinearRegression
+from collections import defaultdict
+
 
 class Forecaster:
     """
@@ -22,7 +23,8 @@ class Forecaster:
 
         self.catchment_models = catchment_models
         self.ensemble_model = LinearRegression()
-       
+        
+        self.historical_forecasts = defaultdict(None)
 
     def fit(self, epochs=1):
         # Fit catchment_models on Xs
@@ -131,10 +133,16 @@ class Forecaster:
         return df_y_preds
 
     def historical_forecasts(self, data_partition="test", **kwargs):
+        if self.historical_forecasts[data_partition] != None:
+            return self.historical_forecasts[data_partition]
+
         historical_forecasts = self.historical_catchment_forecasts(data_partition=data_partition, **kwargs)
         X = historical_forecasts.drop(columns=['level_true'])
         y_ensembled = self.ensemble_model.predict(X)
         historical_forecasts['level_pred'] = y_ensembled
+
+        self.historical_forecasts[data_partition] = historical_forecasts
+        
         return historical_forecasts
 
 
