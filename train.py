@@ -1,11 +1,12 @@
+#%%
 import os
 import sys
 import pickle
-from darts.models import RNNModel
+from darts.models import BlockRNNModel
 from forecasting.forecaster import Forecaster
 
 # Provide name of model and catchment. These will determine model save directory names.
-MODEL_NAME = sys.argv[1]
+MODEL_NAME = "Block_GRU_(6_Hour_Blocks)_Trained_20_Epochs"
 CATCHMENT_NAME = "illinois-kerby"
 
 # Define root directory for trained models
@@ -26,25 +27,25 @@ pickle_in = open(CATCHMENT_DATA_FILEPATH, "rb")
 catchment = pickle.load(pickle_in)
 
 # Define model type for catchment models
-model_builder = RNNModel
+model_builder = BlockRNNModel
 
 # Define parameters for model
 best_params = {'pl_trainer_kwargs': {'accelerator': 'gpu', 'gpus': [0]}, 
-                'n_epochs': 10, 
-                'input_chunk_length': 72, 
-                'training_length': 120, 
-                'model': 'GRU', 
-                'hidden_dim': 50, 
-                'n_rnn_layers': 5, 
-                'dropout': 0.01}
+    'n_epochs': 20, 
+    'input_chunk_length': 120, 
+    'output_chunk_length': 6, 
+    'model': 'GRU', 
+    'hidden_size': 50, 
+    'n_rnn_layers': 5, 
+    'dropout': 0.01}
 
 
 test_params = {'pl_trainer_kwargs': {'accelerator': 'gpu', 'gpus': [0]}, 
     'n_epochs': 0, 
-    'input_chunk_length': 2, 
-    'output_chunk_length': 2, 
+    'input_chunk_length': 6, 
+    'output_chunk_length': 6, 
     'model': 'GRU', 
-    'hidden_size': 1, 
+    'hidden_size': 5, 
     'n_rnn_layers': 1, 
     'dropout': 0.01}
 
@@ -55,24 +56,28 @@ catchment_models = []
 for i in range(NUM_MODELS):
     model = model_builder(work_dir=CATCHMENT_MODEL_DIR, 
                             model_name=str(i), 
-                            force_reset=True, 
+                            force_reset=False, 
                             save_checkpoints=True, 
                             **best_params)
     catchment_models.append(model)
 
-# Create desired regression model. Set to None for basic Linear Regression.
-regression_model = None
-
 # Create forecaster
-frcstr = Forecaster(catchment, catchment_models, regression_model=regression_model)
-
+frcstr = Forecaster(catchment, catchment_models)
+#%%
 # Fit the forecaster
-frcstr.fit()
+frcstr.fit(epochs=20)
 
+
+#%%
 # Save the trained forecaster 
 pickle_out = open(FRCSTR_OUTFILE, "wb")
 pickle.dump(frcstr, pickle_out)
 pickle_out.close()
 
-# Print out a sample forecast
-print(frcstr.forecast_for_hours())
+preds = frcstr.predict()
+
+# # Print out a sample forecast
+print(preds)
+
+
+# %%

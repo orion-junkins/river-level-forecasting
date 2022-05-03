@@ -8,10 +8,10 @@ DEFAULT_LOCAL_PATH = os.path.join("data", "aws_dispatch")
 os.makedirs(DEFAULT_LOCAL_PATH, exist_ok=True)
 
 class AWSDispatcher():
-    def __init__(self, river_gauge_name, model_name) -> None:
+    def __init__(self, river_gauge_name, model_name, ensembler_name) -> None:
         self.river_gauge_name = river_gauge_name
         self.model_name = model_name
-
+        self.ensembler_name = ensembler_name
         self.forecaster = self.load_forecaster()
 
 
@@ -40,7 +40,7 @@ class AWSDispatcher():
         pickle.dump(payload, pickle_out)
         pickle_out.close()
         s3 = boto3.client('s3')
-        s3.upload_file(out_path, f'generated-forecasts', f'{self.river_gauge_name}/{self.model_name}/{filename}.pickle')
+        s3.upload_file(out_path, f'generated-forecasts', f'{self.river_gauge_name}/{self.model_name}/{self.ensembler_name}/{filename}.pickle')
 
 
     def rebuild_current_forecast(self, horizon=96, update_dataset=True):
