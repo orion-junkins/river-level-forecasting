@@ -1,10 +1,11 @@
 import sys
 import pandas as pd
+from collections import defaultdict
+import numpy as np
+
 from forecasting.dataset import Dataset
 from forecasting.general_utilities.logging_utils import build_logger
 from sklearn.linear_model import LinearRegression
-from collections import defaultdict
-import numpy as np
 
 class Forecaster:
     """
@@ -28,6 +29,8 @@ class Forecaster:
         self.built_historical_forecasts = defaultdict(None)
 
 
+
+    # MODEL FITTING
     def fit(self, epochs=1):
         # Fit catchment_models on Xs
         self.fit_catchment_models(epochs=epochs)
@@ -42,8 +45,12 @@ class Forecaster:
 
 
     def fit_catchment_models(self, epochs=10):
+        """ Fit tribuatry models on the training set
+        """
         Xs = self.dataset.Xs_train
         y = self.dataset.y_train
+
+        # For every X set and model, fit
         for index, (X, model) in enumerate(zip(Xs, self.catchment_models)):
             print(f"Training Model {index} for {epochs} epochs")
             model.fit(series=y, past_covariates=X, epochs=epochs)
@@ -57,6 +64,25 @@ class Forecaster:
         y = df['level_true']
         X = df.drop(columns=['level_true'])
         self.ensemble_model.fit(X, y)
+
+
+
+    # FUTURE FORECASTING 
+    def get_forecast(self, num_timesteps=24, update_dataset=True):
+        if update_dataset:
+            self.update_dataset()
+            
+        # Generate forecast
+        y_preds = self.predict(num_timesteps)
+        
+        # Grab recent true data
+        y_recent = self.get_y_df(data_partition="current")
+
+        # Join all data into single dataframe
+        frames = [y_recent, y_preds]
+        df = pd.concat(frames, axis=1)
+
+        return df
 
 
     def predict(self, num_timesteps=6):
@@ -92,23 +118,8 @@ class Forecaster:
         return df_y_preds
 
 
-    def get_forecast(self, num_timesteps=24, update_dataset=True):
-        if update_dataset:
-            self.update_dataset()
-            
-        # Generate forecast
-        y_preds = self.predict(num_timesteps)
-        
-        # Grab recent true data
-        y_recent = self.get_y_df(data_partition="current")
 
-        # Join all data into single dataframe
-        frames = [y_recent, y_preds]
-        df = pd.concat(frames, axis=1)
-
-        return df
-
-
+    # HISTORICAL FORECASTING
     def historical_catchment_forecasts(self, data_partition="validation", **kwargs):
         y = self.get_y(data_partition)
         Xs = self.get_Xs(data_partition)
@@ -145,6 +156,8 @@ class Forecaster:
         return historical_forecasts
 
 
+
+    # MODEL EVALUATION
     def score(self, data_partition = "test"):
         if self.built_historical_forecasts[data_partition] == None:
             self.historical_forecasts(data_partition=data_partition)
@@ -174,7 +187,8 @@ class Forecaster:
         return np.mean(np.abs((y - y_hat)/y)*100)
 
 
-    # Utilities & Helpers
+
+    # MISC UTILITIES AND HELPERS
     def update_dataset(self) -> None:
         """
         Force an update to ensure inference data is up to date. Run at least hourly when forecasting.
@@ -220,6 +234,7 @@ class Forecaster:
             sys.exit()
         
         return Xs
+
 
     def rename_pred_cols(self, y_pred, index):
         if "level" in y_pred.columns:
