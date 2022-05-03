@@ -12,14 +12,14 @@ class Forecaster:
     Managers training data, inference data, model fitting and inference of trained model.
     Allows the user to query for specific forecasts or forecast ranges.
     """
-    def __init__(self, catchment_data, catchment_models) -> None:
+    def __init__(self, catchment_data, catchment_models, test_size=0.1, validation_size=0.2) -> None:
         """
         Fetches data from provided forecast site and generates processed training and inference sets.
         Builds the specified model.
         """
         self.logger = build_logger(log_level='INFO')
         self.name = catchment_data.name
-        self.dataset = Dataset(catchment_data)
+        self.dataset = Dataset(catchment_data, test_size=test_size, validation_size=validation_size)
 
         self.catchment_models = catchment_models
         self.ensemble_model = LinearRegression()

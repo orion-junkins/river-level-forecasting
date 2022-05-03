@@ -3,14 +3,14 @@ from darts import timeseries
 from darts.dataprocessing.transformers import Scaler
 
 class Dataset:
-    def __init__(self, catchment_data) -> None:
+    def __init__(self, catchment_data, test_size=0.1, validation_size=0.2) -> None:
         self.catchment_data = catchment_data
         self.scaler = Scaler(MinMaxScaler())
         self.target_scaler = Scaler(MinMaxScaler())
 
         historical_weather, historical_level = self.catchment_data.all_historical_data
         self.Xs_historical, self.y_historical = self._pre_process(historical_weather, historical_level)
-        self.Xs_train, self.Xs_test, self.Xs_validation, self.y_train, self.y_test, self.y_validation = self._partition()
+        self.Xs_train, self.Xs_test, self.Xs_validation, self.y_train, self.y_test, self.y_validation = self._partition(test_size, validation_size)
 
         current_weather, recent_level = self.catchment_data.all_current_data
         self.Xs_current, self.y_current = self._pre_process(current_weather, recent_level, allow_future_X=True)
@@ -66,7 +66,7 @@ class Dataset:
         return (Xs, y)
         
 
-    def _partition(self, test_size=0.1, validation_size=0.2):
+    def _partition(self, test_size, validation_size):
         Xs_train = []
         Xs_test = []
         Xs_validation = []
