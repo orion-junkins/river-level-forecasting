@@ -119,14 +119,10 @@ class Forecaster:
             y_pred = model.historical_forecasts(series=y, past_covariates=X, start=0.02, retrain=False, last_points_only=True, verbose=True , **kwargs)
             y_pred = target_scaler.inverse_transform(y_pred)
             y_pred = y_pred.pd_dataframe()
-            if "level" in y_pred.columns:
-                y_pred.rename(columns={"level": "level_"+str(index)}, inplace=True)
-            elif "0" in y_pred.columns:
-                y_pred.rename(columns={"0": "level_"+str(index)}, inplace=True)
+            y_pred = self.rename_pred_cols(y_pred, index)
             y_preds.append(y_pred)
 
         df_y_preds = pd.concat(y_preds, axis=1)
-
         y_true = target_scaler.inverse_transform(y).pd_dataframe()
         df_y_preds['level_true'] = y_true['level']
 
@@ -221,3 +217,9 @@ class Forecaster:
             sys.exit()
         
         return Xs
+
+    def rename_pred_cols(self, y_pred, index):
+        if "level" in y_pred.columns:
+            y_pred.rename(columns={"level": "level_"+str(index)}, inplace=True)
+        elif "0" in y_pred.columns:
+            y_pred.rename(columns={"0": "level_"+str(index)}, inplace=True)
