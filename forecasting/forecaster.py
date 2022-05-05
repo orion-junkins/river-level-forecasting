@@ -2,6 +2,7 @@ import sys
 import pandas as pd
 from collections import defaultdict
 import numpy as np
+import pandas as pd
 
 from forecasting.dataset import Dataset
 from forecasting.general_utilities.logging_utils import build_logger
@@ -23,25 +24,26 @@ class Forecaster:
         self.dataset = Dataset(tributary_data, test_size=test_size, validation_size=validation_size)
 
         self.tributary_models = tributary_models
-        self.ensemble_model = LinearRegression()
+        self.regression_models = {}
         
-        self.historical_trib_forecasts = None
-        self.built_historical_forecasts = defaultdict(None)
+        self.historical_tributary_forecasts = pd.DataFrame()
+        self.historical_forecasts = pd.DataFrame()
 
 
 
     # MODEL FITTING
-    def fit(self, epochs=1):
-        # Fit tributary_models on Xs
-        self.fit_tributary_models(epochs=epochs)
+    def fit(self, reg_model=LinearRegression(), epochs=10):
+        # Check if historical forecasts have been built; build them if not
+        if len(self.historical_tributary_forecasts) == 0:
+            print("Building historical trib forecasts")
+            # Fit tributary_models on Xs
+            self.fit_tributary_models(epochs=epochs)
 
-        # Predict validation set
-        historical_trib_forecasts = self.historical_tributary_forecasts()
-        historical_trib_forecasts.dropna(inplace=True)
-        self.historical_trib_forecasts = historical_trib_forecasts
+            # Predict validation set
+            self.build_historical_tributary_forecasts()
 
-        # Fit ensemble model on predictions
-        self.fit_ensemble_model(historical_trib_forecasts)
+        # Fit ensemble model given built historical forecasts
+        self.fit_ensemble_model(reg_model)
 
 
     def fit_tributary_models(self, epochs=10):
@@ -56,15 +58,21 @@ class Forecaster:
             model.fit(series=y, past_covariates=X, epochs=epochs)
     
 
-    def fit_ensemble_model(self, df):
+    def fit_ensemble_model(self, reg_model=LinearRegression()):
         """
         Given a dataframe with columns level_0, level_1...level_11 and level_true,
         train self.ensemble model to predict level_true based on other cols
         """
-        y = df['level_true']
-        X = df.drop(columns=['level_true'])
-        self.ensemble_model.fit(X, y)
-
+        df = self.historical_tributary_forecasts
+        reg_model_name = type(reg_model).__name__
+        if reg_model_name in self.regression_models:
+            print(f"{reg_model_name} model has already been fit!")
+        else:
+            print(f"Fitting regression model: {reg_model_name}")
+            y = df['level_true']
+            X = df.drop(columns=['level_true'])
+            reg_model.fit(X, y)
+            self.regression_models[reg_model_name] = reg_model
 
 
     # FUTURE FORECASTING 
@@ -85,12 +93,13 @@ class Forecaster:
         return df
 
 
-    def predict(self, num_timesteps=6):
+    def predict(self, reg_model_name='LinearRegression', num_timesteps=6):
         # Generate tributary model predictions
         preds = self.predict_tributary_models(num_timesteps=num_timesteps)
 
         # Generate ensembled prediction
-        y_ensembled = self.ensemble_model.predict(preds)
+        reg_model = self.regression_models[reg_model_name]
+        y_ensembled = reg_model.predict(preds)
 
         preds['level_pred'] = y_ensembled
         return preds
@@ -120,7 +129,7 @@ class Forecaster:
 
 
     # HISTORICAL FORECASTING
-    def historical_tributary_forecasts(self, data_partition="validation", **kwargs):
+    def build_historical_tributary_forecasts(self, data_partition="validation", **kwargs):
         y = self.get_y(data_partition)
         Xs = self.get_Xs(data_partition)
 
@@ -130,7 +139,7 @@ class Forecaster:
 
         for index, (X, model) in enumerate(zip(Xs, models)):
             print(f"Generating historical forecasts for model {index}")
-            y_pred = model.historical_forecasts(series=y, past_covariates=X, start=0.02, retrain=False, last_points_only=True, verbose=True , **kwargs)
+            y_pred = model.historical_forecasts(series=y, past_covariates=X, start=0.99, retrain=False, last_points_only=True, verbose=True , **kwargs)
             y_pred = target_scaler.inverse_transform(y_pred)
             y_pred = y_pred.pd_dataframe()
             y_pred = self.rename_pred_cols(y_pred, index)
@@ -140,7 +149,8 @@ class Forecaster:
         y_true = target_scaler.inverse_transform(y).pd_dataframe()
         df_y_preds['level_true'] = y_true['level']
 
-        return df_y_preds
+        df_y_preds.dropna(inplace=True)
+        self.historical_tributary_forecasts = df_y_preds
 
     def historical_forecasts(self, data_partition="test", **kwargs):
         # if self.built_historical_forecasts[data_partition] != None:
@@ -241,3 +251,4 @@ class Forecaster:
             y_pred.rename(columns={"level": "level_"+str(index)}, inplace=True)
         elif "0" in y_pred.columns:
             y_pred.rename(columns={"0": "level_"+str(index)}, inplace=True)
+        return y_pred
