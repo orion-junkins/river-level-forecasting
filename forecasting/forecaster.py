@@ -9,20 +9,20 @@ from sklearn.linear_model import LinearRegression
 
 class Forecaster:
     """
-    Highest level user facing class. Each instance is specific to a single gauge site/catchment.
+    Highest level user facing class. Each instance is specific to a single gauge site/tributary.
     Managers training data, inference data, model fitting and inference of trained model.
     Allows the user to query for specific forecasts or forecast ranges.
     """
-    def __init__(self, catchment_data, catchment_models, test_size=0.1, validation_size=0.2) -> None:
+    def __init__(self, tributary_data, tributary_models, test_size=0.01, validation_size=0.01) -> None:
         """
         Fetches data from provided forecast site and generates processed training and inference sets.
         Builds the specified model.
         """
         self.logger = build_logger(log_level='INFO')
-        self.name = catchment_data.name
-        self.dataset = Dataset(catchment_data, test_size=test_size, validation_size=validation_size)
+        self.name = tributary_data.name
+        self.dataset = Dataset(tributary_data, test_size=test_size, validation_size=validation_size)
 
-        self.catchment_models = catchment_models
+        self.tributary_models = tributary_models
         self.ensemble_model = LinearRegression()
         
         self.historical_trib_forecasts = None
@@ -32,11 +32,11 @@ class Forecaster:
 
     # MODEL FITTING
     def fit(self, epochs=1):
-        # Fit catchment_models on Xs
-        self.fit_catchment_models(epochs=epochs)
+        # Fit tributary_models on Xs
+        self.fit_tributary_models(epochs=epochs)
 
         # Predict validation set
-        historical_trib_forecasts = self.historical_catchment_forecasts()
+        historical_trib_forecasts = self.historical_tributary_forecasts()
         historical_trib_forecasts.dropna(inplace=True)
         self.historical_trib_forecasts = historical_trib_forecasts
 
@@ -44,14 +44,14 @@ class Forecaster:
         self.fit_ensemble_model(historical_trib_forecasts)
 
 
-    def fit_catchment_models(self, epochs=10):
+    def fit_tributary_models(self, epochs=10):
         """ Fit tribuatry models on the training set
         """
         Xs = self.dataset.Xs_train
         y = self.dataset.y_train
 
         # For every X set and model, fit
-        for index, (X, model) in enumerate(zip(Xs, self.catchment_models)):
+        for index, (X, model) in enumerate(zip(Xs, self.tributary_models)):
             print(f"Training Model {index} for {epochs} epochs")
             model.fit(series=y, past_covariates=X, epochs=epochs)
     
@@ -86,8 +86,8 @@ class Forecaster:
 
 
     def predict(self, num_timesteps=6):
-        # Generate catchment model predictions
-        preds = self.predict_catchment_models(num_timesteps=num_timesteps)
+        # Generate tributary model predictions
+        preds = self.predict_tributary_models(num_timesteps=num_timesteps)
 
         # Generate ensembled prediction
         y_ensembled = self.ensemble_model.predict(preds)
@@ -96,13 +96,13 @@ class Forecaster:
         return preds
 
 
-    def predict_catchment_models(self, num_timesteps, num_samples=1):
+    def predict_tributary_models(self, num_timesteps, num_samples=1):
         """
         """
         y = self.dataset.y_current
         Xs = self.dataset.Xs_current
 
-        models = self.catchment_models
+        models = self.tributary_models
         target_scaler = self.dataset.target_scaler
         y_preds = []
 
@@ -120,11 +120,11 @@ class Forecaster:
 
 
     # HISTORICAL FORECASTING
-    def historical_catchment_forecasts(self, data_partition="validation", **kwargs):
+    def historical_tributary_forecasts(self, data_partition="validation", **kwargs):
         y = self.get_y(data_partition)
         Xs = self.get_Xs(data_partition)
 
-        models = self.catchment_models
+        models = self.tributary_models
         target_scaler = self.dataset.target_scaler
         y_preds = []
 
@@ -143,10 +143,10 @@ class Forecaster:
         return df_y_preds
 
     def historical_forecasts(self, data_partition="test", **kwargs):
-        if self.historical_forecasts[data_partition] != None:
-            return self.historical_forecasts[data_partition]
+        # if self.built_historical_forecasts[data_partition] != None:
+        #     return self.built_historical_forecasts[data_partition]
 
-        historical_forecasts = self.historical_catchment_forecasts(data_partition=data_partition, **kwargs)
+        historical_forecasts = self.historical_tributary_forecasts(data_partition=data_partition, **kwargs)
         X = historical_forecasts.drop(columns=['level_true'])
         y_ensembled = self.ensemble_model.predict(X)
         historical_forecasts['level_pred'] = y_ensembled
