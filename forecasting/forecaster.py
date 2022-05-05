@@ -159,7 +159,7 @@ class Forecaster:
 
         if reg_model_name not in self.regression_models:
             print("The specified regression model does not exist. Pass an instance to fit or check that you are specifying the correct name")
-            return
+            sys.exit(2)
         
         if len(self.historical_trib_forecasts[data_partition]) == 0:
             self.build_historical_tributary_forecasts(data_partition=data_partition)
@@ -177,10 +177,10 @@ class Forecaster:
 
     # MODEL EVALUATION
     def score(self, reg_model_name='LinearRegression'):
-        if len(self.historical_test_forecasts) == 0:
-            self.build_historical_forecasts(reg_model_name=reg_model_name)
+        if len(self.historical_reg_forecasts[reg_model_name]) == 0:
+            self.build_historical_reg_forecasts(reg_model_name=reg_model_name)
 
-        y_all = self.historical_test_forecasts
+        y_all = self.historical_reg_forecasts[reg_model_name]
         y_true = y_all['level_true']
         y_hats = y_all.drop(columns=['level_true'])
         
