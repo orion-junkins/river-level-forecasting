@@ -26,15 +26,15 @@ class Forecaster:
         self.tributary_models = tributary_models
         self.regression_models = {}
         
-        self.historical_tributary_forecasts = pd.DataFrame()
-        self.historical_forecasts = pd.DataFrame()
+        self.historical_trib_forecasts = defaultdict(lambda: pd.DataFrame())
+        self.historical_reg_forecasts = defaultdict(lambda: pd.DataFrame())
 
 
 
     # MODEL FITTING
     def fit(self, reg_model=LinearRegression(), epochs=10):
         # Check if historical forecasts have been built; build them if not
-        if len(self.historical_tributary_forecasts) == 0:
+        if len(self.historical_trib_forecasts['validation']) == 0:
             print("Building historical trib forecasts")
             # Fit tributary_models on Xs
             self.fit_tributary_models(epochs=epochs)
@@ -63,7 +63,7 @@ class Forecaster:
         Given a dataframe with columns level_0, level_1...level_11 and level_true,
         train self.ensemble model to predict level_true based on other cols
         """
-        df = self.historical_tributary_forecasts
+        df = self.historical_trib_forecasts['validation']
         reg_model_name = type(reg_model).__name__
         if reg_model_name in self.regression_models:
             print(f"{reg_model_name} model has already been fit!")
@@ -150,43 +150,51 @@ class Forecaster:
         df_y_preds['level_true'] = y_true['level']
 
         df_y_preds.dropna(inplace=True)
-        self.historical_tributary_forecasts = df_y_preds
+        self.historical_trib_forecasts[data_partition] = df_y_preds
 
-    def historical_forecasts(self, data_partition="test", **kwargs):
-        # if self.built_historical_forecasts[data_partition] != None:
-        #     return self.built_historical_forecasts[data_partition]
 
-        historical_forecasts = self.historical_tributary_forecasts(data_partition=data_partition, **kwargs)
+    def build_historical_reg_forecasts(self, data_partition="test", reg_model_name='LinearRegression', **kwargs):
+        if (len(self.historical_reg_forecasts[reg_model_name]) != 0):
+            return
+
+        if reg_model_name not in self.regression_models:
+            print("The specified regression model does not exist. Pass an instance to fit or check that you are specifying the correct name")
+            return
+        
+        if len(self.historical_trib_forecasts[data_partition]) == 0:
+            self.build_historical_tributary_forecasts(data_partition=data_partition)
+
+        historical_forecasts = self.historical_trib_forecasts[data_partition].copy()
         X = historical_forecasts.drop(columns=['level_true'])
-        y_ensembled = self.ensemble_model.predict(X)
+
+        reg_model = self.regression_models[reg_model_name]
+        y_ensembled = reg_model.predict(X)
         historical_forecasts['level_pred'] = y_ensembled
 
-        self.built_historical_forecasts[data_partition] = historical_forecasts
-
-        return historical_forecasts
+        self.historical_reg_forecasts[reg_model_name] = historical_forecasts
 
 
 
     # MODEL EVALUATION
-    def score(self, data_partition = "test"):
-        if self.built_historical_forecasts[data_partition] == None:
-            self.historical_forecasts(data_partition=data_partition)
+    def score(self, reg_model_name='LinearRegression'):
+        if len(self.historical_test_forecasts) == 0:
+            self.build_historical_forecasts(reg_model_name=reg_model_name)
 
-        y_all = self.historical_forecasts[data_partition]
+        y_all = self.historical_test_forecasts
         y_true = y_all['level_true']
         y_hats = y_all.drop(columns=['level_true'])
         
-        mae_df = pd.DataFrame()
-        mape_df = pd.DataFrame()
+        mae_scores = {}
+        mape_scores = {}
 
         for col in y_hats.columns:
             y_hat = y_hats[col]
             ensembled_mae = self.mae(y_true, y_hat)
-            mae_df[col] = ensembled_mae
+            mae_scores[col] = ensembled_mae
             ensembled_mape = self.mape(y_true, y_hat)
-            mape_df[col] = ensembled_mape
+            mape_scores[col] = ensembled_mape
         
-        return (mae_df, mape_df)
+        return (mae_scores, mape_scores)
 
 
     def mae(self, y, y_hat):
