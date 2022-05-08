@@ -1,6 +1,5 @@
 import sys
 import pandas as pd
-from collections import defaultdict
 import numpy as np
 import pandas as pd
 
@@ -76,12 +75,12 @@ class Forecaster:
 
 
     # FUTURE FORECASTING 
-    def get_forecast(self, num_timesteps=24, update_dataset=True):
+    def get_forecast(self, num_timesteps=24, reg_model_name="LinearRegression", update_dataset=True):
         if update_dataset:
             self.update_dataset()
-            
+        
         # Generate forecast
-        y_preds = self.predict(num_timesteps)
+        y_preds = self.predict(num_timesteps=num_timesteps, reg_model_name=reg_model_name)
         
         # Grab recent true data
         y_recent = self.get_y_df(data_partition="current")
@@ -93,7 +92,7 @@ class Forecaster:
         return df
 
 
-    def predict(self, reg_model_name='LinearRegression', num_timesteps=6):
+    def predict(self, num_timesteps=6, reg_model_name='LinearRegression'):
         # Generate tributary model predictions
         preds = self.predict_tributary_models(num_timesteps=num_timesteps)
 
@@ -162,7 +161,7 @@ class Forecaster:
             sys.exit(2)
         
         if data_partition not in self.historical_trib_forecasts.keys():
-            self.build_historical_tributary_forecasts(data_partition=data_partition)
+            self.build_historical_tributary_forecasts(data_partition=data_partition, **kwargs)
 
         historical_forecasts = self.historical_trib_forecasts[data_partition].copy()
         X = historical_forecasts.drop(columns=['level_true'])
