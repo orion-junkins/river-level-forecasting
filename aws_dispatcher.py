@@ -8,10 +8,9 @@ DEFAULT_LOCAL_PATH = os.path.join("data", "aws_dispatch")
 os.makedirs(DEFAULT_LOCAL_PATH, exist_ok=True)
 
 class AWSDispatcher():
-    def __init__(self, river_gauge_name, model_name, ensembler_name) -> None:
+    def __init__(self, river_gauge_name, model_name) -> None:
         self.river_gauge_name = river_gauge_name
         self.model_name = model_name
-        self.ensembler_name = ensembler_name
         self.forecaster = self.load_forecaster()
 
 
@@ -24,7 +23,7 @@ class AWSDispatcher():
         return frcstr
 
 
-    def pickle_to_aws(self, payload, filename, local_dir=DEFAULT_LOCAL_PATH):
+    def pickle_to_aws(self, payload, filename, reg_model_name, local_dir=DEFAULT_LOCAL_PATH):
         """
         Pickle the given payload locally, and upload the file to AWS
 
@@ -40,17 +39,23 @@ class AWSDispatcher():
         pickle.dump(payload, pickle_out)
         pickle_out.close()
         s3 = boto3.client('s3')
-        s3.upload_file(out_path, f'generated-forecasts', f'{self.river_gauge_name}/{self.model_name}/{self.ensembler_name}/{filename}.pickle')
+        s3.upload_file(out_path, f'generated-forecasts', f'{self.river_gauge_name}/{self.model_name}/{reg_model_name}/{filename}.pickle')
 
 
     def rebuild_current_forecast(self, horizon=96, update_dataset=True):
         
-        fcast = self.forecaster.get_forecast(num_timesteps=horizon, update_dataset=update_dataset)
-        self.pickle_to_aws(fcast, filename="current_forecast")
+        reg_model_names = self.forecaster.regression_models.keys()
+        for reg_model_name in reg_model_names:
+            fcast = self.forecaster.get_forecast(num_timesteps=horizon, reg_model_name=reg_model_name, update_dataset=update_dataset)
+
+            self.pickle_to_aws(fcast, reg_model_name=reg_model_name, filename="current_forecast")
 
 
     def rebuild_historical_forecast(self, horizon=24, stride=1):
-        fcast = self.forecaster.historical_forecasts(forecast_horizon=horizon, stride=stride)
-        self.pickle_to_aws(fcast, filename=f"historical_forecast_h{horizon}_s{stride}")
+        reg_model_names = self.forecaster.regression_models.keys()
+        for reg_model_name in reg_model_names:    
+            self.forecaster.build_historical_reg_forecasts(reg_model_name=reg_model_name, forecast_horizon=horizon, stride=stride)
+            fcast = self.forecaster.historical_reg_forecasts[reg_model_name]
+            self.pickle_to_aws(fcast, filename=f"historical_forecast_h{horizon}_s{stride}", reg_model_name=reg_model_name)
 
 
