@@ -4,9 +4,11 @@ import sys
 import pickle
 from darts.models import BlockRNNModel
 from forecasting.forecaster import Forecaster
+from sklearn.svm import SVR
 
+reg_models = [SVR()]
 # Provide name of model and catchment. These will determine model save directory names.
-MODEL_NAME = "Block_GRU_(6_Hour_Blocks)_Trained_20_Epochs"
+MODEL_NAME = "TEST5-7"
 CATCHMENT_NAME = "illinois-kerby"
 
 # Define root directory for trained models
@@ -58,15 +60,19 @@ for i in range(NUM_MODELS):
                             model_name=str(i), 
                             force_reset=False, 
                             save_checkpoints=True, 
-                            **best_params)
+                            **test_params)
     catchment_models.append(model)
 
 # Create forecaster
 frcstr = Forecaster(catchment, catchment_models)
 #%%
 # Fit the forecaster
-frcstr.fit(epochs=20)
+frcstr.fit(epochs=0)
 
+# Fit additional models
+for reg_model in reg_models:
+    if reg_model not in frcstr.regression_models:
+        frcstr.fit(reg_model=reg_model)
 
 #%%
 # Save the trained forecaster 
