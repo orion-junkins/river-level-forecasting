@@ -26,15 +26,15 @@ class Forecaster:
         self.tributary_models = tributary_models
         self.regression_models = {}
         
-        self.historical_trib_forecasts = defaultdict(lambda: pd.DataFrame())
-        self.historical_reg_forecasts = defaultdict(lambda: pd.DataFrame())
+        self.historical_trib_forecasts = {}
+        self.historical_reg_forecasts = {}
 
 
 
     # MODEL FITTING
     def fit(self, reg_model=LinearRegression(), epochs=10):
         # Check if historical forecasts have been built; build them if not
-        if len(self.historical_trib_forecasts['validation']) == 0:
+        if 'validation' not in self.historical_trib_forecasts.keys():
             print("Building historical trib forecasts")
             # Fit tributary_models on Xs
             self.fit_tributary_models(epochs=epochs)
@@ -154,14 +154,14 @@ class Forecaster:
 
 
     def build_historical_reg_forecasts(self, data_partition="test", reg_model_name='LinearRegression', **kwargs):
-        if (len(self.historical_reg_forecasts[reg_model_name]) != 0):
+        if reg_model_name in self.historical_reg_forecasts.keys():
             return
 
         if reg_model_name not in self.regression_models:
             print("The specified regression model does not exist. Pass an instance to fit or check that you are specifying the correct name")
             sys.exit(2)
         
-        if len(self.historical_trib_forecasts[data_partition]) == 0:
+        if data_partition not in self.historical_trib_forecasts.keys():
             self.build_historical_tributary_forecasts(data_partition=data_partition)
 
         historical_forecasts = self.historical_trib_forecasts[data_partition].copy()
@@ -177,7 +177,7 @@ class Forecaster:
 
     # MODEL EVALUATION
     def score(self, reg_model_name='LinearRegression'):
-        if len(self.historical_reg_forecasts[reg_model_name]) == 0:
+        if reg_model_name not in self.historical_reg_forecasts.keys():
             self.build_historical_reg_forecasts(reg_model_name=reg_model_name)
 
         y_all = self.historical_reg_forecasts[reg_model_name]
