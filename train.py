@@ -32,7 +32,7 @@ catchment = pickle.load(pickle_in)
 model_builder = BlockRNNModel
 
 # Define parameters for model
-best_params = {'pl_trainer_kwargs': {'accelerator': 'gpu', 'gpus': [0]}, 
+model_params = {'pl_trainer_kwargs': {'accelerator': 'gpu', 'gpus': [0]}, 
     'n_epochs': 20, 
     'input_chunk_length': 120, 
     'output_chunk_length': 6, 
@@ -42,7 +42,10 @@ best_params = {'pl_trainer_kwargs': {'accelerator': 'gpu', 'gpus': [0]},
     'dropout': 0.01}
 
 
-test_params = {'pl_trainer_kwargs': {'accelerator': 'gpu', 'gpus': [0]}, 
+# Toggle to true for a simple, lightweight test model with rapid training (0 epochs)
+# Useful for pipeline testing
+if False:
+    model_params = {'pl_trainer_kwargs': {'accelerator': 'gpu', 'gpus': [0]}, 
     'n_epochs': 0, 
     'input_chunk_length': 6, 
     'output_chunk_length': 6, 
@@ -60,14 +63,14 @@ for i in range(NUM_MODELS):
                             model_name=str(i), 
                             force_reset=False, 
                             save_checkpoints=True, 
-                            **test_params)
+                            **model_params)
     catchment_models.append(model)
 
 # Create forecaster
 frcstr = Forecaster(catchment, catchment_models)
 #%%
 # Fit the forecaster
-frcstr.fit(epochs=0)
+frcstr.fit()
 
 # Fit additional models
 for reg_model in reg_models:
@@ -84,6 +87,3 @@ preds = frcstr.predict()
 
 # # Print out a sample forecast
 print(preds)
-
-
-# %%
