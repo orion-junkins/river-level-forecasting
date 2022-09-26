@@ -11,6 +11,15 @@ reg_models = [SVR()]
 MODEL_NAME = "TEST5-7"
 CATCHMENT_NAME = "illinois-kerby"
 
+# Specify if test mode is enabled
+test_mode = True
+# Toggle to true for a simple, lightweight test model with rapid training (0 epochs)
+# Useful for pipeline testing
+if not test_mode:
+    n_epochs = 20
+else:
+    n_epochs = 0
+
 # Define root directory for trained models
 TRAINED_MODEL_DIR = "trained_models"
 
@@ -33,26 +42,23 @@ model_builder = BlockRNNModel
 
 # Define parameters for model
 model_params = {'pl_trainer_kwargs': {'accelerator': 'gpu', 'gpus': [0]}, 
-    'n_epochs': 20, 
+        'n_epochs': n_epochs, 
+        'input_chunk_length': 120, 
     'input_chunk_length': 120, 
+        'input_chunk_length': 120, 
+        'output_chunk_length': 6, 
     'output_chunk_length': 6, 
+        'output_chunk_length': 6, 
+        'model': 'GRU', 
     'model': 'GRU', 
+        'model': 'GRU', 
+        'hidden_size': 50, 
     'hidden_size': 50, 
+        'hidden_size': 50, 
+        'n_rnn_layers': 5, 
     'n_rnn_layers': 5, 
-    'dropout': 0.01}
-
-
-# Toggle to true for a simple, lightweight test model with rapid training (0 epochs)
-# Useful for pipeline testing
-if False:
-    model_params = {'pl_trainer_kwargs': {'accelerator': 'gpu', 'gpus': [0]}, 
-    'n_epochs': 0, 
-    'input_chunk_length': 6, 
-    'output_chunk_length': 6, 
-    'model': 'GRU', 
-    'hidden_size': 5, 
-    'n_rnn_layers': 1, 
-    'dropout': 0.01}
+        'n_rnn_layers': 5, 
+        'dropout': 0.01}
 
 
 # Create desired number of catchment models (must be the same as the number of catchments)
@@ -70,7 +76,7 @@ for i in range(NUM_MODELS):
 frcstr = Forecaster(catchment, catchment_models)
 #%%
 # Fit the forecaster
-frcstr.fit()
+frcstr.fit(epochs=n_epochs)
 
 # Fit additional models
 for reg_model in reg_models:
