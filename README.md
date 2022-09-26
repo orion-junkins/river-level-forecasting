@@ -8,14 +8,26 @@ Using a model trained on historical data, and a snapshot of recent/forecasted we
 
 The accuracy of these forecasts can be compared internally (ie. between model types), and externally (ie against USGS statistically modeled forecasts)
 
-# Concept Proof Startup
-This interactive notebook is a naive proof of concept. **This notebook does not represent the current approach used elsewhere in this repository**, but it is a well documented way to get used to the problem domain. It is worth skimming before diving into the rest of the codebase.
+# Dependency Install
+All required dependencies are managed through an Anaconda environment. Setup Anaconda and familiarize yourself with environment management if needed.
+The needed environment is defined in 'darts-env.txt'
+1) Create a new Conda Environment from this text definition. This will create a new conda environment named 'darts-env'
 ```
-pip install requirements.txt
+conda create --file darts-env.txt --name darts-env
 ```
-Explore and run cells in concept-proof.ipynb
 
-# Advanced Startup
+2) Activate the environment
+```
+conda activate darts-env
+```
+
+# Modifying Dependency List
+When experimenting, feel free to change package versions and add new packages as needed. If you push a change that relies on a dependency change/addition, be sure to rebuild darts-env.txt, push the updated version and notify all codebase users. 
+```
+conda list --explicit > darts-env.txt
+```
+
+# Startup
 The rest of the codebase follows a similar workflow to the proof of concept, but with far more advanced capabilities, increased flexibility, and increased modularity.
 
 The reset of the README will serve as a high level walkthrough of the core forecasting code. 
