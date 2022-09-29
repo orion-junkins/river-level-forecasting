@@ -3,7 +3,19 @@ from darts import timeseries
 from darts.dataprocessing.transformers import Scaler
 
 class Dataset:
+    """
+    Dataset abstraction that fetches, processes and exposes needed X and y datasets given a CatchmentData instance.
+    """
     def __init__(self, catchment_data, test_size=0.1, validation_size=0.2) -> None:
+        """
+        Generate a Dataset from a CatchmentData instance using the given test and validation sizes.
+
+        Note that variable plurality indicates the presence of multiple datasets. Ie Xs_train is a list of multiple X_train sets.
+        Args:
+            catchment_data (CatchmentData): All needed catchment data.
+            test_size (float, optional): Desired test set size. Defaults to 0.1.
+            validation_size (float, optional): Desired validation size. Defaults to 0.2.
+        """
         self.catchment_data = catchment_data
         self.scaler = Scaler(MinMaxScaler())
         self.target_scaler = Scaler(MinMaxScaler())
@@ -16,20 +28,42 @@ class Dataset:
         self.Xs_current, self.y_current = self._pre_process(current_weather, recent_level, allow_future_X=True)
         self.Xs_current, self.y_current = self.scale_data(self.Xs_current, self.y_current)
 
+        # TODO add validation call - ie all X sets are same size, match y sets.
+
     
     @property
     def num_training_samples(self):
+        """
+        How many samples exist in the sets in Xs_train. Samples 
+
+        Returns:
+            int: Number of samples.
+        """
         return len(self.Xs_train[0])
 
 
     @property
     def num_X_sets(self):
+        """
+        How many X sets are present in Xs_train.
+
+        Returns:
+            int: Number of X sets.
+        """
         return len(self.Xs_train)
 
         
     def _pre_process(self, Xs, y, allow_future_X=False):
         """
-        Fetch needed data and perform all standard preprocessing.
+        Pre process data. This includes adding engineered features and trimming datasets to ensure X, y consistency.
+
+        Args:
+            Xs (list of dataframes): List of all X sets.
+            y (dataframe): Dataframe containing y set.
+            allow_future_X (bool, optional): Determines if end date of X sets can exceed end date of y set. Only True for current data which includes forecasts (level data into future is not yet known, but weather is). Defaults to False.
+
+        Returns:
+            tuple of (list of TimeSeries, TimeSeries): Tuple containing (processed_Xs, y)
         """
         y = timeseries.TimeSeries.from_dataframe(y)
 
@@ -58,6 +92,17 @@ class Dataset:
 
 
     def scale_data(self, Xs, y, fit_scalers=False):
+        """
+        Apply scaling to all X and y sets. Fit only if specified.
+
+        Args:
+            Xs (list of TimeSeries): X sets to scale.
+            y (TimeSeries): y set to scale.
+            fit_scalers (bool, optional): Whether or not to fit scalers. Defaults to False.
+
+        Returns:
+            tuple of (list of TimeSeries, TimeSeries): Tuple containing (Xs, y)
+        """
         if fit_scalers:
             self.scaler = self.scaler.fit(Xs)
             self.target_scaler = self.target_scaler.fit(y)
@@ -67,6 +112,16 @@ class Dataset:
         
 
     def _partition(self, test_size, validation_size):
+        """
+        Partition data using the specified test and validation sizes. Note that validation size is relative to whatever data is excluded from the test set.
+
+        Args:
+            test_size (float): Size of test set relative to overall dataset size.
+            validation_size (float): Size of validation set relative to dataset size after excluding test set.
+
+        Returns:
+            tuple of (list of TimeSeries, list of TimeSeries, list of TimeSeries, TimeSeries, TimeSeries, TimeSeries): (Xs_train, Xs_test, Xs_validation, y_train, y_test, y_validation)
+        """
         Xs_train = []
         Xs_test = []
         Xs_validation = []
@@ -90,6 +145,15 @@ class Dataset:
     
 
     def add_engineered_features(self, df):
+        """
+        Generate and add engineered features.
+
+        Args:
+            df (dataframe): Data from which features should be engineered.
+
+        Returns:
+            dataframe: Data including new features.
+        """
         df['day_of_year'] = df.index.day_of_year
 
         df['snow_10d'] = df['snow_1h'].rolling(window=10 * 24).sum()
@@ -104,6 +168,9 @@ class Dataset:
 
 
     def update(self):
+        """
+        Update the underlying catchment data for inference with up to date data. This triggers new weather data queries and a rebuild of all current datasets.
+        """
         self.catchment_data.update_for_inference()
         current_weather, recent_level = self.catchment_data.all_current_data
         self.Xs_current, self.y_current = self._pre_process(current_weather, recent_level, allow_future_X=True)
