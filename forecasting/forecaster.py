@@ -13,14 +13,19 @@ class Forecaster:
     Managers training data, inference data, model fitting and inference of trained model.
     Allows the user to query for specific forecasts or forecast ranges.
     """
-    def __init__(self, tributary_data, tributary_models, test_size=0.01, validation_size=0.01) -> None:
-        """
-        Fetches data from provided forecast site and generates processed training and inference sets.
-        Builds the specified model.
+    def __init__(self, catchment_data, tributary_models, test_size=0.01, validation_size=0.01) -> None:
+        """ 
+        Creates a new Forecaster instance. Builds a Dataset from the given CatchmentData with the specified test/validation sizes.
+
+        Args:
+            catchment_data (CatchmentData): All relevant historical and current data.
+            tributary_models (list of Darts Forecasting Models): Forecasting models for tributary level prediction.
+            test_size (float, optional): Test set partition size. Determines holdout test size. Defaults to 0.01.
+            validation_size (float, optional): Validation set partition size. Determines training set size for second stage ensemble model. Defaults to 0.01.
         """
         self.logger = build_logger(log_level='INFO')
-        self.name = tributary_data.name
-        self.dataset = Dataset(tributary_data, test_size=test_size, validation_size=validation_size)
+        self.name = catchment_data.name
+        self.dataset = Dataset(catchment_data, test_size=test_size, validation_size=validation_size)
 
         self.tributary_models = tributary_models
         self.regression_models = {}
@@ -32,6 +37,13 @@ class Forecaster:
 
     # MODEL FITTING
     def fit(self, reg_model=LinearRegression(), epochs=10):
+        """
+        Fit tributary models and run inference on validation set if needed. Fit the ensemble model.
+
+        Args:
+            reg_model (SKLearn Regression Model, optional): Model to be used for ensembling. Defaults to LinearRegression().
+            epochs (int, optional): Number of epochs to train train tributary models. Defaults to 10.
+        """
         # Check if historical forecasts have been built; build them if not
         if 'validation' not in self.historical_trib_forecasts.keys():
             print("Building historical trib forecasts")
@@ -46,7 +58,11 @@ class Forecaster:
 
 
     def fit_tributary_models(self, epochs=10):
-        """ Fit tribuatry models on the training set
+        """
+        Fit tribuatry models on the training set
+
+        Args:
+            epochs (int, optional): Number of epochs to train train tributary models. Defaults to 10.
         """
         Xs = self.dataset.Xs_train
         y = self.dataset.y_train
@@ -59,9 +75,14 @@ class Forecaster:
 
     def fit_ensemble_model(self, reg_model=LinearRegression()):
         """
-        Given a dataframe with columns level_0, level_1...level_11 and level_true,
-        train self.ensemble model to predict level_true based on other cols
+        Start with a dataframe with columns level_0, level_1...level_11 and level_true, where level_n represents the predicted values from model n and level_true represents the actual level.Train self.ensemble model to predict level_true based on other predictions.
+
+        Note that [level_0, level_1, ..., level_n] use the last point only of a fixed forecasting window, and do not retain entire forecasted sequences. A sequence to sequence approach would likely perform better.
+
+        Args:
+            reg_model (SKLearn Regression Model, optional): Model to be used for ensembling. Defaults to LinearRegression().
         """
+        # TODO throw exception if historical_trib_forecasts not valid/dne
         df = self.historical_trib_forecasts['validation']
         reg_model_name = type(reg_model).__name__
         if reg_model_name in self.regression_models:
@@ -74,8 +95,20 @@ class Forecaster:
             self.regression_models[reg_model_name] = reg_model
 
 
-    # FUTURE FORECASTING 
+    # FUTURE/CURRENT FORECASTING 
     def get_forecast(self, num_timesteps=24, reg_model_name="LinearRegression", update_dataset=True):
+        """
+        Produce a forecast for the specified number of timesteps using the desired regression model.
+
+        Args:
+            num_timesteps (int, optional): How many timesteps into the future to forecast. Defaults to 24.
+            reg_model_name (str, optional): Which model to use for ensembling. Must exist as a key in self.regression_models. Defaults to "LinearRegression".
+            update_dataset (bool, optional): Whether or not to update the dataset for inference. Leave false while experimenting to avoid excessive calls to weather API. Defaults to True.
+
+        Returns:
+            dataframe: A dataframe containing the requested forecast.
+        """
+        # TODO Asserts. Verify needed models exist and are trained.
         if update_dataset:
             self.update_dataset()
         
@@ -92,7 +125,17 @@ class Forecaster:
         return df
 
 
-    def predict(self, num_timesteps=6, reg_model_name='LinearRegression'):
+    def predict(self, num_timesteps=24, reg_model_name='LinearRegression'):
+        """
+        Generate a prediction for tributary models. Use the generated prediction to generate an ensembled prediction with the specified regression model.
+
+        Args:
+            num_timesteps (int, optional): How many timesteps into the future to forecast. Defaults to 24.
+            reg_model_name (str, optional): Which model to use for ensembling. Must exist as a key in self.regression_models. Defaults to "LinearRegression".
+            
+        Returns:
+            dataframe: dataframe containing all generated predictions.
+        """
         # Generate tributary model predictions
         preds = self.predict_tributary_models(num_timesteps=num_timesteps)
 
@@ -104,8 +147,16 @@ class Forecaster:
         return preds
 
 
-    def predict_tributary_models(self, num_timesteps, num_samples=1):
+    def predict_tributary_models(self, num_timesteps=24, num_samples=1):
         """
+        Generate predictions for all tributary models for the specified number of timesteps using current data. 
+
+        Args:
+            num_timesteps (int, optional): How many timesteps into the future to forecast. Defaults to 24.
+            num_samples (int, optional): How many samples to generate. Leave set to 1 for deterministic predictions. Higher values can be explored for probabilistic forecasts (Future TODO). Defaults to 1.
+
+        Returns:
+            dataframe: dataframe containing all tributary model predictions.
         """
         y = self.dataset.y_current
         Xs = self.dataset.Xs_current
@@ -129,6 +180,12 @@ class Forecaster:
 
     # HISTORICAL FORECASTING
     def build_historical_tributary_forecasts(self, data_partition="validation", **kwargs):
+        """
+        Build all historical tributary forecasts for the specified partition. Given kwargs will be forwarded to model.historical_forecasts().
+
+        Args:
+            data_partition (str, optional): Which partition of the dataset to generate predictions for. Defaults to "validation".
+        """
         y = self.get_y(data_partition)
         Xs = self.get_Xs(data_partition)
 
@@ -153,10 +210,19 @@ class Forecaster:
 
 
     def build_historical_reg_forecasts(self, data_partition="test", reg_model_name='LinearRegression', **kwargs):
+        """
+        Ensemble together tributary level forecasts using the specified regression model. Produce a dataframe of generated forecasts.
+
+        Args:
+            data_partition (str, optional): Which partition to generate forecasts for. Defaults to "test".
+            reg_model_name (str, optional): Which regression model to use for ensembling. Defaults to 'LinearRegression'.
+        """
         if reg_model_name in self.historical_reg_forecasts.keys():
+            # TODO throw exception
             return
 
         if reg_model_name not in self.regression_models:
+            # TODO throw exception instead of using sys.exit()
             print("The specified regression model does not exist. Pass an instance to fit or check that you are specifying the correct name")
             sys.exit(2)
         
@@ -176,6 +242,15 @@ class Forecaster:
 
     # MODEL EVALUATION
     def score(self, reg_model_name='LinearRegression'):
+        """
+        Generate mae and mape scores using historical ensembled predictions for the specified regression model.
+
+        Args:
+            reg_model_name (str, optional): Which regression model to generate metrics for. Defaults to 'LinearRegression'.
+
+        Returns:
+            tuple of (dataframe, dataframe): Two dataframes containing (mae_scores, mape_scores)
+        """
         if reg_model_name not in self.historical_reg_forecasts.keys():
             self.build_historical_reg_forecasts(reg_model_name=reg_model_name)
 
@@ -197,10 +272,30 @@ class Forecaster:
 
 
     def mae(self, y, y_hat):
+        """
+        Helper function for generating mean average error.
+
+        Args:
+            y (Series): True y values.
+            y_hat (Series): Predicted y values.
+
+        Returns:
+            ndarray: TODO verify return type
+        """
         return np.mean(np.abs(y - y_hat))
 
 
     def mape(self, y, y_hat):
+        """
+        Helper function for generating mean average percent error.
+
+        Args:
+            y (Series): True y values.
+            y_hat (Series): Predicted y values.
+
+        Returns:
+            ndarray: TODO verify return type
+        """
         return np.mean(np.abs((y - y_hat)/y)*100)
 
 
@@ -214,6 +309,15 @@ class Forecaster:
 
 
     def get_y(self, data_partition):
+        """
+        Fetch a specific y partition based on a string keyword.
+
+        Args:
+            data_partition (str): Partition specifier.
+
+        Returns:
+            TimeSeries | List[TimeSeries]: desired y dataset.
+        """
         if data_partition == "current":
             y = self.dataset.y_current
         elif data_partition == "train":
@@ -229,6 +333,15 @@ class Forecaster:
     
 
     def get_y_df(self, data_partition):
+        """
+        Fetch a specific y partition as a dataframe based on a string keyword.
+
+        Args:
+            data_partition (str): Partition specifier.
+
+        Returns:
+            dataframe: desired y dataset.
+        """
         y = self.get_y(data_partition)
         target_scaler = self.dataset.target_scaler
         y = target_scaler.inverse_transform(y)
@@ -238,6 +351,15 @@ class Forecaster:
     
 
     def get_Xs(self, data_partition):
+        """
+        Fetch a specific X partition based on a string keyword.
+
+        Args:
+            data_partition (str): Partition specifier.
+
+        Returns:
+            TimeSeries | List[TimeSeries]: desired X dataset.
+        """
         if data_partition == "current":
             Xs = self.dataset.Xs_current
         elif data_partition == "train":
@@ -254,6 +376,16 @@ class Forecaster:
 
 
     def rename_pred_cols(self, y_pred, index):
+        """
+        Predictions appear in a column titled '0' by default. Rename columns as needed using the correct index.
+
+        Args:
+            y_pred (dataframe): The data for which renaming is needed.
+            index (integer): The current model index which should be used in the column suffix. 
+
+        Returns:
+            dataframe: An updated dataframe with the correct column names.
+        """
         if "level" in y_pred.columns:
             y_pred.rename(columns={"level": "level_"+str(index)}, inplace=True)
         elif "0" in y_pred.columns:
