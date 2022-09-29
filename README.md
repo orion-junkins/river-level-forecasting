@@ -28,8 +28,6 @@ conda list --explicit > darts-env.txt
 ```
 
 # Startup
-The rest of the codebase follows a similar workflow to the proof of concept, but with far more advanced capabilities, increased flexibility, and increased modularity.
-
 The reset of the README will serve as a high level walkthrough of the core forecasting code. 
 
 Most relevant functionality lives in `./forecasting/`
