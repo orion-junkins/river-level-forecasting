@@ -1,0 +1,9 @@
+name: river-level
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - darts
+  - flake8
+  - pytest
+  - python=3.10
