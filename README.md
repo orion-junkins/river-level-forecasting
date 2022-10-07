@@ -10,22 +10,19 @@ The accuracy of these forecasts can be compared internally (ie. between model ty
 
 # Dependency Install
 All required dependencies are managed through an Anaconda environment. Setup Anaconda and familiarize yourself with environment management if needed.
-The needed environment is defined in 'darts-env.txt'
-1) Create a new Conda Environment from this text definition. This will create a new conda environment named 'darts-env'
+The needed environment is defined in `environment.yml`
+1) Create a new Conda Environment from this yml definition. This will create a new conda environment named 'river-level'
 ```
-conda create --file darts-env.txt --name darts-env
+conda env create -f environment.yml
 ```
 
 2) Activate the environment
 ```
-conda activate darts-env
+conda activate river-level
 ```
 
 # Modifying Dependency List
-When experimenting, feel free to change package versions and add new packages as needed. If you push a change that relies on a dependency change/addition, be sure to rebuild darts-env.txt, push the updated version and notify all codebase users. 
-```
-conda list --explicit > darts-env.txt
-```
+When experimenting, feel free to change package versions and add new packages as needed. If you push a change that relies on a dependency change/addition, be sure to update `environment.yml` with the correct package(s) accordingly.
 
 # Startup
 The reset of the README will serve as a high level walkthrough of the core forecasting code. 
