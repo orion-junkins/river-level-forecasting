@@ -15,7 +15,7 @@ def convert_timestamp_to_datetime(timestamp: int | str, tz_offset: int = 0) -> s
     """
     ts = int(timestamp) - tz_offset
     date = (datetime.utcfromtimestamp(ts).strftime('%Y-%m-%d %H:%M:%S'))
-    return date 
+    return date
 
 
 def convert_timestamp_to_time(timestamp: int | str, tz_offset: int = 28800) -> str:
@@ -37,11 +37,11 @@ def convert_timestamp_to_time(timestamp: int | str, tz_offset: int = 28800) -> s
 def yesterday() -> str:
     """
     Helper function for data retrieval. Gives yesterdays date as a str representation of datetime
-    
+
     Returns:
         yesterday (string): yesterdays date in the format "%Y-%m-%d"
     """
-    yesterday = datetime.today()  - timedelta(days=1)
+    yesterday = datetime.today() - timedelta(days=1)
     yesterday = yesterday.strftime("%Y-%m-%d")
     return yesterday
 
@@ -49,13 +49,13 @@ def yesterday() -> str:
 def date_days_ago(days: int) -> str:
     """
     Helper function for data retrieval. Gives string representation of date for given number of days in past
-    
+
     Args:
         days (int): number of days in past for which date is desired
     Returns:
         date (str): date for present - days
     """
-    date = datetime.now()  - timedelta(days=days)
+    date = datetime.now() - timedelta(days=days)
     date = date.strftime("%Y-%m-%d")
     return date
 
@@ -63,13 +63,13 @@ def date_days_ago(days: int) -> str:
 def unix_timestamp_days_ago(days: int) -> str:
     """
     Helper function for data retrieval. Gives unix timestamp of date for given number of days in past
-    
+
     Args:
         days (int): number of days in past for which date is desired
     Returns:
         timestamp (str): unix timestamp for present - days
     """
-    date = datetime.now()  - timedelta(days=days)
+    date = datetime.now() - timedelta(days=days)
     timestamp = str(int(time.mktime(date.timetuple())))
     return timestamp
 
