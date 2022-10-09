@@ -8,7 +8,7 @@ def convert_timestamp_to_datetime(timestamp: int | str, tz_offset: int = 0) -> s
 
     Args:
         timestamp (int or str): timestamp to convert
-        tz_offset (int, optional): Timezone offset if desired. Defaults to 28800 (converts OpenWeather default to PST).
+        tz_offset (int, optional): Timezone offset if desired. Defaults to 0.
 
     Returns:
         date (str): converted datetime
