@@ -1,13 +1,13 @@
 name: river-level
 channels:
   - conda-forge
+  - pytorch
   - defaults
 dependencies:
   # Add additional Conda dependencies here
   # Version lock critical packages using '=' ie:
   # - packageName=0.123
   - python=3.10
-  - darts=0.2   # Core Timeseries forecasting library (includes Pytorch)
   - flake8      # Linter for style adherence
   - pytest      # Unit testing framework
   - pip         # Package installer for dependencies not available through Conda
@@ -15,4 +15,5 @@ dependencies:
     # Add pip packages which are not available through conda here
     # Note: to version lock a pip package, use '==' not '=' ie:
     # - packageName==0.123
+    - darts==0.22   # Core Timeseries forecasting library (includes Pytorch)
     - dataretrieval
