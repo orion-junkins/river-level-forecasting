@@ -1,47 +1,40 @@
 from data.weather_locations import all_weather_locs
-from forecasting.general_utilities.time_utils import date_days_ago, unix_timestamp_days_ago
-from forecasting.data_fetching_utilities.weather import *
-from forecasting.data_fetching_utilities.level import get_historical_level
+from forecasting.data_providers.weather_provider import WeatherProvider
+from forecasting.data_providers.level_provider import LevelProvider
 
 class CatchmentData:
-    def __init__(self, name, usgs_gauge_id, weather_locs=None, window_size=40) -> None:
-        self.name = name
-        self.usgs_gauge_id = str(usgs_gauge_id)
+    def __init__(self, catchment_name, usgs_gauge_id, num_recent_samples=40*24) -> None:
+        self.weather_provider = WeatherProvider(all_weather_locs[catchment_name])
+        self.level_provider = LevelProvider(str(usgs_gauge_id))
+        self.num_recent_samples = num_recent_samples
 
-        if weather_locs == None:
-            self.weather_locs = all_weather_locs[name]
-        else:
-            self.weather_locs = weather_locs
-
-        self.window_size = window_size
-
-
-    # CURRENT
+        self._all_current = None 
+        self._all_historical = None
+ 
     @property
     def all_current(self):
-        recent_level = get_historical_level(self.usgs_gauge_id, start=date_days_ago(self.window_size))
-        recent_weather = fetch_all_recent_weather(self.weather_locs, start=unix_timestamp_days_ago(self.window_size))
-        forecasted_weather = fetch_all_forecasted_weather(self.weather_locs)
+        if self._all_current == None:
+            self._get_all_current()
         
-        current_weather = []
-        for df_recent, df_forecasted in zip(recent_weather, forecasted_weather):
-            weather_frames = [df_recent, df_forecasted]
-            df = pd.concat(weather_frames) # Combine recent and forecasted weather into a single df
-            df = handle_missing_data(df)
-            current_weather.append(df)
+        return self._all_current
         
-        return (current_weather, recent_level)
+    def _get_all_current(self):
+        current_weather = self.weather_provider.fetch_current_weather(hours_to_fetch=self.past_hours_to_fetch)
+        recent_level = self.level_provider.fetch_recent_level(hours_to_fetch=self.num_recent_samples)
     
+        self._all_current = (current_weather, recent_level)
 
-    # HISTORICAL
-    @property
-    def historical_level(self):
-        return get_historical_level(self.usgs_gauge_id)
-
-    @property
-    def historical_weather(self):
-        return fetch_all_historical_weather(self.weather_locs, self.name) 
+    def update_for_inference(self):
+        self._get_all_current()
 
     @property
     def all_historical(self):
-        return (self.historical_weather, self.historical_level)
+        if self._all_historical is None:
+            self._get_all_historical()
+
+        return self._all_historical 
+
+    def _get_all_historical(self):
+        historical_weather = self.weather_provider.fetch_historical_weather(self.weather_locs, self.name) 
+        historical_level = self.level_provider.fetch_historical_level(self.usgs_gauge_id)
+        self._all_historical = (historical_weather, historical_level)
