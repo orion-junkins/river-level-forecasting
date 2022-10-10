@@ -10,21 +10,26 @@ The accuracy of these forecasts can be compared internally (ie. between model ty
 
 # Dependency Install
 All required dependencies are managed through an Anaconda environment. Setup Anaconda and familiarize yourself with environment management if needed.
-The needed environment is defined in 'darts-env.txt'
-1) Create a new Conda Environment from this text definition. This will create a new conda environment named 'darts-env'
+The needed environment is defined in `environment.yml`
+1) Create a new Conda Environment from this yml definition. This will create a new conda environment named 'river-level'
 ```
-conda create --file darts-env.txt --name darts-env
+conda env create -f environment.yml
 ```
 
 2) Activate the environment
 ```
-conda activate darts-env
+conda activate river-level
 ```
 
 # Modifying Dependency List
-When experimenting, feel free to change package versions and add new packages as needed. If you push a change that relies on a dependency change/addition, be sure to rebuild darts-env.txt, push the updated version and notify all codebase users. 
+When experimenting, feel free to change package versions and add new packages as needed. If you push a change that relies on a dependency change/addition, be sure to update `environment.yml` with the correct package(s) accordingly.
+
+When adding a new dependency also add a short comment in the yml stating where or for what purpose it is being used. This will make any future dependency issues easier to resolve.
+
+# Dependency Update
+Following changes to the environment.yml file, run the following command to update your local environment to match the dependency list specified in `environment.yml`.
 ```
-conda list --explicit > darts-env.txt
+conda env update -f environment.yml
 ```
 
 # Startup
