@@ -24,6 +24,14 @@ conda activate river-level
 # Modifying Dependency List
 When experimenting, feel free to change package versions and add new packages as needed. If you push a change that relies on a dependency change/addition, be sure to update `environment.yml` with the correct package(s) accordingly.
 
+When adding a new dependency also add a short comment in the yml stating where or for what purpose it is being used. This will make any future dependency issues easier to resolve.
+
+# Dependency Update
+Following changes to the environment.yml file, run the following command to update your local environment to match the dependency list specified in `environment.yml`.
+```
+conda env update -f environment.yml
+```
+
 # Startup
 The reset of the README will serve as a high level walkthrough of the core forecasting code. 
 
