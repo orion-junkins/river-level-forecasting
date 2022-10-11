@@ -14,7 +14,7 @@ class InferenceDataset:
         self.scaler = scaler
         self.target_scaler = target_scaler
 
-        self.Xs_current, self.y_current = self._get_data()
+        self.Xs, self.y = self._get_data()
 
         # TODO add validation call - ie all X sets are same size, match y sets.
     
