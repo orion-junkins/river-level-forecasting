@@ -4,6 +4,7 @@ from forecasting.data_providers.level_provider import LevelProvider
 
 class CatchmentData:
     def __init__(self, catchment_name, usgs_gauge_id, num_recent_samples=40*24) -> None:
+        self.name = catchment_name
         self.weather_provider = WeatherProvider(all_weather_locs[catchment_name])
         self.level_provider = LevelProvider(str(usgs_gauge_id))
         self.num_recent_samples = num_recent_samples
@@ -11,6 +12,13 @@ class CatchmentData:
         self._all_current = None 
         self._all_historical = None
  
+    @property
+    def num_data_sets(self):
+        current_weather = self.all_current[0]
+        historical_weather = self.all_historical[0]
+        assert(len(current_weather) == len(historical_weather))
+        return len(current_weather)
+
     @property
     def all_current(self):
         if self._all_current == None:
