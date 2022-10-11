@@ -1,9 +1,14 @@
 import pytest
+from datetime import date
 from forecasting.data_fetching_utilities.historical_weather.weather_api_hourly_parameter import WeatherAPIHourlyParameter
 from forecasting.data_fetching_utilities.historical_weather.weather_api_parameters import WeatherAPIParameters
 
 
 class TestWeatherAPIParameters():
+
+    @pytest.fixture
+    def current_date(self):
+        return date.today().isoformat()
 
     @pytest.fixture
     def fake_latitude(self) -> float:
@@ -71,8 +76,8 @@ class TestWeatherAPIParameters():
         assert (weather_api_parameters.get_location()
                 == (fake_latitude, fake_longitude))
 
-    def test_set_start_date(self, fake_start_date, weather_api_parameters):
-        assert (weather_api_parameters.start_date == None)
+    def test_set_start_date(self, current_date, fake_start_date, weather_api_parameters):
+        assert (weather_api_parameters.start_date == current_date)
         weather_api_parameters.set_start_date(start_date=fake_start_date)
         assert (weather_api_parameters.start_date == fake_start_date)
 
@@ -81,8 +86,8 @@ class TestWeatherAPIParameters():
             start_date=fake_start_date)
         assert (weather_api_parameters.get_start_date() == fake_start_date)
 
-    def test_set_end_date(self, fake_end_date, weather_api_parameters):
-        assert (weather_api_parameters.end_date == None)
+    def test_set_end_date(self, current_date, fake_end_date, weather_api_parameters):
+        assert (weather_api_parameters.end_date == current_date)
         weather_api_parameters.set_end_date(end_date=fake_end_date)
         assert (weather_api_parameters.end_date == fake_end_date)
 
