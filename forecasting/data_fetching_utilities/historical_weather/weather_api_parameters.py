@@ -28,6 +28,17 @@ class WeatherAPIParameters:
         self.end_date = end_date
         self.hourly_parameter = hourly_parameter
 
+    def get_hourly_parameter(self) -> list[str]:
+        """Get the hourly parameter's weather variables to build the hourly query string.
+
+        Args: None
+
+        Returns: list[str]: list of weather variables"""
+        if self.hourly_parameter is not None:
+            return self.hourly_parameter.get_weather_variable_names()
+        else:
+            return None
+
     def set_location(self, latitude: float, longitude: float) -> None:
         """Set the Geographical WGS84 coordinate of the location
 
@@ -75,14 +86,3 @@ class WeatherAPIParameters:
 
         Returns: end_date (str): (yyyy-mm-dd)"""
         return self.end_date
-
-    def get_hourly_parameter(self) -> list[str]:
-        """Get the hourly parameter's weather variables to build the hourly query string.
-
-        Args: None
-
-        Returns: list[str]: list of weather variables"""
-        if self.hourly_parameter is not None:
-            return self.hourly_parameter.get_weather_variable_names()
-        else:
-            return None
