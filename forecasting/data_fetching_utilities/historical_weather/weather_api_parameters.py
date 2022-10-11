@@ -1,9 +1,13 @@
+
+from datetime import date
+
 from forecasting.data_fetching_utilities.historical_weather.weather_api_hourly_parameter import WeatherAPIHourlyParameter
 
 
 class WeatherAPIParameters:
 
-    def __init__(self, latitude: float = 44.06, longitude: float = -121.31, start_date: str = None, end_date: str = None, hourly_parameter: WeatherAPIHourlyParameter() = None):
+    def __init__(self, latitude: float = 44.06, longitude: float = -121.31, start_date: str = date.today().isoformat(),
+                 end_date: str = date.today().isoformat(), hourly_parameter: WeatherAPIHourlyParameter() = None):
         """Default Location: Bend, OR
 
         Args: latitude (float): (decimal degrees)
