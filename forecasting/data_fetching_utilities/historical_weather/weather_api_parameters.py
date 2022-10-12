@@ -28,7 +28,7 @@ class WeatherAPIParameters:
         self.end_date = end_date
         self.hourly_parameter = hourly_parameter
 
-    def get_query_parameters(self) -> str:
+    def build_query_string(self) -> str:
         """Get the query parameters for the weather data to be fetched.
 
         Args: None
