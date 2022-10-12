@@ -10,9 +10,10 @@ class InferenceForecaster(Forecaster_ABC):
         self.dataset= InferenceDataset(catchment_data=self.catchment_data)
     
     def load_ensemble(self):
-        RegressionEnsembleModel.load(self.ensemble_save_path)
+        return RegressionEnsembleModel.load(self.ensemble_save_path)
 
-
-    def predict(self, num_timesteps=24):
+    def predict(self, num_timesteps=24, update=False):
+        if update:
+            self.dataset.update()
+            
         self.ensemble.predict(num_timesteps, series=self.dataset.y, past_covariates=self.dataset.Xs)
-
