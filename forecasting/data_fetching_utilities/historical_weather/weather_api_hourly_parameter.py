@@ -18,134 +18,134 @@ class WeatherAPIHourlyParameter():
         returns: list of variable names."""
         return self.weather_variables
 
-    def temperature_2m(self) -> None:
+    def select_temperature_2m(self) -> None:
         self.weather_variables.append("temperature_2m")
 
-    def relativehumidity_2m(self) -> None:
+    def select_relativehumidity_2m(self) -> None:
         self.weather_variables.append("relativehumidity_2m")
 
-    def dewpoint_2m(self) -> None:
+    def select_dewpoint_2m(self) -> None:
         self.weather_variables.append("dewpoint_2m")
 
-    def apparent_temperature(self) -> None:
+    def select_apparent_temperature(self) -> None:
         self.weather_variables.append("apparent_temperature")
 
-    def pressure_msl(self) -> None:
+    def select_pressure_msl(self) -> None:
         self.weather_variables.append("pressure_msl")
 
-    def surface_pressure(self) -> None:
+    def select_surface_pressure(self) -> None:
         self.weather_variables.append("surface_pressure")
 
-    def precipitation(self) -> None:
+    def select_precipitation(self) -> None:
         self.weather_variables.append("precipitation")
 
-    def rain(self) -> None:
+    def select_rain(self) -> None:
         self.weather_variables.append("rain")
 
-    def snowfall(self) -> None:
+    def select_snowfall(self) -> None:
         self.weather_variables.append("snowfall")
 
-    def cloudcover(self) -> None:
+    def select_cloudcover(self) -> None:
         self.weather_variables.append("cloudcover")
 
-    def cloudcover_low(self) -> None:
+    def select_cloudcover_low(self) -> None:
         self.weather_variables.append("cloudcover_low")
 
-    def cloudcover_mid(self) -> None:
+    def select_cloudcover_mid(self) -> None:
         self.weather_variables.append("cloudcover_mid")
 
-    def cloudcover_high(self) -> None:
+    def select_cloudcover_high(self) -> None:
         self.weather_variables.append("cloudcover_high")
 
-    def shortwave_radiation(self) -> None:
+    def select_shortwave_radiation(self) -> None:
         self.weather_variables.append("shortwave_radiation")
 
-    def direct_radiation(self) -> None:
+    def select_direct_radiation(self) -> None:
         self.weather_variables.append("direct_radiation")
 
-    def diffuse_radiation(self) -> None:
+    def select_diffuse_radiation(self) -> None:
         self.weather_variables.append("diffuse_radiation")
 
-    def direct_normal_irradiance(self) -> None:
+    def select_direct_normal_irradiance(self) -> None:
         self.weather_variables.append("direct_normal_irradiance")
 
-    def windspeed_10m(self) -> None:
+    def select_windspeed_10m(self) -> None:
         self.weather_variables.append("windspeed_10m")
 
-    def windspeed_100m(self) -> None:
+    def select_windspeed_100m(self) -> None:
         self.weather_variables.append("windspeed_100m")
 
-    def winddirection_10m(self) -> None:
+    def select_winddirection_10m(self) -> None:
         self.weather_variables.append("winddirection_10m")
 
-    def winddirection_100m(self) -> None:
+    def select_winddirection_100m(self) -> None:
         self.weather_variables.append("winddirection_100m")
 
-    def windgusts_10m(self) -> None:
+    def select_windgusts_10m(self) -> None:
         self.weather_variables.append("windgusts_10m")
 
-    def et0_fao_evapotranspiration(self) -> None:
+    def select_et0_fao_evapotranspiration(self) -> None:
         self.weather_variables.append("et0_fao_evapotranspiration")
 
-    def vapor_pressure_deficit(self) -> None:
-        self.weather_variables.append("vapor_pressure_deficit")
+    def select_vapor_pressure_deficit(self) -> None:
+        self.weather_variables.append("vapor_pressure_defiselect_cit")
 
-    def soil_temperature_0_to_7cm(self) -> None:
+    def select_soil_temperature_0_to_7cm(self) -> None:
         self.weather_variables.append("soil_temperature_0_to_7cm")
 
-    def soil_temperature_7_to_28cm(self) -> None:
+    def select_soil_temperature_7_to_28cm(self) -> None:
         self.weather_variables.append("soil_temperature_7_to_28cm")
 
-    def soil_temperature_28_to_100cm(self) -> None:
+    def select_soil_temperature_28_to_100cm(self) -> None:
         self.weather_variables.append(
             "soil_temperature_28_to_100cm")
 
-    def soil_temperature_100_to_255cm(self) -> None:
+    def select_soil_temperature_100_to_255cm(self) -> None:
         self.weather_variables.append(
             "soil_temperature_100_to_255cm")
 
-    def soil_moisture_0_to_7cm(self) -> None:
+    def select_soil_moisture_0_to_7cm(self) -> None:
         self.weather_variables.append("soil_moisture_0_to_7cm")
 
-    def soil_moisture_7_to_28cm(self) -> None:
+    def select_soil_moisture_7_to_28cm(self) -> None:
         self.weather_variables.append("soil_moisture_7_to_28cm")
 
-    def soil_moisture_28_to_100cm(self) -> None:
+    def select_soil_moisture_28_to_100cm(self) -> None:
         self.weather_variables.append("soil_moisture_28_to_100cm")
 
-    def soil_moisture_100_to_255cm(self) -> None:
+    def select_soil_moisture_100_to_255cm(self) -> None:
         self.weather_variables.append("soil_moisture_100_to_255cm")
 
-    def all(self) -> None:
-        self.temperature_2m()
-        self.relativehumidity_2m()
-        self.dewpoint_2m()
-        self.apparent_temperature()
-        self.pressure_msl()
-        self.surface_pressure()
-        self.precipitation()
-        self.rain()
-        self.snowfall()
-        self.cloudcover()
-        self.cloudcover_low()
-        self.cloudcover_mid()
-        self.cloudcover_high()
-        self.shortwave_radiation()
-        self.direct_radiation()
-        self.diffuse_radiation()
-        self.direct_normal_irradiance()
-        self.windspeed_10m()
-        self.windspeed_100m()
-        self.winddirection_10m()
-        self.winddirection_100m()
-        self.windgusts_10m()
-        self.et0_fao_evapotranspiration()
-        self.vapor_pressure_deficit()
-        self.soil_temperature_0_to_7cm()
-        self.soil_temperature_7_to_28cm()
-        self.soil_temperature_28_to_100cm()
-        self.soil_temperature_100_to_255cm()
-        self.soil_moisture_0_to_7cm()
-        self.soil_moisture_7_to_28cm()
-        self.soil_moisture_28_to_100cm()
-        self.soil_moisture_100_to_255cm()
+    def select_all(self) -> None:
+        self.select_temperature_2m()
+        self.select_relativehumidity_2m()
+        self.select_dewpoint_2m()
+        self.select_apparent_temperature()
+        self.select_pressure_msl()
+        self.select_surface_pressure()
+        self.select_precipitation()
+        self.select_rain()
+        self.select_snowfall()
+        self.select_cloudcover()
+        self.select_cloudcover_low()
+        self.select_cloudcover_mid()
+        self.select_cloudcover_high()
+        self.select_shortwave_radiation()
+        self.select_direct_radiation()
+        self.select_diffuse_radiation()
+        self.select_direct_normal_irradiance()
+        self.select_windspeed_10m()
+        self.select_windspeed_100m()
+        self.select_winddirection_10m()
+        self.select_winddirection_100m()
+        self.select_windgusts_10m()
+        self.select_et0_fao_evapotranspiration()
+        self.select_vapor_pressure_deficit()
+        self.select_soil_temperature_0_to_7cm()
+        self.select_soil_temperature_7_to_28cm()
+        self.select_soil_temperature_28_to_100cm()
+        self.select_soil_temperature_100_to_255cm()
+        self.select_soil_moisture_0_to_7cm()
+        self.select_soil_moisture_7_to_28cm()
+        self.select_soil_moisture_28_to_100cm()
+        self.select_soil_moisture_100_to_255cm()
