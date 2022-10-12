@@ -104,3 +104,30 @@ class TestWeatherAPIParameters():
         weather_api_parameters.hourly_parameter = weather_api_hourly_parameter
         assert (weather_api_parameters.get_hourly_parameter()
                 == ["temperature_2m"])
+
+    def test_get_query_parameters_base(self, fake_latitude, fake_longitude, fake_start_date, fake_end_date, weather_api_parameters):
+        weather_api_parameters.set_location(fake_latitude, fake_longitude)
+        weather_api_parameters.set_start_date(fake_start_date)
+        weather_api_parameters.set_end_date(fake_end_date)
+        query_base_string = f"latitude={fake_latitude}&longitude={fake_longitude}&start_date={fake_start_date}&end_date={fake_end_date}"
+        assert (weather_api_parameters.get_query_parameters()
+                == query_base_string)
+
+    def test_get_query_parameters_with_hourly(self, fake_latitude, fake_longitude, fake_start_date, fake_end_date):
+
+        weather_api_hourly_parameter = WeatherAPIHourlyParameter()
+        weather_api_hourly_parameter.temperature_2m()
+        weather_api_hourly_parameter.pressure_msl()
+        weather_api_hourly_parameter.diffuse_radiation()
+
+        weather_api_parameters = WeatherAPIParameters(
+            hourly_parameter=weather_api_hourly_parameter)
+        weather_api_parameters.set_location(fake_latitude, fake_longitude)
+        weather_api_parameters.set_start_date(fake_start_date)
+        weather_api_parameters.set_end_date(fake_end_date)
+
+        query_base_string = f"latitude={fake_latitude}&longitude={fake_longitude}&start_date={fake_start_date}&end_date={fake_end_date}"
+        query_hourly_string = "&hourly=temperature_2m,pressure_msl,diffuse_radiation"
+
+        assert (weather_api_parameters.get_query_parameters()
+                == query_base_string + query_hourly_string)
