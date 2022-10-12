@@ -28,6 +28,18 @@ class WeatherAPIParameters:
         self.end_date = end_date
         self.hourly_parameter = hourly_parameter
 
+    def get_query_parameters(self) -> str:
+        """Get the query parameters for the weather data to be fetched.
+
+        Args: None
+
+        Returns: query_parameters (str): (query string)"""
+        # latitude=52.52&longitude=13.41&start_date=2022-10-11&end_date=2022-10-11
+        query_string: str = f"latitude={self.latitude}&longitude={self.longitude}&start_date={self.start_date}&end_date={self.end_date}"
+        if self.hourly_parameter is not None:
+            query_string += f"&{self.hourly_parameter.get_query_string()}"
+        return query_string
+
     def get_hourly_parameter(self) -> list[str]:
         """Get the hourly parameter's weather variables to build the hourly query string.
 
