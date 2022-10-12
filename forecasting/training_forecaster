@@ -3,25 +3,11 @@ from forecasting.training_dataset import TrainingDataset
 from darts.models.forecasting.regression_ensemble_model import RegressionEnsembleModel
 
 class TrainingForecaster(Forecaster_ABC):
-    def __init__(self, tributary_model_builder=None, tributary_model_params={}, regression_model=None, train_n_points=720, **kwargs) -> None:
+    def __init__(self, ensemble, **kwargs) -> None:
         super().__init__(**kwargs)
         
-        self.tributary_models = self.build_tributary_models(tributary_model_builder, tributary_model_params)
-        self.ensemble = RegressionEnsembleModel(self.tributary_models, train_n_points, regression_model=regression_model)
+        self.ensemble = ensemble
         self.dataset = TrainingDataset(catchment_data=self.catchment_data)
-
-
-    def build_tributary_models(self, tributary_model_builder, tributary_model_params):
-        tributary_models = []
-        for i in range(self.num_tributary_models):
-            model = tributary_model_builder(work_dir=self.work_dir, 
-                                    model_name=str(i), 
-                                    force_reset=False, 
-                                    save_checkpoints=True, 
-                                    **tributary_model_params)
-            tributary_models.append(model)
-
-        return tributary_models
 
     def fit(self):
         self.ensemble.fit(self.dataset.y, past_covariates=self.dataset.Xs)
