@@ -23,7 +23,7 @@ class TestWeatherAPIHourlyParameter():
 
     def test_get_weather_variable_names_not_empty(self):
         weather_api_hourly_parameter = WeatherAPIHourlyParameter()
-        weather_api_hourly_parameter.temperature_2m()
+        weather_api_hourly_parameter.select_temperature_2m()
         assert weather_api_hourly_parameter.get_weather_variable_names() == [
             "temperature_2m"]
 
@@ -32,8 +32,8 @@ class TestWeatherAPIHourlyParameter():
 
     def test_get_query_string_not_empty(self):
         weather_api_hourly_parameter = WeatherAPIHourlyParameter()
-        weather_api_hourly_parameter.temperature_2m()
-        weather_api_hourly_parameter.pressure_msl()
-        weather_api_hourly_parameter.diffuse_radiation()
+        weather_api_hourly_parameter.select_temperature_2m()
+        weather_api_hourly_parameter.select_pressure_msl()
+        weather_api_hourly_parameter.select_diffuse_radiation()
         assert weather_api_hourly_parameter.get_query_string(
         ) == "hourly=temperature_2m,pressure_msl,diffuse_radiation"
