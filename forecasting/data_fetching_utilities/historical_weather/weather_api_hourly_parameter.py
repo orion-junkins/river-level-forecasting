@@ -6,6 +6,12 @@ class WeatherAPIHourlyParameter():
         returns: list of valid weather_variables to build query string for the hourly parameter."""
         self.weather_variables: list[str] = []
 
+    def get_query_string(self) -> str:
+        """Get query string for hourly parameter.
+
+        returns: query string for hourly parameter."""
+        return "hourly=" + ",".join(self.weather_variables)
+
     def get_weather_variable_names(self) -> list[str]:
         """Get list of variable names to be included in query hourly parameter.
 
