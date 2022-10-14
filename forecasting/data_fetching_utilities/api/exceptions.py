@@ -1,0 +1,2 @@
+class RestInvokerException(Exception):
+    pass
