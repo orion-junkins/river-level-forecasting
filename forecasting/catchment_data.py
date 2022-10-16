@@ -1,16 +1,12 @@
-from data.weather_locations import all_weather_locs
-from forecasting.data_providers.weather_provider import WeatherProvider
-from forecasting.data_providers.level_provider import LevelProvider
-
 class CatchmentData:
-    def __init__(self, catchment_name, usgs_gauge_id, num_recent_samples=40*24) -> None:
+    def __init__(self, catchment_name, weather_provider, level_provider, num_recent_samples=40*24) -> None:
         self.name = catchment_name
-        self.weather_provider = WeatherProvider(all_weather_locs[catchment_name])
-        self.level_provider = LevelProvider(str(usgs_gauge_id))
+        self.weather_provider = weather_provider
+        self.level_provider = level_provider
         self.num_recent_samples = num_recent_samples
 
-        self._all_current = None 
-        self._all_historical = None
+        self._all_current = (None, None) 
+        self._all_historical = (None, None) 
  
     @property
     def num_data_sets(self):
@@ -21,7 +17,7 @@ class CatchmentData:
 
     @property
     def all_current(self):
-        if self._all_current == None:
+        if self._all_current == (None, None):
             self._get_all_current()
         
         return self._all_current
@@ -37,12 +33,12 @@ class CatchmentData:
 
     @property
     def all_historical(self):
-        if self._all_historical is None:
+        if self._all_historical == (None, None):
             self._get_all_historical()
 
         return self._all_historical 
 
     def _get_all_historical(self):
-        historical_weather = self.weather_provider.fetch_historical_weather(self.weather_locs, self.name) 
-        historical_level = self.level_provider.fetch_historical_level(self.usgs_gauge_id)
+        historical_weather = self.weather_provider.fetch_historical_weather() 
+        historical_level = self.level_provider.fetch_historical_level()
         self._all_historical = (historical_weather, historical_level)
