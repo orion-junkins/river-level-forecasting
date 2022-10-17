@@ -17,3 +17,4 @@ dependencies:
     # - packageName==0.123
     - dataretrieval # Package for fetching NWIS river level dataa
     - simplekml     # Weather location KML generation
+    - geopy         # Utilites for handling location data
