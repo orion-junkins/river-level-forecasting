@@ -1,3 +1,4 @@
+import os
 import simplekml
 from .coordinate import Coordinate
 
@@ -59,7 +60,7 @@ class LocationGenerator:
         self.coordinates = coordinates
 
 
-    def build_kml(self, filename='TEST_KML.kml'):
+    def save_to_kml(self, filepath=os.path.join('TEST_KML.kml')):
         kml=simplekml.Kml()
         coordinates = self.coordinates
         for coordinate in coordinates:
@@ -68,4 +69,4 @@ class LocationGenerator:
         linestring = kml.newlinestring(name="bound")
         linestring.coords = [(self.x_min, self.y_min),(self.x_min, self.y_max), (self.x_max, self.y_max), (self.x_max, self.y_min), (self.x_min, self.y_min)]
 
-        kml.save(filename)
+        kml.save(filepath)

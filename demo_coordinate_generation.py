@@ -1,5 +1,6 @@
 # This file is an interactive, experimental space for generating data site coordinates 
 #%%
+import os
 from forecasting.data_fetching_utilities.coordinate import Coordinate
 from forecasting.data_fetching_utilities.location_generator import LocationGenerator
 
@@ -19,5 +20,9 @@ print(imposer.coordinates)
 
 #%%
 # Build a KML file if desired
-imposer.build_kml(filename="KML_demo_illinois_kerby.KML")
+out_dir = "KML_demos"
+os.makedirs(out_dir, exist_ok=True)
+filepath = os.path.join(out_dir, "illinois-kerby.KML")
+
+imposer.save_to_kml(filepath=filepath)
 # %%
