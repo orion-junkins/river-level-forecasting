@@ -16,3 +16,4 @@ dependencies:
     # Note: to version lock a pip package, use '==' not '=' ie:
     # - packageName==0.123
     - dataretrieval
+    - simplekml # Weather location KML generation
