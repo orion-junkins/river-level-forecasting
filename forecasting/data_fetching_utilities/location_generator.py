@@ -1,72 +1,79 @@
 import os
 import simplekml
+
 from .coordinate import Coordinate
 
 class LocationGenerator:
     """
-    Driver class for grid imposition given the bottom left, and top right coordinates of an area.
+    Driver class for generating locations given the bottom left and top right coordinates of a rectangular area.
     """
     def __init__(self, bottom_left, top_right, separation_distance=0.025):
-        self.x_min = bottom_left.x
-        self.y_min = bottom_left.y
-        self.x_max = top_right.x
-        self.y_max = top_right.y
+        self.lon_min = bottom_left.lon
+        self.lat_min = bottom_left.lat
+        self.lon_max = top_right.lon
+        self.lat_max = top_right.lat
         self.separation_distance = separation_distance
 
-        self.coordinates = [] # list of coordinates
-        self.get_coordinates()
+        assert(self.separation_distance > 0.0)
+        assert(self.lat_min < self.lat_max)
+        assert(self.lon_min < self.lon_max)
+
+        self.coordinates = self._get_coordinates()
+
         
     @property
-    def x_excess(self):
-        return (0.5 * (self.x_max - self.x_min) % self.separation_distance)
+    def lon_excess(self):
+        return (0.5 * (self.lon_max - self.lon_min) % self.separation_distance)
+    
     
     @property
-    def y_excess(self):
-        return (0.5 * (self.y_max - self.y_min) % self.separation_distance)
+    def lat_excess(self):
+        return (0.5 * (self.lat_max - self.lat_min) % self.separation_distance)
+    
 
-    @property
-    def coordinate_xs(self):
-        xs = []
-        x_start = self.x_min + self.x_excess
-        x_end = self.x_max - self.x_excess
+    def _coordinate_lons(self):
+        lons = []
+        lon_start = self.lon_min + self.lon_excess
+        lon_end = self.lon_max - self.lon_excess
 
-        while x_start < x_end:
-            xs.append(x_start)
-            x_start += self.separation_distance
+        while lon_start < lon_end:
+            lons.append(lon_start)
+            lon_start += self.separation_distance
 
-        xs.append(x_end)
+        lons.append(lon_end)
 
-        return xs
+        return lons
 
-    @property
-    def coordinate_ys(self):
-        ys = []
-        y_start = self.y_min + self.y_excess
-        y_end = self.y_max - self.y_excess
 
-        while y_start < y_end:
-            ys.append(y_start)
-            y_start += self.separation_distance
+    def _coordinate_lats(self):
+        lats = []
+        lat_start = self.lat_min + self.lat_excess
+        lat_end = self.lat_max - self.lat_excess
 
-        ys.append(y_end)
-        return ys
+        while lat_start < lat_end:
+            lats.append(lat_start)
+            lat_start += self.separation_distance
 
-    def get_coordinates(self):
+        lats.append(lat_end)
+        return lats
+
+
+    def _get_coordinates(self):
         coordinates = []
-        for y in self.coordinate_ys:
-            for x in self.coordinate_xs:
-                coordinate = Coordinate(x, y)
+        for lat in self._coordinate_lats():
+            for lon in self._coordinate_lons():
+                coordinate = Coordinate(lon, lat)
                 coordinates.append(coordinate)
-        self.coordinates = coordinates
+        return coordinates
 
 
-    def save_to_kml(self, filepath=os.path.join('TEST_KML.kml')):
+    def save_to_kml(self, filepath=os.path.join('TEST_KML.kml'), render_bounding_box=True):
         kml=simplekml.Kml()
-        coordinates = self.coordinates
-        for coordinate in coordinates:
-            kml.newpoint(name=str(coordinate), coords=[(coordinate.x,coordinate.y)])
+        for coordinate in self.coordinates:
+            kml.newpoint(name=str(coordinate), coords=[(coordinate.lon,coordinate.lat)])
 
-        linestring = kml.newlinestring(name="bound")
-        linestring.coords = [(self.x_min, self.y_min),(self.x_min, self.y_max), (self.x_max, self.y_max), (self.x_max, self.y_min), (self.x_min, self.y_min)]
+        if render_bounding_box:
+            linestring = kml.newlinestring(name="bound")
+            linestring.coords = [(self.lon_min, self.lat_min),(self.lon_min, self.lat_max), (self.lon_max, self.lat_max), (self.lon_max, self.lat_min), (self.lon_min, self.lat_min)]
 
         kml.save(filepath)
