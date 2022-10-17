@@ -4,6 +4,8 @@ from forecasting.data_fetching_utilities.coordinate import Coordinate
 from forecasting.data_fetching_utilities.location_generator import \
     LocationGenerator
 
+FLOAT_COMPARISON_PRECISION = 0.0001
+
 
 @pytest.fixture
 def bottom_left():
@@ -55,28 +57,29 @@ def test_top_right(location_generator):
 
 
 def test_lat_separation(location_generator):
-    expected_result = 7.5073669164334405
-    assert (location_generator.lat_separation == expected_result)
+    expected_result = 7.50737
+    assert (abs(location_generator.lat_separation - expected_result) < FLOAT_COMPARISON_PRECISION)
 
 
 def test_lon_separation(location_generator):
-    expected_result = 11.192053240167708
+    expected_result = 11.19205
     location_generator.save_to_kml()
-    assert (location_generator.lon_separation == expected_result)
+    assert (abs(location_generator.lon_separation - expected_result) < FLOAT_COMPARISON_PRECISION)
 
 
 def test_lat_excess(location_generator):
-    expected_result = 2.9926330835665595
-    assert (location_generator.lat_excess == expected_result)
+    expected_result = 2.99263
+    assert (abs(location_generator.lat_excess - expected_result) < FLOAT_COMPARISON_PRECISION)
 
 
 def test_lon_excess(location_generator):
-    expected_result = 1.8079467598322925
+    expected_result = 1.80795
     location_generator.save_to_kml()
-    assert (location_generator.lon_excess == expected_result)
+    assert (abs(location_generator.lon_excess - expected_result) < FLOAT_COMPARISON_PRECISION)
 
 
 def test_coordinates(location_generator):
-    expected_result = [Coordinate(lat=2.9926330835665595, lon=1.8079467598322925), Coordinate(lat=2.9926330835665595, lon=13.0), Coordinate(lat=2.9926330835665595, lon=24.19205324016771), Coordinate(lat=10.5, lon=1.8079467598322925), Coordinate(lat=10.5, lon=13.0), Coordinate(lat=10.5, lon=24.19205324016771), Coordinate(lat=18.00736691643344, lon=1.8079467598322925), Coordinate(lat=18.00736691643344, lon=13.0), Coordinate(lat=18.00736691643344, lon=24.19205324016771)]
-
-    assert (location_generator.coordinates == expected_result)
+    expected_result = [Coordinate(lat=2.99263, lon=1.80795), Coordinate(lat=2.99263, lon=13.0), Coordinate(lat=2.99263, lon=24.19205), Coordinate(lat=10.5, lon=1.80795), Coordinate(lat=10.5, lon=13.0), Coordinate(lat=10.5, lon=24.19205), Coordinate(lat=18.00737, lon=1.80795), Coordinate(lat=18.00737, lon=13.0), Coordinate(lat=18.00737, lon=24.19205)]
+    for (expected, generated) in zip(expected_result, location_generator.coordinates):
+        assert (abs(expected.lat - generated.lat) < FLOAT_COMPARISON_PRECISION)
+        assert (abs(expected.lon - generated.lon) < FLOAT_COMPARISON_PRECISION)
