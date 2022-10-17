@@ -169,7 +169,7 @@ class LocationGenerator:
         return coordinates
 
     def save_to_kml(self, filepath=os.path.join('TEST_KML.kml'), render_bounding_box=True):
-        """Save the generated coordinates to a kml file. Each coordinate will have an integer id and a name of the form "(lon, lat)".
+        """Save the generated coordinates to a kml file. Each coordinate will have an integer id and a name corresponding to the string repr of the Coordinate instance.
 
         Args:
             filepath (os.path, optional): Destination path to which KML will be saved. Must end in ".kml". Defaults to os.path.join('TEST_KML.kml').
@@ -177,10 +177,14 @@ class LocationGenerator:
         """
         kml = simplekml.Kml()
         for coordinate in self.coordinates:
-            kml.newpoint(name=str(coordinate), coords=[tuple(coordinate)])
+            kml.newpoint(name=str(coordinate), coords=[tuple(reversed(tuple(coordinate)))])
 
         if render_bounding_box:
             linestring = kml.newlinestring(name="bounding_box")
-            linestring.coords = [tuple(self.bottom_left), tuple(self.bottom_right), tuple(self.top_right), tuple(self.top_left), tuple(self.bottom_left)]
+            linestring.coords = [tuple(reversed(tuple(self.bottom_left))),
+                                 tuple(reversed(tuple(self.bottom_right))),
+                                 tuple(reversed(tuple(self.top_right))),
+                                 tuple(reversed(tuple(self.top_left))),
+                                 tuple(reversed(tuple(self.bottom_left)))]
 
         kml.save(filepath)
