@@ -16,4 +16,6 @@ dependencies:
     # Note: to version lock a pip package, use '==' not '=' ie:
     # - packageName==0.123
     - darts==0.22   # Core Timeseries forecasting library (includes Pytorch)
-    - dataretrieval
+    - dataretrieval # Package for fetching NWIS river level dataa
+    - simplekml     # Weather location KML generation
+    - geopy         # Utilites for handling location data
