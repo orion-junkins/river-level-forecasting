@@ -10,6 +10,7 @@ dependencies:
   - python=3.10
   - flake8      # Linter for style adherence
   - pytest      # Unit testing framework
+  - boto3       # AWS S3 interaction
   - pip         # Package installer for dependencies not available through Conda
   - pip:
     # Add pip packages which are not available through conda here

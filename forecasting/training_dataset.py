@@ -28,7 +28,7 @@ class TrainingDataset:
     def load_data(self):
         historical_weather, historical_level = self.catchment_data.all_historical_data
         Xs_historical, y_historical = pre_process(historical_weather, historical_level)
-        return (Xs_historical, y_historical)   
+        return (Xs_historical, y_historical)
 
     def _partition(self, test_size, validation_size):
         """

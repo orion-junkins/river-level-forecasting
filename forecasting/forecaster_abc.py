@@ -21,7 +21,7 @@ class Forecaster_ABC(ABC):
     @property
     def ensemble_save_path(self):
         return os.path.join(self.work_dir, self.name)
-    
+
     @property
     def num_tributary_models(self):
         return self.catchment_data.num_data_sets
