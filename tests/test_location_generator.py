@@ -63,7 +63,6 @@ def test_lat_separation(location_generator):
 
 def test_lon_separation(location_generator):
     expected_result = 11.19205
-    location_generator.save_to_kml()
     assert (abs(location_generator.lon_separation - expected_result) < FLOAT_COMPARISON_PRECISION)
 
 
@@ -74,7 +73,6 @@ def test_lat_excess(location_generator):
 
 def test_lon_excess(location_generator):
     expected_result = 1.80795
-    location_generator.save_to_kml()
     assert (abs(location_generator.lon_excess - expected_result) < FLOAT_COMPARISON_PRECISION)
 
 

@@ -1,5 +1,7 @@
-import sys
 import logging
+import sys
+
+
 def build_logger(log_level='INFO', name='NewLogger', log_file='logfile.log'):
     logger = logging.getLogger(name=name)
     fileHandler = logging.FileHandler(log_file)
