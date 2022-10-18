@@ -23,8 +23,8 @@ class CatchmentData:
         return self._all_current
 
     def _get_all_current(self):
-        current_weather = self.weather_provider.fetch_current_weather(hours_to_fetch=self.past_hours_to_fetch)
-        recent_level = self.level_provider.fetch_recent_level(hours_to_fetch=self.num_recent_samples)
+        current_weather = self.weather_provider.fetch_current_weather(self.num_recent_samples)
+        recent_level = self.level_provider.fetch_recent_level(self.num_recent_samples)
 
         self._all_current = (current_weather, recent_level)
 
