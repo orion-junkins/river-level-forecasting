@@ -1,5 +1,6 @@
 from general_utilities.dataset_utilities import pre_process
 
+
 class InferenceDataset:
     """
     Dataset abstraction that fetches, processes and exposes needed X and y datasets for inference given a CatchmentData instance.
@@ -17,10 +18,9 @@ class InferenceDataset:
         self.Xs, self.y = self._get_data()
 
         # TODO add validation call - ie all X sets are same size, match y sets.
-    
 
     def _get_data(self, update=False):
-        # Update if specified 
+        # Update if specified
         if update:
             self.catchment_data.update_for_inference()
 
@@ -34,8 +34,7 @@ class InferenceDataset:
         Xs_current = self.scaler.transform(Xs_current)
         y_current = self.target_scaler.transform(y_current)
 
-        return(Xs_current, y_current)
-
+        return (Xs_current, y_current)
 
     def update(self):
         """
