@@ -32,6 +32,15 @@ Following changes to the environment.yml file, run the following command to upda
 conda env update -f environment.yml
 ```
 
+# Install Package Locally
+
+From the root directory of the repo run the following command:
+```
+pip install -e .
+```
+
+This will install the package as 'editable' meaning that any changes to the repo will automatically be reflected the next time you import a module. You will not have to reinstall the package.
+
 # Startup
 The reset of the README will serve as a high level walkthrough of the core forecasting code. 
 
