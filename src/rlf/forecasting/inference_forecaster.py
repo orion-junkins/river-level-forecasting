@@ -1,8 +1,8 @@
 from darts.models.forecasting.regression_ensemble_model import \
     RegressionEnsembleModel
 
-from forecasting.forecaster_abc import Forecaster_ABC
-from forecasting.inference_dataset import InferenceDataset
+from rlf.forecasting.forecaster_abc import Forecaster_ABC
+from rlf.forecasting.inference_dataset import InferenceDataset
 
 
 class InferenceForecaster(Forecaster_ABC):

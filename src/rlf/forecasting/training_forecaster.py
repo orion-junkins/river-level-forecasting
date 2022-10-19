@@ -1,5 +1,5 @@
-from forecasting.forecaster_abc import Forecaster_ABC
-from forecasting.training_dataset import TrainingDataset
+from rlf.forecasting.forecaster_abc import Forecaster_ABC
+from rlf.forecasting.training_dataset import TrainingDataset
 
 
 class TrainingForecaster(Forecaster_ABC):

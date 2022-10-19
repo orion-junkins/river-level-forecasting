@@ -1,9 +1,9 @@
 import os
 
-import simplekml
 from geopy import distance
+import simplekml
 
-from .coordinate import Coordinate
+from rlf.forecasting.data_fetching_utilities.coordinate import Coordinate
 
 
 class LocationGenerator:

@@ -1,4 +1,4 @@
-from general_utilities.dataset_utilities import pre_process
+from rlf.forecasting.general_utilities.dataset_utilities import pre_process
 
 
 class InferenceDataset:
