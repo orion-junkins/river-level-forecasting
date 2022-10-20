@@ -46,7 +46,7 @@ class OpenMeteoAdapter():
             "longitude": self.longitude,
             "start_date": self.start_date,
             "end_date": self.end_date,
-            "hourly_parameters": self.hourly_parameters
+            "hourly": self.hourly_parameters
         }
         return parameters
 
