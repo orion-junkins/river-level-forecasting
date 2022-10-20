@@ -1,4 +1,4 @@
-from forecasting.data_fetching_utilities.open_meteo.hourly import Hourly
+from forecasting.data_fetching_utilities.open_meteo.open_meteo_hourly_parameters import OpenMeteoHourlyParameters
 
 
 class OpenMeteoAdapter():
@@ -12,7 +12,7 @@ class OpenMeteoAdapter():
                  longitude: float = -121.31,
                  start_date: str = None,
                  end_date: str = None,
-                 hourly: Hourly().get_variables() = None):
+                 hourly_parameters: OpenMeteoHourlyParameters().get_variables() = None):
         """Default Location: Bend, OR (44.06, -121.31)"""
 
         if latitude < -90 or latitude > 90:
@@ -28,7 +28,7 @@ class OpenMeteoAdapter():
         self.longitude = longitude
         self.start_date = start_date
         self.end_date = end_date
-        self.hourly = hourly
+        self.hourly_parameters = hourly_parameters
 
     def get_payload(self) -> dict:
         payload = {
@@ -46,12 +46,12 @@ class OpenMeteoAdapter():
             "longitude": self.longitude,
             "start_date": self.start_date,
             "end_date": self.end_date,
-            "hourly": self.hourly
+            "hourly_parameters": self.hourly_parameters
         }
         return parameters
 
-    def set_hourly(self, hourly: dict) -> None:
-        self.hourly = hourly
+    def set_hourly_parameters(self, hourly_parameters: dict) -> None:
+        self.hourly_parameters = hourly_parameters
 
     def set_location(self, latitude: float, longitude: float) -> None:
         """Args: Geographical WGS84 coordinate"""
