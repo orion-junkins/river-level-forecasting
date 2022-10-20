@@ -171,3 +171,6 @@ class ResponseModel():
             **hourly_units)
         self.hourly = [] if not hourly else HourlyParametersModel(
             **hourly)
+
+    def hourly_parameters(self) -> dict:
+        return self.hourly.__dict__
