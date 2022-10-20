@@ -59,7 +59,7 @@ class TestOpenMeteoAdapter():
         assert hasattr(weather_api_parameters, "end_date")
 
     def test_has_hourly_parameter(self, weather_api_parameters):
-        assert hasattr(weather_api_parameters, "hourly")
+        assert hasattr(weather_api_parameters, "hourly_parameters")
 
     def test_has_get_payload_method(self, weather_api_parameters):
         assert hasattr(weather_api_parameters, "get_payload")
