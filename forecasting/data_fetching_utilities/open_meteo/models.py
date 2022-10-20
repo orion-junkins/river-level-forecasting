@@ -1,7 +1,7 @@
 from typing import Optional
 
 
-class HourlyModel():
+class HourlyParametersModel():
 
     def __init__(self,
                  time: Optional[list[str]] = None,
@@ -157,7 +157,7 @@ class ResponseModel():
                  timezone_abbreviation: Optional[str] = None,
                  elevation: Optional[int] = None,
                  hourly_units: Optional[HourlyUnitsModel] = None,
-                 hourly: Optional[HourlyModel] = None
+                 hourly_parameters: Optional[HourlyParametersModel] = None
                  ):
 
         self.latitude = latitude
@@ -169,4 +169,5 @@ class ResponseModel():
         self.elevation = elevation
         self.hourly_units = [] if not hourly_units else HourlyUnitsModel(
             **hourly_units)
-        self.hourly = [] if not hourly else HourlyModel(**hourly)
+        self.hourly_parameters = [] if not hourly_parameters else HourlyParametersModel(
+            **hourly_parameters)
