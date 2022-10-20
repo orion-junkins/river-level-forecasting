@@ -1,6 +1,6 @@
 import pytest
 
-from forecasting.data_fetching_utilities.open_meteo.models import ResponseModel, HourlyModel, HourlyUnitsModel
+from forecasting.data_fetching_utilities.open_meteo.models import ResponseModel, HourlyParametersModel, HourlyUnitsModel
 
 
 class TestResponseModel():
@@ -21,22 +21,22 @@ class TestResponseModel():
         assert isinstance(response.hourly_units, HourlyUnitsModel)
 
     def test_has_type_hourly_or_empty(self, response):
-        assert isinstance(response.hourly, list)
-        response.hourly = HourlyModel()
-        assert isinstance(response.hourly, HourlyModel)
+        assert isinstance(response.hourly_parameters, list)
+        response.hourly_parameters = HourlyParametersModel()
+        assert isinstance(response.hourly_parameters, HourlyParametersModel)
 
 
-class TestHourlyModel():
+class TestHourlyParametersModel():
 
     @pytest.fixture
     def hourly(self):
-        return HourlyModel()
+        return HourlyParametersModel()
 
     def test_initialization(self, hourly):
         try:
             hourly
         except NameError:
-            pytest.fail("HourlyModel failed to initialize")
+            pytest.fail("HourlyParametersModel failed to initialize")
 
 
 class TestHourlyUnitsModel():
