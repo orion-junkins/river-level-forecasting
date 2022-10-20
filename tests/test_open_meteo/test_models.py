@@ -21,9 +21,9 @@ class TestResponseModel():
         assert isinstance(response.hourly_units, HourlyUnitsModel)
 
     def test_has_type_hourly_or_empty(self, response):
-        assert isinstance(response.hourly_parameters, list)
-        response.hourly_parameters = HourlyParametersModel()
-        assert isinstance(response.hourly_parameters, HourlyParametersModel)
+        assert isinstance(response.hourly, list)
+        response.hourly = HourlyParametersModel()
+        assert isinstance(response.hourly, HourlyParametersModel)
 
 
 class TestHourlyParametersModel():
