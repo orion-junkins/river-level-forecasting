@@ -34,7 +34,7 @@ class WeatherProvider():
 
         response_model = ResponseModel(**response.data)
         print(response_model.hourly)
-        df = pd.DataFrame(response_model.hourly.__dict__)
+        df = pd.DataFrame(response_model.hourly_parameters())
         df["latitude"] = response_model.latitude
         df["longitude"] = response_model.longitude
         df["generationtime_ms"] = response_model.generationtime_ms
