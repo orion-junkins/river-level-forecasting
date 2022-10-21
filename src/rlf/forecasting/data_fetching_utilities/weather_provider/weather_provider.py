@@ -1,5 +1,5 @@
 from rlf.forecasting.data_fetching_utilities.coordinate import Coordinate
-from rlf.forecasting.data_fetching_utilities.weather_provider.datum import Datum
+from rlf.forecasting.data_fetching_utilities.weather_provider.weather_datum import WeatherDatum
 from rlf.forecasting.data_fetching_utilities.weather_provider.open_meteo.open_meteo_adapter import OpenMeteoAdapter
 from rlf.forecasting.data_fetching_utilities.weather_provider.api.api import RequestBuilder
 from rlf.forecasting.data_fetching_utilities.weather_provider.open_meteo.models import ResponseModel
@@ -16,7 +16,7 @@ class WeatherProvider():
         """
         self.coordinates = coordinates
 
-    def fetch_historical_weather(self, start_date: str, end_date: str) -> list[Datum]:
+    def fetch_historical_weather(self, start_date: str, end_date: str) -> list[WeatherDatum]:
         """Fetch historical weather for all coordinates
 
         Args:
@@ -24,7 +24,7 @@ class WeatherProvider():
             end_date (str, optional): iso8601 format YYYY-MM-DD. Defaults to "2021-01-02".
 
         Returns:
-            list[Datum]: A list of Datum objects containing the weather data and metadata about the location or datum
+            list[WeatherDatum]: A list of WeatherDatum objects containing the weather data and metadata about the location or datum
         """
         datums = []
         for coordinate in self.coordinates:
@@ -33,7 +33,7 @@ class WeatherProvider():
             datums.append(datum)
         return datums
 
-    def fetch_historical_weather_at_datum(self, longitude: float, latitude: float, start_date: str, end_date: str) -> Datum:
+    def fetch_historical_weather_at_datum(self, longitude: float, latitude: float, start_date: str, end_date: str) -> WeatherDatum:
         """Fetch historical weather for a single coordinate or datum
 
         Args:
@@ -43,7 +43,7 @@ class WeatherProvider():
             end_date (str): iso8601 format YYYY-MM-DD
 
         Returns:
-            Datum: A Datum object containing the weather data and metadata about a coordinate (https://en.wikipedia.org/wiki/Geodetic_datum)
+            WeatherDatum: A Datum object containing the weather data and metadata about a coordinate (https://en.wikipedia.org/wiki/Geodetic_datum)
         """        """"""
         open_meteo_archive_api_adapter = OpenMeteoAdapter(hostname="archive-api.open-meteo.com", latitude=latitude, longitude=longitude,
                                                           start_date=start_date, end_date=end_date,)
@@ -55,8 +55,8 @@ class WeatherProvider():
 
         response_model = ResponseModel(**response.data)
 
-        datum = Datum(longitude=response_model.longitude, latitude=response_model.latitude,
-                      elevation=response_model.elevation, utc_offset_seconds=response_model.utc_offset_seconds,
-                      timezone=response_model.timezone, hourly_parameters=response_model.hourly_parameters())
+        datum = WeatherDatum(longitude=response_model.longitude, latitude=response_model.latitude,
+                             elevation=response_model.elevation, utc_offset_seconds=response_model.utc_offset_seconds,
+                             timezone=response_model.timezone, hourly_parameters=response_model.hourly_parameters())
 
         return datum

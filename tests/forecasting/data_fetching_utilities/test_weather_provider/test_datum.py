@@ -1,13 +1,13 @@
 import pandas as pd
 import pytest
 
-from rlf.forecasting.data_fetching_utilities.weather_provider.datum import Datum
+from rlf.forecasting.data_fetching_utilities.weather_provider.weather_datum import WeatherDatum
 
 
 @pytest.fixture
 def datum():
-    return Datum(longitude=0, latitude=0, elevation=0, utc_offset_seconds=0,
-                 timezone="UTC", hourly_parameters={})
+    return WeatherDatum(longitude=0, latitude=0, elevation=0, utc_offset_seconds=0,
+                        timezone="UTC", hourly_parameters={})
 
 
 def test_get_hourly_parameters_returns_dict(datum):

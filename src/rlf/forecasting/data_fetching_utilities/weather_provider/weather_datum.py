@@ -1,7 +1,9 @@
+from dataclasses import dataclass
 import pandas as pd
 
 
-class Datum():
+@dataclass
+class WeatherDatum():
 
     def __init__(self, longitude: float, latitude: float, elevation: float,
                  utc_offset_seconds: float, timezone: str, hourly_parameters: dict):
