@@ -24,19 +24,13 @@ class Datum():
         self.timezone = timezone
         self.hourly_parameters = hourly_parameters
 
-    def get_hourly_parameters(self, as_pandas_data_frame: bool = True) -> pd.DataFrame or dict:
+    def get_hourly_parameters(self, as_) -> pd.DataFrame:
         """Get the hourly parameters of the location point
 
-        Args:
-            as_pandas_data_frame (bool, optional): True to build a DataFrame. Defaults to True.
-
         Returns:
-            pd.DataFrame or dict: choose from dataframe or dictionary
-        """        """"""
-        if as_pandas_data_frame:
-            return pd.DataFrame(self.hourly_parameters)
-        else:
-            return self.hourly_parameters
+            pd.DataFrame: hourly parameters
+        """
+        return pd.DataFrame(self.hourly_parameters)
 
     def get_longitude(self) -> float:
         """WGS84 datum longitude
