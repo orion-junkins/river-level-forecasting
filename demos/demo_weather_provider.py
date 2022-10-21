@@ -1,6 +1,6 @@
 
 # %%
-from rlf.forecasting.data_fetching_utilities.data_providers.weather_provider import WeatherProvider
+from rlf.forecasting.data_fetching_utilities.weather_provider.weather_provider import WeatherProvider
 from rlf.forecasting.data_fetching_utilities.coordinate import Coordinate
 
 coordinates = [Coordinate(lat=52.52, lon=13.40),
