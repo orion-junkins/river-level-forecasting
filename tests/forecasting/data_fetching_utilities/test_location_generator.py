@@ -1,7 +1,7 @@
 import pytest
 
-from forecasting.data_fetching_utilities.coordinate import Coordinate
-from forecasting.data_fetching_utilities.location_generator import \
+from rlf.forecasting.data_fetching_utilities.coordinate import Coordinate
+from rlf.forecasting.data_fetching_utilities.location_generator import \
     LocationGenerator
 
 FLOAT_COMPARISON_PRECISION = 0.0001

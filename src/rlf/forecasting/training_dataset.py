@@ -1,6 +1,7 @@
 from darts.dataprocessing.transformers import Scaler
-from general_utilities.dataset_utilities import pre_process
 from sklearn.preprocessing import MinMaxScaler
+
+from rlf.forecasting.general_utilities.dataset_utilities import pre_process
 
 
 class TrainingDataset:

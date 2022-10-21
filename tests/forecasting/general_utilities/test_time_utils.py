@@ -1,7 +1,6 @@
 import pytest
 
-from forecasting.general_utilities.time_utils import \
-    convert_timestamp_to_datetime
+from rlf.forecasting.general_utilities.time_utils import convert_timestamp_to_datetime
 
 
 @pytest.fixture

@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from forecasting.catchment_data import CatchmentData
+from rlf.forecasting.catchment_data import CatchmentData
 
 
 def level_df(num_samples=100):
