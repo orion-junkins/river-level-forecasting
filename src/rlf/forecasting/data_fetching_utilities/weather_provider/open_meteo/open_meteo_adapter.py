@@ -1,9 +1,8 @@
-HOURLY_PARAMETERS = ["temperature_2m"]
+from rlf.forecasting.data_fetching_utilities.weather_provider.open_meteo.parameters import get_hourly_parameters
 
 
 class OpenMeteoAdapter():
-    """Adapts the OpenMeteo API to be used by the RequestBuilder 
-    """
+    """Adapts the OpenMeteo API to be used by the RequestBuilder"""
 
     def __init__(self,
                  latitude: float,
@@ -14,7 +13,7 @@ class OpenMeteoAdapter():
                  hostname: str = "archive-api.open-meteo.com",
                  version: str = "v1",
                  path: str = "era5",
-                 hourly_parameters: list[str] = HOURLY_PARAMETERS):
+                 hourly_parameters: list[str] = get_hourly_parameters()) -> None:
         """Adapts the OpenMeteo API to be used by the RequestBuilder
 
         Args:
@@ -67,14 +66,6 @@ class OpenMeteoAdapter():
             "hourly": self.hourly_parameters
         }
         return parameters
-
-    def set_hourly_parameters(self, hourly_parameters: dict) -> None:
-        """The hourly parameters to use in a request
-
-        Args:
-            hourly_parameters (dict): The parameters to use in a request
-        """
-        self.hourly_parameters = hourly_parameters
 
     def set_location(self, latitude: float, longitude: float) -> None:
         """Set the geographical location
