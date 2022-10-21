@@ -5,8 +5,8 @@ class OpenMeteoAdapter():
     """Adapts the OpenMeteo API to be used by the RequestBuilder"""
 
     def __init__(self,
-                 latitude: float,
                  longitude: float,
+                 latitude: float,
                  start_date: str,
                  end_date: str,
                  protocol: str = "https",
@@ -27,14 +27,14 @@ class OpenMeteoAdapter():
             end_date (str, optional): ISO8601 date (yyyy-mm-dd). Defaults to None.
             hourly_parameters (OpenMeteoHourlyParameters, optional): The parameters to use. Defaults to None.
         """
+        self.longitude = longitude
+        self.latitude = latitude
+        self.start_date = start_date
+        self.end_date = end_date
         self.protocol = protocol
         self.hostname = hostname
         self.version = version
         self.path = path
-        self.latitude = latitude
-        self.longitude = longitude
-        self.start_date = start_date
-        self.end_date = end_date
         self.hourly_parameters = hourly_parameters
 
     def get_payload(self) -> dict:
@@ -59,23 +59,23 @@ class OpenMeteoAdapter():
             dict: The parameters to use in a request
         """
         parameters = {
-            "latitude": self.latitude,
             "longitude": self.longitude,
+            "latitude": self.latitude,
             "start_date": self.start_date,
             "end_date": self.end_date,
             "hourly": self.hourly_parameters
         }
         return parameters
 
-    def set_location(self, latitude: float, longitude: float) -> None:
+    def set_location(self, longitude: float, latitude: float) -> None:
         """Set the geographical location
 
         Args:
-            latitude (float): Geographical WGS84 latitude
             longitude (float): Geographical WGS84 longitude
+            latitude (float): Geographical WGS84 latitude
         """
-        self.latitude = latitude
         self.longitude = longitude
+        self.latitude = latitude
 
     def get_location(self) -> tuple:
         """Get the geographical location
@@ -83,7 +83,7 @@ class OpenMeteoAdapter():
         Returns:
             tuple: Geographical WGS84 coordinate
         """
-        return (self.latitude, self.longitude)
+        return (self.longitude, self.latitude)
 
     def set_start_date(self, start_date: str) -> None:
         """Start date for the request
