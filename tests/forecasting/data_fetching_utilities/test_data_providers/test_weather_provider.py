@@ -1,7 +1,7 @@
 import pytest
 import pandas as pd
-from forecasting.data_fetching_utilities.data_providers.weather_provider import WeatherProvider
-from forecasting.data_fetching_utilities.data_providers.datum import Datum
+from rlf.forecasting.data_fetching_utilities.data_providers.weather_provider import WeatherProvider
+from rlf.forecasting.data_fetching_utilities.data_providers.datum import Datum
 
 
 class TestWeatherProvider():

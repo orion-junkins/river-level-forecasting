@@ -1,7 +1,7 @@
 import pytest
-from forecasting.data_fetching_utilities.api.exceptions import RestInvokerException
-from forecasting.data_fetching_utilities.api.models import Response
-from forecasting.data_fetching_utilities.api.rest_invoker import RestInvoker
+from rlf.forecasting.data_fetching_utilities.api.exceptions import RestInvokerException
+from rlf.forecasting.data_fetching_utilities.api.models import Response
+from rlf.forecasting.data_fetching_utilities.api.rest_invoker import RestInvoker
 
 
 class TestRestInvoker():

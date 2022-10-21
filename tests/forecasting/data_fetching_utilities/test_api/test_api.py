@@ -1,8 +1,8 @@
 import pytest
 
-from forecasting.data_fetching_utilities.open_meteo.open_meteo_adapter import OpenMeteoAdapter
-from forecasting.data_fetching_utilities.api.api import RequestBuilder
-from forecasting.data_fetching_utilities.api.models import Response
+from rlf.forecasting.data_fetching_utilities.open_meteo.open_meteo_adapter import OpenMeteoAdapter
+from rlf.forecasting.data_fetching_utilities.api.api import RequestBuilder
+from rlf.forecasting.data_fetching_utilities.api.models import Response
 
 
 class TestRequestBuilder:

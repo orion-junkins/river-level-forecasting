@@ -1,6 +1,6 @@
 import pytest
 
-from forecasting.data_fetching_utilities.open_meteo.open_meteo_hourly_parameters import OpenMeteoHourlyParameters
+from rlf.forecasting.data_fetching_utilities.open_meteo.open_meteo_hourly_parameters import OpenMeteoHourlyParameters
 
 
 class TestHourly():

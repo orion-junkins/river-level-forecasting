@@ -1,6 +1,6 @@
 import pytest
 
-from forecasting.data_fetching_utilities.open_meteo.models import ResponseModel, HourlyParametersModel, HourlyUnitsModel
+from rlf.forecasting.data_fetching_utilities.open_meteo.models import ResponseModel, HourlyParametersModel, HourlyUnitsModel
 
 
 class TestResponseModel():

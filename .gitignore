@@ -139,3 +139,4 @@ trained_catchment_models/
 *.out
 *.tar
 *.pickle
+*.DS_Store

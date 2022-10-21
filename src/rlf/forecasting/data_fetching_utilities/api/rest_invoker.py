@@ -1,6 +1,6 @@
 import requests
-from forecasting.data_fetching_utilities.api.exceptions import RestInvokerException
-from forecasting.data_fetching_utilities.api.models import Response
+from rlf.forecasting.data_fetching_utilities.api.exceptions import RestInvokerException
+from rlf.forecasting.data_fetching_utilities.api.models import Response
 
 
 class RestInvoker():

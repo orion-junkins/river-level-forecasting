@@ -1,8 +1,8 @@
-from forecasting.data_fetching_utilities.api.api import RequestBuilder
-from forecasting.data_fetching_utilities.open_meteo.models import ResponseModel
-from forecasting.data_fetching_utilities.open_meteo.open_meteo_adapter import OpenMeteoAdapter
-from forecasting.data_fetching_utilities.open_meteo.open_meteo_hourly_parameters import OpenMeteoHourlyParameters
-from forecasting.data_fetching_utilities.data_providers.datum import Datum
+from rlf.forecasting.data_fetching_utilities.api.api import RequestBuilder
+from rlf.forecasting.data_fetching_utilities.open_meteo.models import ResponseModel
+from rlf.forecasting.data_fetching_utilities.open_meteo.open_meteo_adapter import OpenMeteoAdapter
+from rlf.forecasting.data_fetching_utilities.open_meteo.open_meteo_hourly_parameters import OpenMeteoHourlyParameters
+from rlf.forecasting.data_fetching_utilities.data_providers.datum import Datum
 
 
 class WeatherProvider():

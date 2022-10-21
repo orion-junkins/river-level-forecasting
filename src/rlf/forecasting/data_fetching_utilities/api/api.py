@@ -1,5 +1,5 @@
-from forecasting.data_fetching_utilities.api.rest_invoker import RestInvoker
-from forecasting.data_fetching_utilities.api.models import APIAdapter, Response
+from rlf.forecasting.data_fetching_utilities.api.rest_invoker import RestInvoker
+from rlf.forecasting.data_fetching_utilities.api.models import APIAdapter, Response
 
 
 class RequestBuilder():

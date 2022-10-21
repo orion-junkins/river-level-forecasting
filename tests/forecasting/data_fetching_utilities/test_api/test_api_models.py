@@ -1,5 +1,5 @@
 import pytest
-from forecasting.data_fetching_utilities.api.models import Response
+from rlf.forecasting.data_fetching_utilities.api.models import Response
 
 
 class TestResponse():
