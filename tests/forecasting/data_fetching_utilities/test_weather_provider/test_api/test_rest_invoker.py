@@ -1,7 +1,7 @@
 import pytest
-from rlf.forecasting.data_fetching_utilities.api.exceptions import RestInvokerException
-from rlf.forecasting.data_fetching_utilities.api.models import Response
-from rlf.forecasting.data_fetching_utilities.api.rest_invoker import RestInvoker
+from rlf.forecasting.data_fetching_utilities.weather_provider.api.exceptions import RestInvokerException
+from rlf.forecasting.data_fetching_utilities.weather_provider.api.models import Response
+from rlf.forecasting.data_fetching_utilities.weather_provider.api.rest_invoker import RestInvoker
 
 
 class TestRestInvoker():
@@ -10,46 +10,15 @@ class TestRestInvoker():
     def rest_adapter(self):
         return RestInvoker(protocol="fake protocol", hostname="fake hostname", version="fake version", ssl_verify=True)
 
-    def test_initialization(self):
-        try:
-            RestInvoker()
-        except NameError:
-            pytest.fail("RestInvoker failed to initialize")
-
-    def test_has_protocol(self, rest_adapter):
-        assert hasattr(rest_adapter, "_protocol")
-
-    def test_protocol_is_type_string(self, rest_adapter):
-        assert isinstance(rest_adapter._protocol, str)
-
-    def test_has_hostname(self, rest_adapter):
-        assert hasattr(rest_adapter, "_hostname")
-
-    def test_hostname_is_type_string(self, rest_adapter):
-        assert isinstance(rest_adapter._hostname, str)
-
-    def test_has_version(self, rest_adapter):
-        assert hasattr(rest_adapter, "_version")
-
-    def test_version_is_type_string(self, rest_adapter):
-        assert isinstance(rest_adapter._version, str)
-
-    def test_has_ssl_verify(self, rest_adapter):
-        assert hasattr(rest_adapter, "_ssl_verify")
-
-    def test_ssl_verify(self, rest_adapter):
-        assert rest_adapter._ssl_verify is True
-
     def test_get_fails(self, rest_adapter):
         with pytest.raises(RestInvokerException):
             rest_adapter.get("fake url")
 
     def test_get_fails_with_message(self, rest_adapter):
-        with pytest.raises(RestInvokerException) as e:
+        with pytest.raises(RestInvokerException):
             rest_adapter.get("fake url")
-        assert e is not None
 
-    def test_get_returns_type_response(self, rest_adapter):
+    def test_get_returns_type_response(self):
         invoker = RestInvoker(
             protocol="https", hostname="jsonplaceholder.typicode.com", version=None, ssl_verify=True)
         assert isinstance(invoker.get(path="posts"), Response)
