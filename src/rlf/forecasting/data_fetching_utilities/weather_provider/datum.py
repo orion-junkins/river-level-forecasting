@@ -3,10 +3,10 @@ import pandas as pd
 
 class Datum():
 
-    def __init__(self, longitude: float, latitude: float, elevation: int,
+    def __init__(self, longitude: float, latitude: float, elevation: float,
                  utc_offset_seconds: float, timezone: str, hourly_parameters: dict):
-        """A datum represents a geographical location via a coordinate system. This class packages data from any datum 
-            into a single structure containing the information about this point. Each datum can have an interval 
+        """A datum represents a geographical location via a coordinate system. This class packages data from any datum
+            into a single structure containing the information about this point. Each datum can have an interval
             of measurements in hourly time steps. (https://en.wikipedia.org/wiki/Geodetic_datum)
 
         Args:
@@ -15,7 +15,7 @@ class Datum():
             elevation (int): elevation of the location using WGS84
             utc_offset_seconds (float): offset seconds from UTC
             timezone (str): database timezone string
-            hourly_parameters (dict): contains a key and value for every passed in parameter 
+            hourly_parameters (dict): contains a key and value for every passed in parameter
         """
         self.longitude = longitude
         self.latitude = latitude
