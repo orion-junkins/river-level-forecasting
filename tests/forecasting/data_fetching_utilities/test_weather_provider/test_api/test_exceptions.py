@@ -1,4 +1,5 @@
 import pytest
+
 from rlf.forecasting.data_fetching_utilities.weather_provider.api.exceptions import RestInvokerException
 
 
