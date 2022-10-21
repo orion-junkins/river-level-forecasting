@@ -4,8 +4,6 @@ from forecasting.data_fetching_utilities.open_meteo.open_meteo_adapter import Op
 from forecasting.data_fetching_utilities.open_meteo.open_meteo_hourly_parameters import OpenMeteoHourlyParameters
 from forecasting.data_fetching_utilities.data_providers.datum import Datum
 
-import pandas as pd
-
 
 class WeatherProvider():
     """Provides a historical of forecasted weather for a given location and time period"""
@@ -70,6 +68,3 @@ class WeatherProvider():
                       timezone=response_model.timezone, hourly_parameters=response_model.hourly_parameters())
 
         return datum
-
-    def fetch_current_weather(self, past_hours_to_fetch, future_hours_to_fetch) -> pd.DataFrame:
-        pass
