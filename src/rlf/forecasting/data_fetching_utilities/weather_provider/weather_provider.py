@@ -1,7 +1,7 @@
-from rlf.forecasting.data_fetching_utilities.api.api import RequestBuilder
-from rlf.forecasting.data_fetching_utilities.open_meteo.models import ResponseModel
-from rlf.forecasting.data_fetching_utilities.open_meteo.open_meteo_adapter import OpenMeteoAdapter
-from rlf.forecasting.data_fetching_utilities.data_providers.datum import Datum
+from rlf.forecasting.data_fetching_utilities.weather_provider.api.api import RequestBuilder
+from rlf.forecasting.data_fetching_utilities.weather_provider.open_meteo.models import ResponseModel
+from rlf.forecasting.data_fetching_utilities.weather_provider.open_meteo.open_meteo_adapter import OpenMeteoAdapter
+from rlf.forecasting.data_fetching_utilities.weather_provider.datum import Datum
 from rlf.forecasting.data_fetching_utilities.coordinate import Coordinate
 
 
