@@ -9,7 +9,7 @@ class WeatherProvider():
     """Provides a historical of forecasted weather for a given location and time period"""
 
     def __init__(self, locations: list[tuple: float, float]):
-        """Takes a list of tuples of longitude and latitude
+        """Takes a list of coordinates
 
         Args:
             locations (list[tuple: (float, float)]): WSG84 coordinates: (longitude, latitude)

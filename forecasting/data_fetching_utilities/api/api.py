@@ -1,8 +1,10 @@
 from forecasting.data_fetching_utilities.api.rest_invoker import RestInvoker
-from forecasting.data_fetching_utilities.api.models import APIAdapter
+from forecasting.data_fetching_utilities.api.models import APIAdapter, Response
 
 
 class RequestBuilder():
+    """Build the request payload
+    """
 
     def __init__(self, api_adapter: APIAdapter,
                  ssl_verify: bool = True,
@@ -11,6 +13,17 @@ class RequestBuilder():
                  version: str = "v1",
                  path: str = "era5",
                  parameters: dict = None):
+        """Builds the request payload for any APIAdapter object that contains the get_payload() method
+
+        Args:
+            api_adapter (APIAdapter): An APIAdapter object that contains the get_payload() method
+            ssl_verify (bool, optional): Option to verify the SSL certificate. Defaults to True.
+            protocol (str, optional): The protocol to use. Defaults to "https".
+            hostname (str, optional): The hostname to use. Defaults to "archive-api.open-meteo.com".
+            version (str, optional): The version of the API to use. Defaults to "v1".
+            path (str, optional): The path to use. Defaults to "era5".
+            parameters (dict, optional): The parameters to use. Defaults to None.
+        """
 
         self.api_adapter = api_adapter
         self.ssl_verify = ssl_verify
@@ -20,7 +33,12 @@ class RequestBuilder():
         self.path = path
         self.parameters = parameters
 
-    def get(self):
+    def get(self) -> Response:
+        """Get the response from a REST API
+
+        Returns:
+            Response: The response object from the REST API containing response body, headers, status code
+        """
         self.parse_payload()
 
         rest_invoker = RestInvoker(
@@ -32,6 +50,8 @@ class RequestBuilder():
         return rest_invoker.get(path=self.path, parameters=self.parameters)
 
     def parse_payload(self) -> None:
+        """Parse the payload from the APIAdapter object and set the parameters attribute
+        """
         payload = self.get_payload()
         self.protocol = payload["protocol"]
         self.hostname = payload["hostname"]

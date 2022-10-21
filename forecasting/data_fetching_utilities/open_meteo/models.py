@@ -2,6 +2,8 @@ from typing import Optional
 
 
 class HourlyParametersModel():
+    """Hourly parameters model for OpenMeteo API response data (https://open-meteo.com/en/)
+    """
 
     def __init__(self,
                  time: Optional[list[str]] = None,
@@ -74,6 +76,8 @@ class HourlyParametersModel():
 
 
 class HourlyUnitsModel():
+    """Hourly units model for OpenMeteo API response data (https://open-meteo.com/en/)
+    """
 
     def __init__(self,
                  time: Optional[list[str]] = None,
@@ -147,6 +151,8 @@ class HourlyUnitsModel():
 
 
 class ResponseModel():
+    """Response model for OpenMeteo API response data (https://open-meteo.com/en/)
+    """
 
     def __init__(self,
                  latitude: Optional[float] = None,

@@ -1,4 +1,6 @@
 class OpenMeteoHourlyParameters():
+    """The hourly parameters available in a request in the OpenMeteo API
+    """
 
     def __init__(self):
         self.variables: list[str] = []
@@ -105,6 +107,8 @@ class OpenMeteoHourlyParameters():
         self.variables.append("soil_moisture_100_to_255cm")
 
     def set_all(self) -> None:
+        """Set all variables to be used in the http request
+        """
         self.set_temperature_2m()
         self.set_relativehumidity_2m()
         self.set_dewpoint_2m()

@@ -7,7 +7,7 @@ class Datum():
                  utc_offset_seconds: float, timezone: str, hourly_parameters: dict):
         """A datum represents a geographical location via a coordinate system. This class packages data from any datum 
             into a single structure containing the information about this point. Each datum can have an interval 
-            of measurements in hourly time steps.
+            of measurements in hourly time steps. (https://en.wikipedia.org/wiki/Geodetic_datum)
 
         Args:
             longitude (float): value between [-180, 180]
