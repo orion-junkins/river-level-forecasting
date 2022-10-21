@@ -1,5 +1,4 @@
-import pytest
-from rlf.forecasting.data_fetching_utilities.api.models import Response
+from rlf.forecasting.data_fetching_utilities.weather_provider.api.models import Response
 
 
 class TestResponse():
