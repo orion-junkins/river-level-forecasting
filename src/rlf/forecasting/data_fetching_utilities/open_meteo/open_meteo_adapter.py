@@ -1,4 +1,4 @@
-from rlf.forecasting.data_fetching_utilities.open_meteo.open_meteo_hourly_parameters import OpenMeteoHourlyParameters
+HOURLY_PARAMETERS = ["temperature_2m"]
 
 
 class OpenMeteoAdapter():
@@ -6,15 +6,15 @@ class OpenMeteoAdapter():
     """
 
     def __init__(self,
+                 latitude: float,
+                 longitude: float,
+                 start_date: str,
+                 end_date: str,
                  protocol: str = "https",
                  hostname: str = "archive-api.open-meteo.com",
                  version: str = "v1",
                  path: str = "era5",
-                 latitude: float = 44.06,
-                 longitude: float = -121.31,
-                 start_date: str = None,
-                 end_date: str = None,
-                 hourly_parameters: OpenMeteoHourlyParameters().get_variables() = None):
+                 hourly_parameters: list[str] = HOURLY_PARAMETERS):
         """Adapts the OpenMeteo API to be used by the RequestBuilder
 
         Args:
@@ -27,17 +27,7 @@ class OpenMeteoAdapter():
             start_date (str, optional): ISO8601 date (yyyy-mm-dd). Defaults to None.
             end_date (str, optional): ISO8601 date (yyyy-mm-dd). Defaults to None.
             hourly_parameters (OpenMeteoHourlyParameters, optional): The parameters to use. Defaults to None.
-
-
-        Raises:
-            ValueError: If latitude is not between -90 and 90
-            ValueError: If longitude is not between -180 and 180
         """
-        if latitude < -90 or latitude > 90:
-            raise ValueError("latitude must be between -90 and 90")
-        if longitude < -180 or longitude > 180:
-            raise ValueError("longitude must be between -180 and 180")
-
         self.protocol = protocol
         self.hostname = hostname
         self.version = version
