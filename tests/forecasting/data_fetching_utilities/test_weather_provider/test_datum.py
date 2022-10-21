@@ -10,19 +10,13 @@ def datum():
                         timezone="UTC", hourly_parameters={})
 
 
-def test_get_hourly_parameters_returns_dict(datum):
-    assert isinstance(datum.get_hourly_parameters(
-        as_pandas_data_frame=False), dict)
-
-
 def test_get_hourly_parameters_returns_dataframe(datum):
-    assert isinstance(datum.get_hourly_parameters(
-        as_pandas_data_frame=True), pd.DataFrame)
+    assert isinstance(datum.get_data_frame(), pd.DataFrame)
 
 
 def test_get_hourly_parameters_returns_dataframe_with_correct_columns(datum):
-    assert datum.get_hourly_parameters(
-        as_pandas_data_frame=True).columns.tolist() == list(datum.hourly_parameters.keys())
+    assert datum.get_data_frame().columns.tolist() == list(
+        datum.hourly_parameters.keys())
 
 
 def test_returns_longitude(datum):
