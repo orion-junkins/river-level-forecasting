@@ -26,7 +26,7 @@ class WeatherDatum():
         self.timezone = timezone
         self.hourly_parameters = hourly_parameters
 
-    def get_hourly_parameters(self, as_) -> pd.DataFrame:
+    def get_data_frame(self) -> pd.DataFrame:
         """Get the hourly parameters of the location point
 
         Returns:
