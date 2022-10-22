@@ -1,7 +1,6 @@
 import pytest
 
 from rlf.forecasting.data_fetching_utilities.weather_provider.open_meteo.open_meteo_adapter import OpenMeteoAdapter
-from rlf.forecasting.data_fetching_utilities.weather_provider.api.models import Response
 from rlf.forecasting.data_fetching_utilities.weather_provider.api.api import RequestBuilder
 
 
@@ -33,21 +32,6 @@ def open_meteo_adapter():
 @pytest.fixture
 def request_builder(open_meteo_adapter):
     return RequestBuilder(open_meteo_adapter)
-
-
-def test_get_returns_response(request_builder):
-    response = request_builder.get()
-    assert isinstance(response, Response)
-
-
-def test_get_returns_response_with_status_code(request_builder):
-    response = request_builder.get()
-    assert response.status_code is not None
-
-
-def test_get_returns_response_with_content(request_builder):
-    response = request_builder.get()
-    assert response.data is not None
 
 
 def test_api_adapter_can_get_payload(open_meteo_adapter):
