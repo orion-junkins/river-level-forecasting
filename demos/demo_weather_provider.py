@@ -3,8 +3,7 @@
 from rlf.forecasting.data_fetching_utilities.coordinate import Coordinate
 from rlf.forecasting.data_fetching_utilities.weather_provider.weather_provider import WeatherProvider
 
-coordinates = [Coordinate(lat=52.52, lon=13.40),
-               Coordinate(lat=52.52, lon=13.40)]
+coordinates = [Coordinate(lat=52.52, lon=300)]
 
 weather_provider = WeatherProvider(coordinates=coordinates)
 wx = weather_provider.fetch_historical_weather(
