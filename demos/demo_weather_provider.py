@@ -13,6 +13,6 @@ print(type(wx))
 
 # %%
 for datum in wx:
-    print(datum.elevation)
+    print(datum.get_data_frame())
 
 # %%

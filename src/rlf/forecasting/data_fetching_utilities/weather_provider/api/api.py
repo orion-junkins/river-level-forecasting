@@ -1,4 +1,5 @@
-from rlf.forecasting.data_fetching_utilities.weather_provider.api.models import APIAdapter, Response
+from rlf.forecasting.data_fetching_utilities.weather_provider.api.api_adapter_abc import APIAdapter_ABC
+from rlf.forecasting.data_fetching_utilities.weather_provider.api.models import Response
 from rlf.forecasting.data_fetching_utilities.weather_provider.api.rest_invoker import RestInvoker
 
 
@@ -6,13 +7,13 @@ class RequestBuilder():
     """Build the request payload
     """
 
-    def __init__(self, api_adapter: APIAdapter,
+    def __init__(self, api_adapter: APIAdapter_ABC,
                  ssl_verify: bool = True,
                  protocol: str = "https",
                  hostname: str = "archive-api.open-meteo.com",
                  version: str = "v1",
                  path: str = "era5",
-                 parameters: dict = None):
+                 parameters: dict = {}) -> None:
         """Builds the request payload for any APIAdapter object that contains the get_payload() method
 
         Args:

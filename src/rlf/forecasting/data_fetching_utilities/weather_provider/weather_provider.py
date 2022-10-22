@@ -8,7 +8,7 @@ from rlf.forecasting.data_fetching_utilities.weather_provider.open_meteo.models 
 class WeatherProvider():
     """Provides a historical of forecasted weather for a given location and time period"""
 
-    def __init__(self, coordinates: Coordinate):
+    def __init__(self, coordinates: Coordinate) -> None:
         """Takes a list of coordinates
 
         Args:
