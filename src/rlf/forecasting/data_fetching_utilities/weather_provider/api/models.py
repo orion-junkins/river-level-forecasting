@@ -1,8 +1,3 @@
-from typing import TypeVar
-
-APIAdapter = TypeVar('APIAdapter', covariant=True)
-
-
 class Response():
     """Response object from a REST API
     """
