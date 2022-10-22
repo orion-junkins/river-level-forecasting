@@ -51,8 +51,7 @@ class RequestBuilder():
         return rest_invoker.get(path=self.path, parameters=self.parameters)
 
     def parse_payload(self) -> None:
-        """Parse the payload from the APIAdapter object and set the parameters attribute
-        """
+        """Parse the payload from the APIAdapter object and set the parameters attribute"""
         payload = self.get_payload()
         self.protocol = payload["protocol"]
         self.hostname = payload["hostname"]
