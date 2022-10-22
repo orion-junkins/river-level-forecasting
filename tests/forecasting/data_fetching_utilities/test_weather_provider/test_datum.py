@@ -20,20 +20,20 @@ def test_get_hourly_parameters_returns_dataframe_with_correct_columns(datum):
 
 
 def test_returns_longitude(datum):
-    assert datum.get_longitude() == 0
+    assert datum.longitude == 0
 
 
 def test_returns_latitude(datum):
-    assert datum.get_latitude() == 0
+    assert datum.latitude == 0
 
 
 def test_returns_elevation(datum):
-    assert datum.get_elevation() == 0
+    assert datum.elevation == 0
 
 
 def test_returns_utc_offset_seconds(datum):
-    assert datum.get_utc_offset_seconds() == 0
+    assert datum.utc_offset_seconds == 0
 
 
 def test_returns_timezone(datum):
-    assert datum.get_timezone() == "UTC"
+    assert datum.timezone == "UTC"
