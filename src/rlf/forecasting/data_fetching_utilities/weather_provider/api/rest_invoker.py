@@ -48,9 +48,14 @@ class RestInvoker():
         try:
             response = requests.request(
                 method=method, url=url, verify=self._ssl_verify, params=parameters, json=data)
+            if response.status_code == 200:
+                return Response(status_code=response.status_code, url=response.url, message=response.reason, headers=response.headers, data=response.json())
+            else:
+                raise RestInvokerException(
+                    f"Error calling the API: {response.reason} ({response.status_code}) \n {response.json()}")
+
         except requests.exceptions.RequestException as e:
-            raise RestInvokerException("Request failed") from e
-        return Response(status_code=response.status_code, url=response.url, message=response.reason, headers=response.headers, data=response.json())
+            raise RestInvokerException("Error: {}".format(e)) from e
 
     def get(self, path: str, parameters: dict = None) -> Response:
         """Perform a GET request
