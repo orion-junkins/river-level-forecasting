@@ -23,7 +23,8 @@ def format_level_data(df) -> pd.DataFrame:
 
     if df.index[0].minute != 0:
         df.drop([df.index[0]], inplace=True)
-    assert (df.index[0].minute == 0)  # TODO replace with exception
+    if not (df.index[0].minute == 0):
+        raise Exception("Error: failed to coerce index to hourly.")
 
     # Remove duplicated entries
     df = df.loc[~df.index.duplicated(), :]
@@ -43,7 +44,7 @@ def format_level_data(df) -> pd.DataFrame:
     df.dropna(inplace=True)
 
     # Confirm imputation worked
-
-    assert (df.isna().sum().sum() == 0)  # TODO: replace with exception.
+    if not (df.isna().sum().sum() == 0):
+        raise Exception("Error: Failed to remove all NaNs.")
 
     return df
