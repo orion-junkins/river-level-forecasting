@@ -10,7 +10,7 @@ import pandas as pd
 class Level_Provider_NWIS(LevelProvider_ABC):
     """Provider class for river level data from the USGS NWIS (National Water Information System)."""
 
-    def __init__(self, gauge_id):
+    def __init__(self, gauge_id) -> None:
         """Create a new level provider for a specific NWIS gauge.
 
         Args:
