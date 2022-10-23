@@ -1,7 +1,7 @@
 from darts import timeseries
 
 
-def pre_process(Xs, y, allow_future_X=False):
+def pre_process(Xs, y, rolling_sum_columns=[], rolling_mean_columns=[], window_sizes=[10*24, 30*24], allow_future_X=False):
     """
     Pre process data. This includes adding engineered features and trimming datasets to ensure X, y consistency.
 
@@ -39,7 +39,7 @@ def pre_process(Xs, y, allow_future_X=False):
     return (processed_Xs, y)
 
 
-def add_engineered_features(df):
+def add_engineered_features(df, rolling_sum_columns=[], rolling_mean_columns=[], window_sizes=[10*24, 30*24]):
     """
     Generate and add engineered features.
 
@@ -51,12 +51,14 @@ def add_engineered_features(df):
     """
     df['day_of_year'] = df.index.day_of_year
 
-    df['snow_10d'] = df['snow_1h'].rolling(window=10 * 24).sum()
-    df['snow_30d'] = df['snow_1h'].rolling(window=30 * 24).sum()
-    df['rain_10d'] = df['rain_1h'].rolling(window=10 * 24).sum()
-    df['rain_30d'] = df['rain_1h'].rolling(window=30 * 24).sum()
+    for window_size in window_sizes:
+        for rolling_sum_col in rolling_sum_columns:
+            new_col_name = rolling_sum_col + "_sum_" + window_size
+            df[new_col_name] = df[rolling_sum_col].rolling(window=window_size).sum()
 
-    df['temp_10d'] = df['temp'].rolling(window=10 * 24).mean()
-    df['temp_30d'] = df['temp'].rolling(window=30 * 24).mean()
+        for rolling_mean_col in rolling_mean_columns:
+            new_col_name = rolling_mean_col + "_mean_" + window_size
+            df[new_col_name] = df[rolling_mean_col].rolling(window=window_size).mean()
+
     df.dropna(inplace=True)
     return df
