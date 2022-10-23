@@ -3,7 +3,7 @@ from abc import ABC, abstractmethod
 import pandas as pd
 
 
-class LevelProvider_ABC(ABC):
+class BaseLevelProvider(ABC):
     """Abstract base class for Level Providers, agnostic to the underlying source where the data comes from."""
 
     @abstractmethod

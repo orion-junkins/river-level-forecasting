@@ -1,8 +1,8 @@
-from rlf.forecasting.data_fetching_utilities.level_provider.level_provider_abc import LevelProvider_ABC
+from rlf.forecasting.data_fetching_utilities.level_provider.level_provider_abc import BaseLevelProvider
 
 
 class CatchmentData:
-    def __init__(self, catchment_name, weather_provider, level_provider: LevelProvider_ABC, num_recent_samples=40*24) -> None:
+    def __init__(self, catchment_name, weather_provider, level_provider: BaseLevelProvider, num_recent_samples=40*24) -> None:
         self.name = catchment_name
         self.weather_provider = weather_provider
         self.level_provider = level_provider

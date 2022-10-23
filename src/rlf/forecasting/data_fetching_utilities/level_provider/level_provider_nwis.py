@@ -1,4 +1,4 @@
-from rlf.forecasting.data_fetching_utilities.level_provider.level_provider_abc import LevelProvider_ABC
+from rlf.forecasting.data_fetching_utilities.level_provider.level_provider_abc import BaseLevelProvider
 from rlf.forecasting.data_fetching_utilities.level_provider.level_provider_helpers import format_level_data
 
 import dataretrieval.nwis as nwis
@@ -7,7 +7,7 @@ from datetime import datetime, timedelta
 import pandas as pd
 
 
-class Level_Provider_NWIS(LevelProvider_ABC):
+class LevelProviderNWIS(BaseLevelProvider):
     """Provider class for river level data from the USGS NWIS (National Water Information System)."""
 
     def __init__(self, gauge_id) -> None:

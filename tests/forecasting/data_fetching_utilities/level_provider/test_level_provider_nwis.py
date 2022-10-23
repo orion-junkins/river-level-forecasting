@@ -1,11 +1,11 @@
 import pytest
 
-from rlf.forecasting.data_fetching_utilities.level_provider.level_provider_nwis import Level_Provider_NWIS
+from rlf.forecasting.data_fetching_utilities.level_provider.LevelProviderNWIS import LevelProviderNWIS
 
 
 @pytest.fixture
 def level_provider():
-    return Level_Provider_NWIS("14377100")
+    return LevelProviderNWIS("14377100")
 
 
 def test_fetch_recent_level(level_provider):
