@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+
 import pandas as pd
 import pytz
 
@@ -55,7 +56,7 @@ class BaseLevelProvider(ABC):
             raise Exception("Error: failed to coerce index to hourly.")
 
         # Remove duplicated entries
-        df_formatted = df_formatted.loc[~df_formatted.index.duplicated(), :]
+        df_formatted.drop_duplicates(inplace=True)
 
         # Set frequency as hourly
         df_formatted = df_formatted.asfreq('H')
@@ -63,10 +64,9 @@ class BaseLevelProvider(ABC):
         # Compute forward/back filled data
         for_fill = df_formatted.fillna(method='ffill')
         back_fill = df_formatted.fillna(method='bfill')
-        # For every column in the dataframe,
-        for col in df_formatted.columns:
-            # Average the forward and back filled values
-            df_formatted[col] = (for_fill[col] + back_fill[col])/2
+
+        # Average the forward and back filled values
+        df_formatted = (for_fill + back_fill) / 2
 
         # Drop any rows remaining which have NaN values (generally first and/or last rows)
         df_formatted.dropna(inplace=True)

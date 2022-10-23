@@ -9,7 +9,7 @@ from rlf.forecasting.data_fetching_utilities.level_provider.level_provider_abc i
 class LevelProviderNWIS(BaseLevelProvider):
     """Provider class for river level data from the USGS NWIS (National Water Information System)."""
 
-    def __init__(self, gauge_id) -> None:
+    def __init__(self, gauge_id: str) -> None:
         """Create a new level provider for a specific NWIS gauge.
 
         Args:
@@ -17,7 +17,7 @@ class LevelProviderNWIS(BaseLevelProvider):
         """
         self.gauge_id = gauge_id
 
-    def fetch_recent_level(self, num_hours) -> pd.DataFrame:
+    def fetch_recent_level(self, num_hours: int) -> pd.DataFrame:
         """Fetch river level data for the most recent num_hours. Dataframe is returned with a tz aware UTC Datetime index.
 
         Args:
@@ -26,7 +26,7 @@ class LevelProviderNWIS(BaseLevelProvider):
         Returns:
             pd.DataFrame: A dataframe of recent level data with a tz aware UTC Datetime index. Guaranteed to have num_hours rows.
         """
-        start_dt = datetime.now() - timedelta(hours=(num_hours+24))
+        start_dt = datetime.utcnow() - timedelta(hours=(num_hours+48))
         start_str = datetime.strftime(start_dt, '%Y-%m-%d')
         data_all = self.fetch_level(start=start_str)
         data_trimmed = data_all.iloc[-num_hours:, :]
@@ -41,12 +41,11 @@ class LevelProviderNWIS(BaseLevelProvider):
         """
         return self.fetch_level()
 
-    def fetch_level(self, start="1900-01-01", end=None, parameterCd='00060', drop_cols=["00060_cd", "site_no"], rename_dict={"00060": "level"}) -> pd.DataFrame:
+    def fetch_level(self, start: str = "1900-01-01", end: str = None, parameterCd: str = '00060', drop_cols: list[str] = ["00060_cd", "site_no"], rename_dict: dict = {"00060": "level"}) -> pd.DataFrame:
         """
         Fetch level data for the given gauge ID. Fetches instant values from start to end.
         Drops and renames columns according to given args.
         Args:
-            gauge_id (string): USGS Gauge ID
             start (str, optional): Start date in the form "yyyy-mm-dd". Defaults to "1900-01-01", giving data from start of collection.
             end  (str, optional): End date in the form "yyyy-mm-dd". Defaults to None, giving data til end of collection.
             parameterCd (str, optional): Which parameter to fetch data for. Defaults to '00060' indicated mean level.
