@@ -39,11 +39,11 @@ class CatchmentData:
         return len(current_weather)
 
     @property
-    def all_current(self) -> tuple[list[pd.dataframe], pd.dataframe]:
-        """All current data. A tuple containing a list of current weather data with one dataframe per location, and a single dataframe of level data.
+    def all_current(self) -> tuple[list[pd.DataFrame], pd.DataFrame]:
+        """All current data. A tuple containing a list of current weather data with one DataFrame per location, and a single DataFrame of level data.
 
         Returns:
-            tuple[list[pd.dataframe], pd.dataframe]: All current data for the Catchment.
+            tuple[list[pd.DataFrame], pd.DataFrame]: All current data for the Catchment.
         """
         if self._all_current == (None, None):
             self._fetch_all_current()
@@ -63,11 +63,11 @@ class CatchmentData:
         self._fetch_all_current()
 
     @property
-    def all_historical(self) -> tuple[list[pd.dataframe], pd.dataframe]:
-        """All historical data. A tuple containing a list of historical weather data with one dataframe per location, and a single dataframe of level data.
+    def all_historical(self) -> tuple[list[pd.DataFrame], pd.DataFrame]:
+        """All historical data. A tuple containing a list of historical weather data with one DataFrame per location, and a single DataFrame of level data.
 
         Returns:
-            tuple[list[pd.dataframe], pd.dataframe]: All historical data for the Catchment.
+            tuple[list[pd.DataFrame], pd.DataFrame]: All historical data for the Catchment.
         """
         if self._all_historical == (None, None):
             self._fetch_all_historical()
