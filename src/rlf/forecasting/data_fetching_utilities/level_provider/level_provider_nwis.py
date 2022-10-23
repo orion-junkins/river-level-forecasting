@@ -1,5 +1,4 @@
 from rlf.forecasting.data_fetching_utilities.level_provider.level_provider_abc import BaseLevelProvider
-from rlf.forecasting.data_fetching_utilities.level_provider.level_provider_helpers import format_level_data
 
 import dataretrieval.nwis as nwis
 from datetime import datetime, timedelta
@@ -67,6 +66,6 @@ class LevelProviderNWIS(BaseLevelProvider):
         df.rename(columns=rename_dict, inplace=True)
 
         # Format data
-        df = format_level_data(df)
+        df = BaseLevelProvider.format_level_data(df)
 
         return df

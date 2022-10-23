@@ -1,6 +1,6 @@
 import pytest
 
-from rlf.forecasting.data_fetching_utilities.level_provider.LevelProviderNWIS import LevelProviderNWIS
+from rlf.forecasting.data_fetching_utilities.level_provider.level_provider_nwis import LevelProviderNWIS
 
 
 @pytest.fixture
