@@ -52,11 +52,11 @@ def fake_weather_provider():
     return FakeWeatherProvider()
 
 
-def test_num_data_sets(fake_weather_provider, fake_level_provider):
+def num_weather_datasets(fake_weather_provider, fake_level_provider):
     catchment = CatchmentData("test_catchment", fake_weather_provider, fake_level_provider)
-    num_data_sets = catchment.num_data_sets
+    num_weather_datasets = catchment.num_weather_datasets
 
-    assert (fake_weather_provider.num_locs == num_data_sets)
+    assert (fake_weather_provider.num_locs == num_weather_datasets)
 
 
 def test_all_current_correct_num_samples(fake_weather_provider, fake_level_provider):
