@@ -1,9 +1,9 @@
-from rlf.forecasting.data_fetching_utilities.level_provider.level_provider_abc import BaseLevelProvider
-
-import dataretrieval.nwis as nwis
 from datetime import datetime, timedelta
 
+import dataretrieval.nwis as nwis
 import pandas as pd
+
+from rlf.forecasting.data_fetching_utilities.level_provider.level_provider_abc import BaseLevelProvider
 
 
 class LevelProviderNWIS(BaseLevelProvider):
