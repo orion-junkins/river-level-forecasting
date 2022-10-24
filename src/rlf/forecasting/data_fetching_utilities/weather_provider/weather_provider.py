@@ -52,12 +52,20 @@ class WeatherProvider():
 
         response = request_builder.get()
 
-        datum = WeatherDatum(longitude=response.data["longitude"],
-                             latitude=response.data["latitude"],
-                             elevation=response.data["elevation"],
-                             utc_offset_seconds=response.data["utc_offset_seconds"],
-                             timezone=response.data["timezone"],
-                             hourly_units=response.data["hourly_units"],
-                             hourly_parameters=response.data["hourly"])
+        datum = WeatherDatum(
+            longitude=response.data.get(
+                "longitude", None),
+            latitude=response.data.get(
+                "latitude", None),
+            elevation=response.data.get(
+                "elevation", None),
+            utc_offset_seconds=response.data.get(
+                "utc_offset_seconds", None),
+            timezone=response.data.get(
+                "timezone", None),
+            hourly_units=response.data.get(
+                "hourly_units", None),
+            hourly_parameters=response.data.get(
+                "hourly", None))
 
         return datum
