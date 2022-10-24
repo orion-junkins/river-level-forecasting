@@ -11,7 +11,7 @@ class WeatherProvider():
         """Takes a list of coordinates
 
         Args:
-            coordinates (list[Coordinate: (float, float)]): Named tuple WSG84 coordinates: (longitude, latitude)
+            coordinates (list[Coordinate(longitude: float, latitude: float)]): Named tuple WSG84 coordinates: (longitude, latitude)
         """
         self.coordinates = coordinates
 
