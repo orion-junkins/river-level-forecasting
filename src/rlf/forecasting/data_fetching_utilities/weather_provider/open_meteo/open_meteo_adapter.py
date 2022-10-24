@@ -1,8 +1,8 @@
-from rlf.forecasting.data_fetching_utilities.weather_provider.api.api_adapter_abc import APIAdapter_ABC
+from rlf.forecasting.data_fetching_utilities.weather_provider.api.api_adapter_abc import APIAdapterABC
 from rlf.forecasting.data_fetching_utilities.weather_provider.open_meteo.parameters import get_hourly_parameters
 
 
-class OpenMeteoAdapter(APIAdapter_ABC):
+class OpenMeteoAdapter(APIAdapterABC):
     """Adapts the OpenMeteo API to be used by the RequestBuilder"""
 
     def __init__(self,
