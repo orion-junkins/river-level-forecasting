@@ -19,8 +19,8 @@ class WeatherProvider():
         """Fetch historical weather for all coordinates
 
         Args:
-            start_date (str, optional):  iso8601 format YYYY-MM-DD (https://en.wikipedia.org/wiki/ISO_8601). Defaults to "2021-01-01".
-            end_date (str, optional): iso8601 format YYYY-MM-DD. Defaults to "2021-01-02".
+            start_date (str, optional):  iso8601 format YYYY-MM-DD (https://en.wikipedia.org/wiki/ISO_8601).
+            end_date (str, optional): iso8601 format YYYY-MM-DD.
 
         Returns:
             list[WeatherDatum]: A list of WeatherDatum objects containing the weather data and metadata about the location or datum
@@ -43,7 +43,7 @@ class WeatherProvider():
 
         Returns:
             WeatherDatum: A Datum object containing the weather data and metadata about a coordinate (https://en.wikipedia.org/wiki/Geodetic_datum)
-        """        """"""
+        """
         open_meteo_archive_api_adapter = OpenMeteoAdapter(hostname="archive-api.open-meteo.com", latitude=latitude, longitude=longitude,
                                                           start_date=start_date, end_date=end_date,)
 
