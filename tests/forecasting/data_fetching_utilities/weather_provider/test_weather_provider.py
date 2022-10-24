@@ -10,7 +10,7 @@ class FakeWeatherProvider():
 
     def fetch_historical_weather(self, start_date: str, end_date: str) -> list[WeatherDatum]:
         return [WeatherDatum(longitude=1.0, latitude=1.0, elevation=3.0,
-                             utc_offset_seconds=4.0, timezone="Time Zone", hourly_parameters={})]
+                             utc_offset_seconds=4.0, timezone="Fake Time Zone", hourly_units="Fake Units", hourly_parameters={})]
 
 
 @ pytest.fixture
@@ -24,6 +24,8 @@ def test_weather_provider_accepts_coordinates_as_list():
             lon=1.0, lat=2.0), Coordinate(lon=3.0, lat=4.0)])
     except TypeError:
         pytest.fail("Failed to accept a list of Coordinates")
+
+# fix
 
 
 def test_fetch_historical_weather_returns_list_of_datums(weather_provider):
