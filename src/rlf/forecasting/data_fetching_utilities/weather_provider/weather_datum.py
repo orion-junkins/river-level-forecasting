@@ -14,6 +14,7 @@ class WeatherDatum:
         elevation (int): elevation of the location using WGS84
         utc_offset_seconds (float): offset seconds from UTC
         timezone (str): database timezone string
+        hourly_units (dict): units of the hourly parameters
         hourly_parameters (dict): contains a key and value for every passed in parameter
     """
     longitude: float
@@ -21,6 +22,7 @@ class WeatherDatum:
     elevation: float
     utc_offset_seconds: float
     timezone: str
+    hourly_units: dict
     hourly_parameters: dict
 
     def get_data_frame(self) -> pd.DataFrame:
