@@ -7,7 +7,7 @@ from rlf.forecasting.data_fetching_utilities.weather_provider.weather_datum impo
 @pytest.fixture
 def datum():
     return WeatherDatum(longitude=0, latitude=0, elevation=0, utc_offset_seconds=0,
-                        timezone="UTC", hourly_parameters={})
+                        timezone="Fake Time Zone", hourly_units="Fake Units", hourly_parameters={})
 
 
 def test_get_hourly_parameters_returns_dataframe(datum):
@@ -36,4 +36,4 @@ def test_returns_utc_offset_seconds(datum):
 
 
 def test_returns_timezone(datum):
-    assert datum.timezone == "UTC"
+    assert datum.timezone == "Fake Time Zone"
