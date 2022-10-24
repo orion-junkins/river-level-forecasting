@@ -2,7 +2,6 @@ from rlf.forecasting.data_fetching_utilities.coordinate import Coordinate
 from rlf.forecasting.data_fetching_utilities.weather_provider.weather_datum import WeatherDatum
 from rlf.forecasting.data_fetching_utilities.weather_provider.open_meteo.open_meteo_adapter import OpenMeteoAdapter
 from rlf.forecasting.data_fetching_utilities.weather_provider.api.api import RequestBuilder
-from rlf.forecasting.data_fetching_utilities.weather_provider.open_meteo.models import ResponseModel
 
 
 class WeatherProvider():
@@ -53,10 +52,12 @@ class WeatherProvider():
 
         response = request_builder.get()
 
-        response_model = ResponseModel(**response.data)
-
-        datum = WeatherDatum(longitude=response_model.longitude, latitude=response_model.latitude,
-                             elevation=response_model.elevation, utc_offset_seconds=response_model.utc_offset_seconds,
-                             timezone=response_model.timezone, hourly_parameters=response_model.hourly_parameters())
+        datum = WeatherDatum(longitude=response.data["longitude"],
+                             latitude=response.data["latitude"],
+                             elevation=response.data["elevation"],
+                             utc_offset_seconds=response.data["utc_offset_seconds"],
+                             timezone=response.data["timezone"],
+                             hourly_units=response.data["hourly_units"],
+                             hourly_parameters=response.data["hourly"])
 
         return datum
