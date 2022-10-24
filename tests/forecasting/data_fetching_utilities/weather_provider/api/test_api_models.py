@@ -18,4 +18,4 @@ def test_init_no_data():
     assert response.url == 'https://fake.com'
     assert response.message == 'OK'
     assert response.headers == {'Content-Type': 'application/json'}
-    assert response.data == []
+    assert response.data is None
