@@ -27,7 +27,7 @@ datum = WeatherDatum(longitude=response.data["longitude"],
                      elevation=response.data["elevation"],
                      utc_offset_seconds=response.data["utc_offset_seconds"],
                      timezone=response.data["timezone"],
-                     hourly_units=response.data["hourly_units"],
-                     hourly_parameters=response.data["hourly"])
+                     hourly_units=response.data.get("hourly_units", None),
+                     hourly_parameters=response.data.get("hourly", None))
 print(datum.get_data_frame())
 # %%
