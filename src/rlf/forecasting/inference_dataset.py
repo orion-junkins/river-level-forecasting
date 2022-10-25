@@ -1,17 +1,17 @@
-from rlf.forecasting.general_utilities.dataset_utilities import pre_process
+from rlf.forecasting.base_dataset import BaseDataset
 
 
-class InferenceDataset:
+class InferenceDataset(BaseDataset):
     """
     Dataset abstraction that fetches, processes and exposes needed X and y datasets for inference given a CatchmentData instance.
     """
-    def __init__(self, catchment_data, scaler, target_scaler) -> None:
+    def __init__(self, scaler, target_scaler, **kwargs) -> None:
         """
         Generate an inference Dataset from a CatchmentData instance using the given test and validation sizes.
 
         Note that variable plurality indicates the presence of multiple datasets. Ie Xs_train is a list of multiple X_train sets.
         """
-        self.catchment_data = catchment_data
+        super().__init__(**kwargs)
         self.scaler = scaler
         self.target_scaler = target_scaler
 
@@ -28,7 +28,7 @@ class InferenceDataset:
         current_weather, recent_level = self.catchment_data.all_current
 
         # Process
-        Xs_current, y_current = pre_process(current_weather, recent_level, allow_future_X=True)
+        Xs_current, y_current = BaseDataset.pre_process(current_weather, recent_level, allow_future_X=True)
 
         # Scale
         Xs_current = self.scaler.transform(Xs_current)
