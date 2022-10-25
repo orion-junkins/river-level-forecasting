@@ -10,7 +10,7 @@ def dummy_hourly_dt_index(num_samples):
     return hours
 
 
-def level_df(num_samples=100):
+def level_df(num_samples=10):
     hours = dummy_hourly_dt_index(num_samples)
     np.random.seed(seed=1)
     data = np.random.randint(1, high=100, size=len(hours))
@@ -20,7 +20,7 @@ def level_df(num_samples=100):
 
 
 class FakeLevelProvider():
-    def __init__(self, num_historical_samples=101) -> None:
+    def __init__(self, num_historical_samples=11) -> None:
         self.num_historical_samples = num_historical_samples
 
     def fetch_recent_level(self, samples_to_fetch):
@@ -48,7 +48,7 @@ def weather_dfs(num_samples, num_dfs):
 
 
 class FakeWeatherProvider:
-    def __init__(self, num_locs=12, num_historical_samples=100) -> None:
+    def __init__(self, num_locs=12, num_historical_samples=10) -> None:
         self.num_locs = num_locs
         self.num_historical_samples = num_historical_samples
 
