@@ -4,7 +4,7 @@ from abc import ABC
 DEFAULT_WORK_DIR = os.path.join("trained_models")
 
 
-class Forecaster_ABC(ABC):
+class BaseForecaster(ABC):
     """Abstract base class for Forecaster objects. Contains Forecaster attributes and methods which are generic across Training and Inference.
     """
     def __init__(self, catchment_data=None, root_dir=DEFAULT_WORK_DIR, filename="frcstr") -> None:
