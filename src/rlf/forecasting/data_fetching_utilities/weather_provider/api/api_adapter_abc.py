@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 
 
-class APIAdapterABC(ABC):
+class BaseAPIAdapter(ABC):
     """Abstract base class for APIAdapter objects"""
 
     def __init__(self, protocol: str, hostname: str, version: str, path: str, parameters: list[str]) -> None:

@@ -1,4 +1,4 @@
-from rlf.forecasting.data_fetching_utilities.weather_provider.api.api_adapter_abc import APIAdapterABC
+from rlf.forecasting.data_fetching_utilities.weather_provider.api.api_adapter_abc import BaseAPIAdapter
 from rlf.forecasting.data_fetching_utilities.weather_provider.api.models import Response
 from rlf.forecasting.data_fetching_utilities.weather_provider.api.rest_invoker import RestInvoker
 
@@ -7,7 +7,7 @@ class RequestBuilder():
     """Build the request payload
     """
 
-    def __init__(self, api_adapter: APIAdapterABC,
+    def __init__(self, api_adapter: BaseAPIAdapter,
                  ssl_verify: bool = True,
                  protocol: str = "https",
                  hostname: str = "archive-api.open-meteo.com",
