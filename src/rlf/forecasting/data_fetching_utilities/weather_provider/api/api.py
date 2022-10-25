@@ -1,4 +1,4 @@
-from rlf.forecasting.data_fetching_utilities.weather_provider.api.api_adapter_abc import BaseAPIAdapter
+from rlf.forecasting.data_fetching_utilities.weather_provider.api.base_api_adapter import BaseAPIAdapter
 from rlf.forecasting.data_fetching_utilities.weather_provider.api.models import Response
 from rlf.forecasting.data_fetching_utilities.weather_provider.api.rest_invoker import RestInvoker
 
