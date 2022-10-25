@@ -1,3 +1,4 @@
+from rlf.forecasting.data_fetching_utilities.coordinate import Coordinate
 from rlf.forecasting.data_fetching_utilities.weather_provider.api.api_adapter_abc import BaseAPIAdapter
 from rlf.forecasting.data_fetching_utilities.weather_provider.open_meteo.parameters import get_hourly_parameters
 
@@ -78,13 +79,13 @@ class OpenMeteoAdapter(BaseAPIAdapter):
         self.longitude = longitude
         self.latitude = latitude
 
-    def get_location(self) -> tuple:
+    def get_location(self) -> Coordinate:
         """Get the geographical location
 
         Returns:
-            tuple: Geographical WGS84 coordinate
+            Coordinate: Geographical WGS84 coordinate namedtuple(longitude, latitude)
         """
-        return (self.longitude, self.latitude)
+        return Coordinate(self.longitude, self.latitude)
 
     def set_start_date(self, start_date: str) -> None:
         """Start date for the request
