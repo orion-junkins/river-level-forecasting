@@ -21,7 +21,7 @@ class BaseAPIAdapter(ABC):
         self.parameters = parameters
 
     @abstractmethod
-    def get_payload(self) -> dict:
+    def get(self) -> dict:
         """Get the payload for the request in the form of a hash map
 
         Returns:
