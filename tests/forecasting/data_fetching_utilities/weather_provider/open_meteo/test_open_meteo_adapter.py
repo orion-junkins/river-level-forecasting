@@ -28,18 +28,15 @@ def weather_api_parameters(fake_latitude, fake_longitude, fake_start_date, fake_
     return OpenMeteoAdapter(longitude=fake_longitude, latitude=fake_latitude, start_date=fake_start_date, end_date=fake_end_date)
 
 
-def test_get_payload_returns_dict(weather_api_parameters):
-    assert isinstance(weather_api_parameters.get_payload(), dict)
-
-
-def test_get_payload_returns_correct_payload(weather_api_parameters):
-    assert (weather_api_parameters.get_payload() == {
-        "protocol": weather_api_parameters.protocol,
-        "hostname": weather_api_parameters.hostname,
-        "version": weather_api_parameters.version,
-        "path": weather_api_parameters.path,
-        "parameters": weather_api_parameters.get_parameters()
-    })
+def test_get_returns_response_with_api_data():
+    adapter = OpenMeteoAdapter(
+        longitude=30.0, latitude=30.0, start_date="2022-08-14", end_date="2022-08-14")
+    response = adapter.get()
+    assert response.status_code == 200
+    assert response.data["longitude"] == 30.0
+    assert response.data["latitude"] == 30.0
+    assert response.data["elevation"] == 162.0
+    assert response.data["hourly"]["temperature_2m"][0] == 23.6
 
 
 def test_get_location_returns_tuple(weather_api_parameters):
