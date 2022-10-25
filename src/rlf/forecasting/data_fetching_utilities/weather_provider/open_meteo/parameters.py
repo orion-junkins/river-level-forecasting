@@ -1,4 +1,3 @@
-
 HOURLY_PARAMETERS = [
     "temperature_2m",
     "relativehumidity_2m",
