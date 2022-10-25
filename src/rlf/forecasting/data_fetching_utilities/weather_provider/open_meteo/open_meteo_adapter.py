@@ -18,15 +18,15 @@ class OpenMeteoAdapter(APIAdapterABC):
         """Adapts the OpenMeteo API to be used by the RequestBuilder
 
         Args:
+            longitude (float, optional): Geographical WGS84 coordinate.
+            latitude (float, optional): Geographical WGS84 coordinate.
+            start_date (str, optional): ISO8601 date (yyyy-mm-dd).
+            end_date (str, optional): ISO8601 date (yyyy-mm-dd).
             protocol (str, optional): The protocol to use. Defaults to "https".
             hostname (str, optional): The hostname to use. Defaults to "archive-api.open-meteo.com".
             version (str, optional): The version of the API to use. Defaults to "v1".
             path (str, optional): The path to use. Defaults to "era5".
-            latitude (float, optional): Geographical WGS84 coordinate. Defaults to 44.06. Bend, OR
-            longitude (float, optional): Geographical WGS84 coordinate. Defaults to -121.31. Bend, OR
-            start_date (str, optional): ISO8601 date (yyyy-mm-dd). Defaults to None.
-            end_date (str, optional): ISO8601 date (yyyy-mm-dd). Defaults to None.
-            hourly_parameters (OpenMeteoHourlyParameters, optional): The parameters to use. Defaults to None.
+            hourly_parameters (OpenMeteoHourlyParameters): The parameters to use. Defaults to hourly_parameters list[str].
         """
         self.longitude = longitude
         self.latitude = latitude

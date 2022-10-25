@@ -8,7 +8,7 @@ class RestInvoker():
     """Invoke a REST API
     """
 
-    def __init__(self, protocol: str = None, hostname: str = None, version: str = None, ssl_verify: bool = True):
+    def __init__(self, protocol: str = None, hostname: str = None, version: str = None, ssl_verify: bool = True) -> None:
         """Invoke a REST API using the requests library
 
         Args:
