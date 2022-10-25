@@ -1,19 +1,20 @@
+from rlf.forecasting.data_fetching_utilities.weather_provider.api.base_api_adapter import BaseAPIAdapter
 from rlf.forecasting.data_fetching_utilities.coordinate import Coordinate
 from rlf.forecasting.data_fetching_utilities.weather_provider.weather_datum import WeatherDatum
-from rlf.forecasting.data_fetching_utilities.weather_provider.open_meteo.open_meteo_adapter import OpenMeteoAdapter
-from rlf.forecasting.data_fetching_utilities.weather_provider.api.api import RequestBuilder
 
 
 class WeatherProvider():
     """Provides a historical of forecasted weather for a given location and time period"""
 
-    def __init__(self, coordinates: Coordinate) -> None:
+    def __init__(self, coordinates: Coordinate, api_adapter: BaseAPIAdapter) -> None:
         """Takes a list of coordinates
 
         Args:
             coordinates (list[Coordinate(longitude: float, latitude: float)]): Named tuple WSG84 coordinates: (longitude, latitude)
+            api_adapter (BaseAPIAdapter): An adapter for a weather API
         """
         self.coordinates = coordinates
+        self.api_adapter = api_adapter
 
     def fetch_historical_weather(self, start_date: str, end_date: str) -> list[WeatherDatum]:
         """Fetch historical weather for all coordinates
@@ -44,13 +45,11 @@ class WeatherProvider():
         Returns:
             WeatherDatum: A Datum object containing the weather data and metadata about a coordinate (https://en.wikipedia.org/wiki/Geodetic_datum)
         """
-        open_meteo_archive_api_adapter = OpenMeteoAdapter(hostname="archive-api.open-meteo.com", latitude=latitude, longitude=longitude,
-                                                          start_date=start_date, end_date=end_date,)
 
-        request_builder = RequestBuilder(
-            api_adapter=open_meteo_archive_api_adapter)
+        self.api_adapter.__dict__.update(
+            longitude=longitude, latitude=latitude, start_date=start_date, end_date=end_date)
 
-        response = request_builder.get()
+        response = self.api_adapter.get()
 
         datum = WeatherDatum(
             longitude=response.data.get(
