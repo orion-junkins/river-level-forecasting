@@ -1,13 +1,11 @@
-from rlf.forecasting.forecaster_abc import Forecaster_ABC
-from rlf.forecasting.training_dataset import TrainingDataset
+from rlf.forecasting.base_forecaster import BaseForecaster
 
 
-class TrainingForecaster(Forecaster_ABC):
-    def __init__(self, model, **kwargs) -> None:
+class TrainingForecaster(BaseForecaster):
+    def __init__(self, model=None, **kwargs) -> None:
         super().__init__(**kwargs)
 
         self.model = model
-        self.dataset = TrainingDataset(catchment_data=self.catchment_data)
 
     def fit(self):
         self.model.fit(self.dataset.y, past_covariates=self.dataset.Xs)

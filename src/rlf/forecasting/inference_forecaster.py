@@ -1,22 +1,23 @@
 from darts.models.forecasting.regression_ensemble_model import \
     RegressionEnsembleModel
 
-from rlf.forecasting.forecaster_abc import Forecaster_ABC
-from rlf.forecasting.inference_dataset import InferenceDataset
+from rlf.forecasting.base_forecaster import BaseForecaster
 
-
-class InferenceForecaster(Forecaster_ABC):
-    def __init__(self, **kwargs) -> None:
+class InferenceForecaster(BaseForecaster):
+    def __init__(self, model_type=RegressionEnsembleModel, **kwargs) -> None:
         super().__init__(**kwargs)
 
-        self.ensemble = self.load_ensemble()
-        self.dataset = InferenceDataset(catchment_data=self.catchment_data)
+        self.model_type = model_type
 
-    def load_ensemble(self):
-        return RegressionEnsembleModel.load(self.ensemble_save_path)
+    @property
+    def model(self):
+        return self._load_ensemble()
+
+    def _load_ensemble(self):
+        return self.model_type.load(self.ensemble_save_path)
 
     def predict(self, num_timesteps=24, update=False):
         if update:
             self.dataset.update()
 
-        self.ensemble.predict(num_timesteps, series=self.dataset.y, past_covariates=self.dataset.Xs)
+        self.model.predict(num_timesteps, series=self.dataset.y, past_covariates=self.dataset.Xs)

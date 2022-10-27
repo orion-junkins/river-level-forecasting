@@ -7,11 +7,12 @@ DEFAULT_WORK_DIR = os.path.join("trained_models")
 class BaseForecaster(ABC):
     """Abstract base class for Forecaster objects. Contains Forecaster attributes and methods which are generic across Training and Inference.
     """
-    def __init__(self, catchment_data=None, root_dir=DEFAULT_WORK_DIR, filename="frcstr") -> None:
+    def __init__(self, catchment_data=None, dataset=None, root_dir=DEFAULT_WORK_DIR, filename="frcstr") -> None:
         """Creates a Forecaster instance. Inheriting classes are expected to call this init before performing their specialized init functionality.
 
         Args:
             catchment_data (CatchmentData, optional): All needed data about the catchment. Defaults to None.
+            dataset (BaseDataset, optional): Dataset object for training OR inference. Must align with subtype (ie TrainingDataset for TrainingForecaster).
             root_dir (_type_, optional): The working directory for model saving. Defaults to DEFAULT_WORK_DIR.
             filename (str, optional): The specific filename under which this forecaster should save/load its core ensemblke model. Defaults to "frcstr".
 
@@ -19,8 +20,9 @@ class BaseForecaster(ABC):
             ValueError: Raises error if there is already a file with filename within root_dir.
         """
         self.catchment_data = catchment_data
-        self.work_dir = os.path.join(root_dir, self.name)
-        self.ensemble_save_path = os.path.join(self.work_dir, filename + ".pkl")
+        self.dataset = dataset
+        self.filename = filename
+        self.work_dir = os.path.join(root_dir, self.catchment_data.name)
 
         os.makedirs(self.work_dir, exist_ok=True)
         if (os.path.isfile(self.ensemble_save_path)):
@@ -42,7 +44,7 @@ class BaseForecaster(ABC):
         Returns:
             os.path: The path of the saved ensemble model.
         """
-        return os.path.join(self.work_dir, self.name)
+        return os.path.join(self.work_dir, self.name, self.filename)
 
     @property
     def num_tributary_models(self):
