@@ -3,6 +3,7 @@ from darts.models.forecasting.regression_ensemble_model import \
 
 from rlf.forecasting.base_forecaster import BaseForecaster
 
+
 class InferenceForecaster(BaseForecaster):
     def __init__(self, model_type=RegressionEnsembleModel, **kwargs) -> None:
         super().__init__(**kwargs)
