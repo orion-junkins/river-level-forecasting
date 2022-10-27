@@ -5,8 +5,8 @@ from rlf.forecasting.data_fetching_utilities.level_provider.base_level_provider 
 
 
 class CatchmentData:
-    """Abstraction for containing all data pertaining to a single catchment. Acts as a cache for fetched data with the ability to update/refetch when desired. Data is not fetched until first access. Thus, this class may be used in production environments for inference without loading excess historical data.
-    """
+    """Abstraction for containing all data pertaining to a single catchment. Acts as a cache for fetched data with the ability to update/refetch when desired. Data is not fetched until first access. Thus, this class may be used in production environments for inference without loading excess historical data."""
+
     def __init__(self, catchment_name: str, weather_provider: WeatherProvider, level_provider: BaseLevelProvider, num_recent_samples: int = 40*24) -> None:
         """
         Create a CatchmentData instance.

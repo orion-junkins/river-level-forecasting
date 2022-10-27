@@ -9,8 +9,7 @@ DEFAULT_WORK_DIR = os.path.join("trained_models")
 
 
 class BaseForecaster(ABC):
-    """Abstract base class for Forecaster objects. Contains Forecaster attributes and methods which are generic across Training and Inference.
-    """
+    """Abstract base class for Forecaster objects. Contains Forecaster attributes and methods which are generic across Training and Inference."""
     def __init__(self, catchment_data: CatchmentData = None, dataset: BaseDataset = None, root_dir: str = DEFAULT_WORK_DIR, filename: str = "frcstr") -> None:
         """Creates a Forecaster instance. Inheriting classes are expected to call this init before performing their specialized init functionality.
 

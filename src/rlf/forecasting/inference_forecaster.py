@@ -7,6 +7,7 @@ from rlf.forecasting.base_forecaster import BaseForecaster
 
 
 class InferenceForecaster(BaseForecaster):
+    """"""
     def __init__(self, model_type: ForecastingModel = RegressionEnsembleModel, **kwargs) -> None:
         super().__init__(**kwargs)
 

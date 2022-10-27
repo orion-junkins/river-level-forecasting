@@ -7,8 +7,9 @@ from rlf.forecasting.catchment_data import CatchmentData
 
 
 class BaseDataset(ABC):
+    """Abstract base class for all Datasets."""
     def __init__(self, catchment_data: CatchmentData = None, rolling_sum_columns: list[str] = [], rolling_mean_columns: list[str] = [], rolling_window_sizes: list[int] = [10*24, 30*24]) -> None:
-        """_summary_
+        """Create a new Dataset instance.
 
         Args:
             catchment_data (CatchmentData): All needed catchment data.
