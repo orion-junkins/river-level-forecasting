@@ -1,7 +1,7 @@
 import pandas as pd
 
-from rlf.forecasting.data_fetching_utilities.weather_provider import WeatherProvider
-from rlf.forecasting.data_fetching_utilities.base_level_provider import BaseLevelProvider
+from rlf.forecasting.data_fetching_utilities.weather_provider.weather_provider import WeatherProvider
+from rlf.forecasting.data_fetching_utilities.level_provider.base_level_provider import BaseLevelProvider
 
 
 class CatchmentData:
