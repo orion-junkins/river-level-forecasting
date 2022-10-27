@@ -1,3 +1,5 @@
+from pandas import DataFrame
+
 from rlf.forecasting.data_fetching_utilities.weather_provider.api.base_api_adapter import BaseAPIAdapter
 from rlf.forecasting.data_fetching_utilities.coordinate import Coordinate
 from rlf.forecasting.data_fetching_utilities.weather_provider.weather_datum import WeatherDatum
@@ -16,7 +18,7 @@ class WeatherProvider():
         self.coordinates = coordinates
         self.api_adapter = api_adapter
 
-    def fetch_historical_weather(self, start_date: str, end_date: str) -> list[WeatherDatum]:
+    def fetch_historical_weather_datums(self, start_date: str, end_date: str) -> list[WeatherDatum]:
         """Fetch historical weather for all coordinates
 
         Args:
@@ -32,6 +34,23 @@ class WeatherProvider():
                 longitude=coordinate.lon, latitude=coordinate.lat, start_date=start_date, end_date=end_date)
             datums.append(datum)
         return datums
+
+    def fetch_historical_weather(self, start_date: str, end_date: str) -> list[DataFrame]:
+        """Fetch historical weather for all coordinates
+
+        Args:
+            start_date (str, optional):  iso8601 format YYYY-MM-DD (https://en.wikipedia.org/wiki/ISO_8601).
+            end_date (str, optional): iso8601 format YYYY-MM-DD.
+
+        Returns:
+            list[DataFrame]: A list of DataFrames containing the weather data about the location.
+        """
+        dfs = []
+        for coordinate in self.coordinates:
+            datum = self.fetch_historical_weather_at_datum(
+                longitude=coordinate.lon, latitude=coordinate.lat, start_date=start_date, end_date=end_date)
+            dfs.append(datum.hourly_parameters)
+        return dfs
 
     def fetch_historical_weather_at_datum(self, longitude: float, latitude: float, start_date: str, end_date: str) -> WeatherDatum:
         """Fetch historical weather for a single coordinate or datum

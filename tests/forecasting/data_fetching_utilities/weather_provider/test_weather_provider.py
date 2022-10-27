@@ -55,19 +55,19 @@ def weather_provider(fake_weather_api_adapter) -> WeatherProvider:
 
 
 def test_fetch_historical_input_output_equal(weather_provider):
-    weather_datums = weather_provider.fetch_historical_weather(
+    weather_datums = weather_provider.fetch_historical_weather_datums(
         start_date="fake start", end_date="fake end")
     assert len(weather_datums) == 2
 
 
 def test_fetch_historical_returns_weather_datum(weather_provider):
-    weather_datums = weather_provider.fetch_historical_weather(
+    weather_datums = weather_provider.fetch_historical_weather_datums(
         start_date="fake start", end_date="fake end")
     assert isinstance(weather_datums[0], WeatherDatum)
 
 
 def test_fetch_historical_returns_datum_at_input_location(weather_provider):
-    weather_datums = weather_provider.fetch_historical_weather(
+    weather_datums = weather_provider.fetch_historical_weather_datums(
         start_date="fake start", end_date="fake end")
     assert weather_datums[0].longitude == 1.0
     assert weather_datums[0].latitude == 2.0
