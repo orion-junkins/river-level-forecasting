@@ -7,7 +7,7 @@ from fake_providers import FakeLevelProvider, FakeWeatherProvider
 
 @pytest.fixture
 def catchment_data():
-    CatchmentData("test_catchment", FakeWeatherProvider(), FakeLevelProvider())
+    return CatchmentData("test_catchment", FakeWeatherProvider(), FakeLevelProvider())
 
 
 def test_partition_size():
