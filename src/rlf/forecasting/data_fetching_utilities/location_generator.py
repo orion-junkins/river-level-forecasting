@@ -33,7 +33,7 @@ class LocationGenerator:
         Returns:
             Coordinate: The bottom left coordinate.
         """
-        return Coordinate(self.lat_min, self.lon_min)
+        return Coordinate(lon=self.lon_min, lat=self.lat_min)
 
     @property
     def top_left(self):
@@ -42,7 +42,7 @@ class LocationGenerator:
         Returns:
             Coordinate: The top left coordinate.
         """
-        return Coordinate(self.lat_max, self.lon_min)
+        return Coordinate(lon=self.lon_min, lat=self.lat_max)
 
     @property
     def bottom_right(self):
@@ -51,7 +51,7 @@ class LocationGenerator:
         Returns:
             Coordinate: The bottom right coordinate.
         """
-        return Coordinate(self.lat_min, self.lon_max)
+        return Coordinate(lon=self.lon_max, lat=self.lat_min)
 
     @property
     def top_right(self):
@@ -60,7 +60,7 @@ class LocationGenerator:
         Returns:
             Coordinate: The top right coordinate.
         """
-        return Coordinate(self.lat_max, self.lon_max)
+        return Coordinate(lon=self.lon_max, lat=self.lat_max)
 
     @property
     def lat_separation(self):
@@ -73,8 +73,8 @@ class LocationGenerator:
         lat_dif_deg = self.lat_max - self.lat_min
 
         # Find the average distance between lat min and lat max in kilometers
-        lat_dif_top_km = distance.distance(tuple(self.top_left), tuple(self.top_right)).km
-        lat_dif_bottom_km = distance.distance(tuple(self.bottom_left), tuple(self.bottom_right)).km
+        lat_dif_top_km = distance.distance(tuple(reversed(tuple(self.top_left))), tuple(reversed(tuple(self.top_right)))).km
+        lat_dif_bottom_km = distance.distance(tuple(reversed(tuple(self.bottom_left))), tuple(reversed(tuple(self.bottom_right)))).km
         average_lat_dif_km = (lat_dif_top_km + lat_dif_bottom_km) / 2
 
         # Convert the separation distance from kilometers to degrees
@@ -93,8 +93,8 @@ class LocationGenerator:
         lon_dif_deg = self.lon_max - self.lon_min
 
         # Find the average distance between lat min and lat max in kilometers
-        lon_dif_left_km = distance.distance(tuple(self.top_left), tuple(self.bottom_left)).km
-        lon_dif_right_km = distance.distance(tuple(self.top_right), tuple(self.bottom_right)).km
+        lon_dif_left_km = distance.distance(tuple(reversed(tuple(self.top_left))), tuple(reversed(tuple(self.bottom_left)))).km
+        lon_dif_right_km = distance.distance(tuple(reversed(tuple(self.top_right))), tuple(reversed(tuple(self.bottom_right)))).km
         average_lon_dif_km = (lon_dif_left_km + lon_dif_right_km) / 2
 
         # Convert the separation distance from kilometers to degrees
@@ -164,7 +164,7 @@ class LocationGenerator:
         coordinates = []
         for lat in self._coordinate_lats():
             for lon in self._coordinate_lons():
-                coordinate = Coordinate(lat, lon)
+                coordinate = Coordinate(lon=lon, lat=lat)
                 coordinates.append(coordinate)
         return coordinates
 
@@ -177,14 +177,14 @@ class LocationGenerator:
         """
         kml = simplekml.Kml()
         for coordinate in self.coordinates:
-            kml.newpoint(name=str(coordinate), coords=[tuple(reversed(tuple(coordinate)))])
+            kml.newpoint(name=str(coordinate), coords=[tuple(coordinate)])
 
         if render_bounding_box:
             linestring = kml.newlinestring(name="bounding_box")
-            linestring.coords = [tuple(reversed(tuple(self.bottom_left))),
-                                 tuple(reversed(tuple(self.bottom_right))),
-                                 tuple(reversed(tuple(self.top_right))),
-                                 tuple(reversed(tuple(self.top_left))),
-                                 tuple(reversed(tuple(self.bottom_left)))]
+            linestring.coords = [tuple(self.bottom_left),
+                                 tuple(self.bottom_right),
+                                 tuple(self.top_right),
+                                 tuple(self.top_left),
+                                 tuple(self.bottom_left)]
 
         kml.save(filepath)

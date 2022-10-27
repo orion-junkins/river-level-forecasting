@@ -8,8 +8,8 @@ from rlf.forecasting.data_fetching_utilities.location_generator import \
 
 # %%
 # Thse coordinates generally represent a bounding box around the Illinois catchment above the gauge near Kerby, OR.
-bottom_left = Coordinate(41.883, -123.822)
-upper_right = Coordinate(42.236, -123.349)
+bottom_left = Coordinate(lon=-123.822, lat=41.883)
+upper_right = Coordinate(lon=-123.349, lat=42.236)
 
 # %%
 # Desired distance between points
@@ -28,3 +28,5 @@ os.makedirs(out_dir, exist_ok=True)
 filepath = os.path.join(out_dir, "illinois-kerby.KML")
 
 location_generator.save_to_kml(filepath=filepath)
+
+# %%
