@@ -1,3 +1,6 @@
+from darts import timeseries
+from darts.dataprocessing.transformers.invertible_data_transformer import InvertibleDataTransformer
+
 from rlf.forecasting.base_dataset import BaseDataset
 
 
@@ -5,7 +8,7 @@ class InferenceDataset(BaseDataset):
     """
     Dataset abstraction that fetches, processes and exposes needed X and y datasets for inference given a CatchmentData instance.
     """
-    def __init__(self, scaler, target_scaler, **kwargs) -> None:
+    def __init__(self, scaler: InvertibleDataTransformer, target_scaler: InvertibleDataTransformer, **kwargs) -> None:
         """
         Generate an inference Dataset from a CatchmentData instance using the given test and validation sizes.
 
@@ -19,7 +22,7 @@ class InferenceDataset(BaseDataset):
 
         # TODO add validation call - ie all X sets are same size, match y sets.
 
-    def _get_data(self, update=False):
+    def _get_data(self, update: bool = False) -> tuple[list[timeseries], timeseries]:
         # Update if specified
         if update:
             self.catchment_data.update_for_inference()
@@ -36,7 +39,7 @@ class InferenceDataset(BaseDataset):
 
         return (Xs_current, y_current)
 
-    def update(self):
+    def update(self) -> None:
         """
         Update the underlying catchment data for inference with up to date data. This triggers new weather data queries and a rebuild of all current datasets.
         """

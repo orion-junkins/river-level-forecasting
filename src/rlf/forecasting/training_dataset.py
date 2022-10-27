@@ -26,7 +26,7 @@ class TrainingDataset(BaseDataset):
 
     def _load_data(self):
         historical_weather, historical_level = self.catchment_data.all_historical
-        Xs, y = BaseDataset.pre_process(historical_weather, historical_level, rolling_sum_columns=self.rolling_sum_columns, rolling_mean_columns=self.rolling_mean_columns, window_sizes=self.rolling_window_sizes)
+        Xs, y = BaseDataset.pre_process(historical_weather, historical_level, rolling_sum_columns=self.rolling_sum_columns, rolling_mean_columns=self.rolling_mean_columns, rolling_window_sizes=self.rolling_window_sizes)
         return (Xs, y)
 
     def _partition(self, test_size):

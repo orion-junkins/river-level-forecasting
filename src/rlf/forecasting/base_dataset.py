@@ -1,10 +1,13 @@
 from abc import ABC
 
 from darts import timeseries
+from pandas import DataFrame
+
+from rlf.forecasting.catchment_data import CatchmentData
 
 
 class BaseDataset(ABC):
-    def __init__(self, catchment_data=None, rolling_sum_columns=[], rolling_mean_columns=[], rolling_window_sizes=[10*24, 30*24]) -> None:
+    def __init__(self, catchment_data: CatchmentData = None, rolling_sum_columns: list[str] = [], rolling_mean_columns: list[str] = [], rolling_window_sizes: list[int] = [10*24, 30*24]) -> None:
         """_summary_
 
         Args:
@@ -19,24 +22,27 @@ class BaseDataset(ABC):
         self.rolling_window_sizes = rolling_window_sizes
 
     @staticmethod
-    def pre_process(Xs, y, rolling_sum_columns=[], rolling_mean_columns=[], window_sizes=[10*24, 30*24], allow_future_X=False):
+    def pre_process(Xs: list[DataFrame], y: DataFrame, rolling_sum_columns: list[str] = [], rolling_mean_columns: list[str] = [], rolling_window_sizes: list[int] = [10*24, 30*24], allow_future_X: bool = False) -> tuple[list[timeseries], timeseries]:
         """
         Pre process data. This includes adding engineered features and trimming datasets to ensure X, y consistency.
 
         Args:
-            Xs (list of dataframes): List of all X sets.
-            y (dataframe): Dataframe containing y set.
+            Xs (list[DataFrame]): List of all X sets.
+            y (DataFrame): Dataframe containing y set.
+            rolling_sum_columns (list[str], optional): For which columns should a rolling sum variable be engineered. Defaults to [].
+            rolling_mean_columns (list[str], optional): For which columns should a rolling mean variable be engineered. Defaults to [].
+            rolling_window_sizes (list[int], optional): For which window sizes should rolling sum and mean variables be engineered. Defaults to [10*24, 30*24] (10 days and 30 days).
             allow_future_X (bool, optional): Determines if end date of X sets can exceed end date of y set. Only True for current data which includes forecasts (level data into future is not yet known, but weather is). Defaults to False.
 
         Returns:
-            tuple of (list of TimeSeries, TimeSeries): Tuple containing (processed_Xs, y)
+            tuple[list[timeseries], timeseries]: Tuple containing (processed_Xs, y)
         """
         y = timeseries.TimeSeries.from_dataframe(y)
 
         processed_Xs = []
 
         for X_cur in Xs:
-            X_cur = BaseDataset.add_engineered_features(X_cur, rolling_sum_columns=rolling_sum_columns, rolling_mean_columns=rolling_mean_columns, window_sizes=window_sizes)
+            X_cur = BaseDataset.add_engineered_features(X_cur, rolling_sum_columns=rolling_sum_columns, rolling_mean_columns=rolling_mean_columns, rolling_window_sizes=rolling_window_sizes)
             X_cur = timeseries.TimeSeries.from_dataframe(X_cur)
 
             if X_cur.start_time() < y.start_time():
@@ -57,19 +63,22 @@ class BaseDataset(ABC):
         return (processed_Xs, y)
 
     @staticmethod
-    def add_engineered_features(df, rolling_sum_columns=[], rolling_mean_columns=[], window_sizes=[10*24, 30*24]):
+    def add_engineered_features(df: DataFrame, rolling_sum_columns: list[str] = [], rolling_mean_columns: list[str] = [], rolling_window_sizes: list[int] = [10*24, 30*24]) -> DataFrame:
         """
         Generate and add engineered features.
 
         Args:
-            df (dataframe): Data from which features should be engineered.
+            df (DataFrame): Data from which features should be engineered.
+            rolling_sum_columns (list[str], optional): For which columns should a rolling sum variable be engineered. Defaults to [].
+            rolling_mean_columns (list[str], optional): For which columns should a rolling mean variable be engineered. Defaults to [].
+            rolling_window_sizes (list[int], optional): For which window sizes should rolling sum and mean variables be engineered. Defaults to [10*24, 30*24] (10 days and 30 days).
 
         Returns:
-            dataframe: Data including new features.
+            DataFrame: Data including new features.
         """
         df['day_of_year'] = df.index.day_of_year
 
-        for window_size in window_sizes:
+        for window_size in rolling_window_sizes:
             for rolling_sum_col in rolling_sum_columns:
                 new_col_name = rolling_sum_col + "_sum_" + str(window_size)
                 df[new_col_name] = df[rolling_sum_col].rolling(window=window_size).sum()

@@ -1,10 +1,13 @@
 import pandas as pd
 
+from rlf.forecasting.data_fetching_utilities.weather_provider import WeatherProvider
+from rlf.forecasting.data_fetching_utilities.base_level_provider import BaseLevelProvider
+
 
 class CatchmentData:
     """Abstraction for containing all data pertaining to a single catchment. Acts as a cache for fetched data with the ability to update/refetch when desired. Data is not fetched until first access. Thus, this class may be used in production environments for inference without loading excess historical data.
     """
-    def __init__(self, catchment_name: str, weather_provider, level_provider, num_recent_samples=40*24) -> None:
+    def __init__(self, catchment_name: str, weather_provider: WeatherProvider, level_provider: BaseLevelProvider, num_recent_samples: int = 40*24) -> None:
         """
         Create a CatchmentData instance.
 
@@ -74,7 +77,7 @@ class CatchmentData:
 
         return self._all_historical
 
-    def _fetch_all_historical(self):
+    def _fetch_all_historical(self) -> None:
         """Fetch or refetch all current data, updating the member variable _all_current. This will trigger queries to the underlying weather and level providers.
         """
         historical_weather = self.weather_provider.fetch_historical_weather()
