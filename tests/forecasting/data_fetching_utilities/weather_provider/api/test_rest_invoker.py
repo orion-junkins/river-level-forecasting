@@ -23,8 +23,7 @@ def test_get_fails_with_message(rest_adapter):
 def test_get():
     invoker = RestInvoker(
         protocol="https", hostname="jsonplaceholder.typicode.com", version=None, ssl_verify=True)
-    for i in range(4):
-        res = invoker.get(path="posts")
+    res = invoker.get(path="posts")
 
     assert isinstance(res, Response)
     assert res.status_code == 200
