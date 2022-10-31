@@ -47,7 +47,7 @@ class RestInvoker():
 
         try:
             response = requests.request(
-                method=method, url=url, verify=self._ssl_verify, params=parameters, json=data)
+                method=method, url=url, verify=self._ssl_verify, params=parameters, json=data, timeout=1)
             if response.status_code == 200:
                 return Response(status_code=response.status_code, url=response.url, message=response.reason, headers=response.headers, data=response.json())
             else:
