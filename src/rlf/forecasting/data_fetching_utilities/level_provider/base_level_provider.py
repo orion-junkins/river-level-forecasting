@@ -28,8 +28,7 @@ class BaseLevelProvider(ABC):
         """
         pass
 
-    @staticmethod
-    def format_level_data(df_raw: pd.DataFrame) -> pd.DataFrame:
+    def format_level_data(self, df_raw: pd.DataFrame) -> pd.DataFrame:
         """
         Take in a dataframe of level data and handle basic formatting.
             - Convert index to UTC
@@ -50,13 +49,10 @@ class BaseLevelProvider(ABC):
         # Convert index to utc timestamps
         df_formatted.index = df_formatted.index.map(lambda x: x.astimezone(pytz.utc))
 
-        if df_formatted.index[0].minute != 0:
-            df_formatted.drop([df_formatted.index[0]], inplace=True)
-        if not (df_formatted.index[0].minute == 0):
-            raise Exception("Error: failed to coerce index to hourly.")
+        df_formatted = self._coerce_index_to_hourly(df_formatted)
 
-        # Remove duplicated entries
-        df_formatted.drop_duplicates(inplace=True)
+        # Remove duplicated index entries
+        df_formatted = df_formatted[~df_formatted.index.duplicated()]
 
         # Set frequency as hourly
         df_formatted = df_formatted.asfreq('H')
@@ -72,3 +68,20 @@ class BaseLevelProvider(ABC):
         df_formatted.dropna(inplace=True)
 
         return df_formatted
+
+    @staticmethod
+    def _coerce_index_to_hourly(df: pd.DataFrame) -> pd.DataFrame:
+        """Coerce the index to hourly by taking the first observed level for each hourly span observed.
+
+        Args:
+            df (pd.DataFrame): Pandas DataFrame with a datetime index.
+
+        Returns:
+            pd.DataFrame: Pandas DataFrame with hourly observations (original timestamp is overwritten).
+        """
+        df = (
+            df.sort_index()
+            .groupby(by=lambda i: i.replace(minute=0, second=0, microsecond=0))
+            .first()
+        )
+        return df

@@ -26,7 +26,7 @@ class LevelProviderNWIS(BaseLevelProvider):
         Returns:
             pd.DataFrame: A dataframe of recent level data with a tz aware UTC Datetime index. Guaranteed to have num_hours rows.
         """
-        start_dt = datetime.utcnow() - timedelta(hours=(num_hours+48))
+        start_dt = datetime.utcnow() - timedelta(hours=(num_hours + 48))
         start_str = datetime.strftime(start_dt, '%Y-%m-%d')
         data_all = self.fetch_level(start=start_str)
         data_trimmed = data_all.iloc[-num_hours:, :]
@@ -65,6 +65,6 @@ class LevelProviderNWIS(BaseLevelProvider):
         df.rename(columns=rename_dict, inplace=True)
 
         # Format data
-        df = BaseLevelProvider.format_level_data(df)
+        df = self.format_level_data(df)
 
         return df
