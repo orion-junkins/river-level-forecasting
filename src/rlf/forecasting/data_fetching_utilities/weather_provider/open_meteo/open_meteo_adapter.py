@@ -9,127 +9,85 @@ class OpenMeteoAdapter(BaseAPIAdapter):
     """Adapts the OpenMeteo API to be used by the RequestBuilder"""
 
     def __init__(self,
-                 longitude: float = None,
-                 latitude: float = None,
-                 start_date: str = None,
-                 end_date: str = None,
                  protocol: str = "https",
-                 hostname: str = "archive-api.open-meteo.com",
+                 archive_hostname: str = "archive-api.open-meteo.com",
+                 forecast_hostname: str = "api.open-meteo.com",
                  version: str = "v1",
-                 path: str = "era5",
-                 hourly_parameters: list[str] = get_hourly_parameters()) -> None:
-        """Adapts the OpenMeteo API to be used by the RequestBuilder
+                 archive_path: str = "era5",
+                 forecast_path: str = "gfs",
+                 archive_hourly_parameters: list[str] = None,
+                 forecast_hourly_parameters: list[str] = None) -> None:
+        """
+        Adapts the OpenMeteo API to be used by the RequestBuilder
 
         Args:
-            longitude (float, optional): Geographical WGS84 coordinate.
-            latitude (float, optional): Geographical WGS84 coordinate.
-            start_date (str, optional): ISO8601 date (yyyy-mm-dd).
-            end_date (str, optional): ISO8601 date (yyyy-mm-dd).
             protocol (str, optional): The protocol to use. Defaults to "https".
-            hostname (str, optional): The hostname to use. Defaults to "archive-api.open-meteo.com".
+            archive_hostname (str, optional): The hostname to use for archived/historical data. Defaults to "archive-api.open-meteo.com".
+            forecast_hostname (str, optional): The hostname to use for current/forecasted data. Defaults to "api.open-meteo.com".
             version (str, optional): The version of the API to use. Defaults to "v1".
-            path (str, optional): The path to use. Defaults to "era5".
-            hourly_parameters (OpenMeteoHourlyParameters): The parameters to use. Defaults to hourly_parameters list[str].
+            archive_path (str, optional): The path to use for archived/historical data. Defaults to "era5".
+            forecast_path (str, optional): The path to use for current/forecasted data. Defaults to "gfs".
+            archive_hourly_parameters (list[str], optional): Which parameters to fetch for archived/historical queries. Defaults to None.
+            forecast_hourly_parameters (list[str], optional): Which parameters to fetch for current/forecasted queries. Defaults to None.
         """
-        self.longitude = longitude
-        self.latitude = latitude
-        self.start_date = start_date
-        self.end_date = end_date
         self.protocol = protocol
-        self.hostname = hostname
+        self.archive_hostname = archive_hostname
+        self.forecast_hostname = forecast_hostname
         self.version = version
-        self.path = path
-        self.hourly_parameters = hourly_parameters
+        self.archive_path = archive_path
+        self.forecast_path = forecast_path
+        self.archive_hourly_parameters = archive_hourly_parameters if archive_hourly_parameters is not None else get_hourly_parameters(archive_path)
+        self.forecast_hourly_parameters = forecast_hourly_parameters if forecast_hourly_parameters is not None else get_hourly_parameters(forecast_path)
 
-    def get(self) -> Response:
-        """Make a GET request to the API
+    def get_historical(self, coordinate: Coordinate, start_date: str, end_date: str, columns: list[str] = None) -> Response:
+        """Make a GET request to the API for historical/archived data.
+
+        Args:
+            coordinate (Coordinate): The location to fetch data for.
+            start_date (str): The starting date for the requested data. In the format "YYYY-MM-DD".
+            end_date (str): The ending date for the requested data. In the format "YYYY-MM-DD".
+            columns (list[str], optional): The subset of columns to fetch. If set to None, all columns will be fetched. Defaults to None.
 
         Returns:
             Response: The response object from the REST API containing response body, headers, status code
         """
         invoker = RestInvoker(protocol=self.protocol,
-                              hostname=self.hostname, version=self.version)
-        return invoker.get(path=self.path, parameters=self._build_request_parameters())
+                              hostname=self.archive_hostname, version=self.version)
 
-    def _build_request_parameters(self) -> dict:
-        """The parameters to use in a request
+        hourly_params = columns if columns is not None else self.archive_hourly_parameters
 
-        Returns:
-            dict: The parameters to use in a request
-        """
         parameters = {
-            "longitude": self.longitude,
-            "latitude": self.latitude,
-            "start_date": self.start_date,
-            "end_date": self.end_date,
-            "hourly": self.hourly_parameters
+            "longitude": coordinate.lon,
+            "latitude": coordinate.lat,
+            "start_date": start_date,
+            "end_date": end_date,
+            "hourly": hourly_params
         }
-        return parameters
 
-    def set_location(self, longitude: float, latitude: float) -> None:
-        """Set the geographical location
+        return invoker.get(path=self.archive_path, parameters=parameters)
 
-        Args:
-            longitude (float): Geographical WGS84 longitude
-            latitude (float): Geographical WGS84 latitude
-        """
-        self.longitude = longitude
-        self.latitude = latitude
-
-    def get_location(self) -> Coordinate:
-        """Get the geographical location
-
-        Returns:
-            Coordinate: Geographical WGS84 coordinate namedtuple(longitude, latitude)
-        """
-        return Coordinate(self.longitude, self.latitude)
-
-    def set_date_interval(self, start_date: str, end_date: str) -> None:
-        """Set the date interval for the request
+    def get_current(self, coordinate: Coordinate, past_days: int = 92, forecast_days: int = 16, columns: list[str] = None) -> Response:
+        """Make a GET request to the API for current/forecasted data.
 
         Args:
-            start_date (str): IS08601 date (yyyy-mm-dd)
-            end_date (str): IS08601 date (yyyy-mm-dd)
-        """
-        self.start_date = start_date
-        self.end_date = end_date
-
-    def get_date_interval(self) -> tuple[str, str]:
-        """Get the date interval for the request
+            coordinate (Coordinate): The location to fetch data for.
+            past_days (int, optional): How many days into the past to fetch data for. Defaults to 92 (OpenMeteo max value).
+            forecast_days (int, optional): How many days into the future to fetch data for. Defaults to 16 (OpenMeteo max value).
+            columns (list[str], optional): The subset of columns to fetch. If set to None, all columns will be fetched. Defaults to None.
 
         Returns:
-            tuple[str, str]: IS08601 date (yyyy-mm-dd)
+            Response: The response object from the REST API containing response body, headers, status code
         """
-        return (self.start_date, self.end_date)
+        invoker = RestInvoker(protocol=self.protocol,
+                              hostname=self.forecast_hostname, version=self.version)
 
-    def set_start_date(self, start_date: str) -> None:
-        """Start date for the request
+        hourly_params = columns if columns is not None else self.forecast_hourly_parameters
+        parameters = {
+            "longitude": coordinate.lon,
+            "latitude": coordinate.lat,
+            "past_days": past_days,
+            "forecast_days": forecast_days,
+            "hourly": hourly_params
+        }
 
-        Args:
-            start_date (str): IS08601 date (yyyy-mm-dd)
-        """
-        self.start_date = start_date
-
-    def get_start_date(self) -> str:
-        """Get the start date for the request
-
-        Returns:
-            str: IS08601 date (yyyy-mm-dd)
-        """
-        return self.start_date
-
-    def set_end_date(self, end_date: str) -> None:
-        """Set the end date for the request
-
-        Args:
-            end_date (str): IS08601 date (yyyy-mm-dd)
-        """
-        self.end_date = end_date
-
-    def get_end_date(self) -> str:
-        """Get the end date for the request
-
-        Returns:
-            str: IS08601 date (yyyy-mm-dd)
-        """
-        return self.end_date
+        return invoker.get(path=self.forecast_path, parameters=parameters)
