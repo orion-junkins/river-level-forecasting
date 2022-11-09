@@ -23,7 +23,7 @@ class WeatherDatum:
     timezone: str
     hourly_units: dict
     hourly_parameters: pd.DataFrame
-    
+
     @property
     def meta_data(self) -> dict:
         """Meta data associated with the Datum contained in a single dictionary.
