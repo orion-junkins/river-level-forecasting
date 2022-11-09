@@ -1,30 +1,32 @@
 from abc import ABC, abstractmethod
 
+from rlf.forecasting.data_fetching_utilities.coordinate import Coordinate
+from rlf.forecasting.data_fetching_utilities.weather_provider.api.models import Response
+
 
 class BaseAPIAdapter(ABC):
     """Abstract base class for APIAdapter objects"""
 
-    def __init__(self, protocol: str, hostname: str, version: str, path: str, parameters: list[str]) -> None:
-        """Initialize the APIAdapter object
+    @abstractmethod
+    def get_current(self, coordinate: Coordinate, **kwargs) -> Response:
+        """Get the current/forecast payload for the request in the form of a hash map
 
         Args:
-            protocol (str): The protocol to use
-            hostname (str): The hostname to use
-            version (str): The version to use
-            path (str): The path to use
-            parameters (list[str]): The parameters to use
-        """
-        self.protocol = protocol
-        self.hostname = hostname
-        self.version = version
-        self.path = path
-        self.parameters = parameters
-
-    @abstractmethod
-    def get(self) -> dict:
-        """Get the payload for the request in the form of a hash map
+            coordinate (Coordinate): The location to fetch data for.
 
         Returns:
-            dict: The payload for the request
+            Response: The response payload for the request
+        """
+        return NotImplementedError
+
+    @abstractmethod
+    def get_historical(self, coordinate: Coordinate, **kwargs) -> Response:
+        """Get the historical/archive payload for the request in the form of a hash map
+
+        Args:
+            coordinate (Coordinate): The location to fetch data for.
+
+        Returns:
+            Response: The response payload for the request
         """
         return NotImplementedError
