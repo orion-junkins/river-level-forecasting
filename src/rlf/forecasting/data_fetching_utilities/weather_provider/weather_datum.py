@@ -5,9 +5,7 @@ import pandas as pd
 
 @dataclass
 class WeatherDatum:
-    """A datum represents a geographical location via a coordinate system. This class packages data from any datum
-        into a single structure containing the information about this point. Each datum can have an interval
-        of measurements in hourly time steps. (https://en.wikipedia.org/wiki/Geodetic_datum)
+    """A datum represents data associated with a single geographical location via a coordinate system. This class packages data from any datum into a single structure containing the information about this point. Each datum can have an interval of measurements in hourly time steps.
 
     Args:
         longitude (float): WGS84 datum longitude value between [-180, 180]
@@ -16,7 +14,7 @@ class WeatherDatum:
         utc_offset_seconds (float): offset seconds from UTC
         timezone (str): database timezone string
         hourly_units (dict): units of the hourly parameters
-        hourly_parameters (dict): contains a key and value for every passed in parameter
+        hourly_parameters (pd.DataFrame): DataFrame of all hourly parameter data
     """
     longitude: float
     latitude: float
@@ -24,12 +22,17 @@ class WeatherDatum:
     utc_offset_seconds: float
     timezone: str
     hourly_units: dict
-    hourly_parameters: dict
-
-    def get_data_frame(self) -> pd.DataFrame:
-        """Get the hourly parameters of the location point
+    hourly_parameters: pd.DataFrame
+    
+    @property
+    def meta_data(self) -> dict:
+        """Meta data associated with the Datum contained in a single dictionary.
 
         Returns:
-            pd.DataFrame: hourly parameters
+            dict: All metadata (attributes excluding hourly_units and hourly_parameters).
         """
-        return pd.DataFrame(self.hourly_parameters)
+        return {"longitude": self.longitude,
+                "latitude": self.latitude,
+                "elevation": self.elevation,
+                "utc_offset_seconds": self.utc_offset_seconds,
+                "timezone": self.timezone}
