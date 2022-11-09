@@ -1,54 +1,119 @@
 import os
-import pickle
+import json
+import s3fs
+import pyarrow.parquet as pq
+from pandas import DataFrame
+from rlf.forecasting.data_fetching_utilities.coordinate import Coordinate
 
-import boto3
+from rlf.forecasting.data_fetching_utilities.weather_provider.weather_datum import WeatherDatum
 
 DEFAULT_LOCAL_PATH = os.path.join("data", "aws_dispatch")
 os.makedirs(DEFAULT_LOCAL_PATH, exist_ok=True)
 
 
 class AWSDispatcher():
-    def __init__(self, river_gauge_name, model_name) -> None:
-        self.river_gauge_name = river_gauge_name
-        self.model_name = model_name
-        self.forecaster = self.load_forecaster()
-
-    def load_forecaster(self):
-        trained_model_dir = "trained_models"
-        frcstr_file = os.path.join(trained_model_dir, self.river_gauge_name, self.model_name, self.model_name + "_frcstr.pickle")
-        # Load trained forecaster
-        pickle_in = open(frcstr_file, "rb")
-        frcstr = pickle.load(pickle_in)
-        return frcstr
-
-    def pickle_to_aws(self, payload, filename, reg_model_name, local_dir=DEFAULT_LOCAL_PATH):
-        """
-        Pickle the given payload locally, and upload the file to AWS
+    def __init__(self, bucket_name="test-bucket-junkinso", directory_name="test_directory_name") -> None:
+        """Create a new AWS Dispatcher instance.
 
         Args:
-            payload (object): any python object, typically a DataFrame
-            filename (string): desired name for the file. Determines local/s3 file name.
-            local_dir (path, optional): Root dir for local storage. Defaults to DEFAULT_LOCAL_PATH.
+            bucket_name (str, optional): The target bucket for dispatching. MUST already exist in AWS. Defaults to "test-bucket-junkinso".
+            directory_name (str, optional): Directory name within the target bucket. Does not need to already exist. Defaults to "test_directory_name".
         """
-        out_dir = os.path.join(local_dir, self.river_gauge_name, self.model_name)
-        os.makedirs(out_dir, exist_ok=True)
-        out_path = os.path.join(out_dir, filename + ".pickle")
-        pickle_out = open(out_path, "wb")
-        pickle.dump(payload, pickle_out)
-        pickle_out.close()
-        s3 = boto3.client('s3')
-        s3.upload_file(out_path, 'generated-forecasts', f'{self.river_gauge_name}/{self.model_name}/{reg_model_name}/{filename}.pickle')
+        self.s3 = s3fs.S3FileSystem(anon=False)
+        self.working_dir = f's3://{bucket_name}/{directory_name}'
 
-    def rebuild_current_forecast(self, horizon=96, update_dataset=True):
-        reg_model_names = self.forecaster.regression_models.keys()
-        for reg_model_name in reg_model_names:
-            fcast = self.forecaster.get_forecast(num_timesteps=horizon, reg_model_name=reg_model_name, update_dataset=update_dataset)
+    def upload_as_json(self, dictionary: dict, folder_name: str, filename: str) -> None:
+        """
+        Pickle the given dictionary locally, and upload the file to AWS
 
-            self.pickle_to_aws(fcast, reg_model_name=reg_model_name, filename="current_forecast")
+        Args:
+            dictionary (dict): dictionary to write to S3.
+            folder_name (str): desired folder for the file. Determines s3 folder name.
+            filename (str): desired name for the file. Determines s3 file name.
+        """
+        path = f'{self.working_dir}/{folder_name}/{filename}.json'
 
-    def rebuild_historical_forecast(self, horizon=24, stride=1):
-        reg_model_names = self.forecaster.regression_models.keys()
-        for reg_model_name in reg_model_names:
-            self.forecaster.build_historical_reg_forecasts(reg_model_name=reg_model_name, forecast_horizon=horizon, stride=stride)
-            fcast = self.forecaster.historical_reg_forecasts[reg_model_name]
-            self.pickle_to_aws(fcast, filename=f"historical_forecast_h{horizon}_s{stride}", reg_model_name=reg_model_name)
+        self.s3.write_bytes(
+            value=json.dumps(dictionary),
+            path=path
+        )
+
+    def download_dict_from_json(self, folder_name: str, filename: str) -> dict:
+        """Download a json file from AWS and parse it into a dictionary.
+
+        Args:
+            folder_name (str): Folder of the file.
+            filename (str): Name for the file.
+
+        Returns:
+            dict: The resulting dictionary.
+        """
+        path = f'{self.working_dir}/{folder_name}/{filename}.json'
+
+        with self.s3.open(path, 'rb') as f:
+            data = json.load(f)
+
+        return data
+
+    def upload_as_parquet(self, dataframe: DataFrame, folder_name: str, filename: str) -> None:
+        """
+        Pickle the given dictionary locally, and upload the file to AWS
+
+        Args:
+            dataframe (DataFrame): DataFrame to upload to S3.
+            folder_name (str): desired folder for the file. Determines s3 folder name.
+            filename (str): desired name for the file. Determines s3 file name.
+        """
+        path = f'{self.working_dir}/{folder_name}/{filename}.parquet'
+
+        self.s3.write_bytes(
+            value=dataframe.to_parquet(),
+            path=path
+        )
+
+    def download_df_from_parquet(self, folder_name: str, filename: str, columns: list[str] = None) -> DataFrame:
+        """Download a parquet file from AWS and parse it into a DataFRame
+
+        Args:
+            folder_name (str): Folder of the file.
+            filename (str): Name for the file.
+            columns (list[str], optional): Columns to fetch. All available will be fetched if set to None. Defaults to None.
+
+        Returns:
+            DataFrame: Downloaded DataFrame.
+        """
+        path = f'{self.working_dir}/{folder_name}/{filename}.parquet'
+
+        dataset = pq.ParquetDataset(path, filesystem=self.s3)
+        table = dataset.read(columns=columns)
+        df = table.to_pandas()
+        return df
+
+    def upload_datum(self, datum: WeatherDatum) -> None:
+        """Upload an entire WeatherDatum to S3.
+
+        Args:
+            datum (WeatherDatum): The Datum to upload.
+        """
+        folder_name = f'lon_{datum.longitude:.3f}_lat_{datum.latitude:.3f}'
+
+        self.upload_as_json(datum.meta_data, folder_name, "meta")
+        self.upload_as_json(datum.hourly_units, folder_name, "units")
+        self.upload_as_parquet(datum.hourly_parameters, folder_name, "data")
+
+    def download_datum(self, coordinate: Coordinate, columns: list[str] = None) -> WeatherDatum:
+        """Download an entire WeatherDatum from S3.
+
+        Args:
+            coordinate (Coordinate): Coordinate to fetch Datum for.
+            columns (list[str], optional): Columns to fetch. All available will be fetched if set to None. Defaults to None.
+
+        Returns:
+            WeatherDatum: Downloaded WeatherDatum
+        """
+        folder_name = f'lon_{coordinate.lon:.3f}_lat_{coordinate.lat:.3f}'
+        meta_data = self.download_dict_from_json(folder_name, "meta")
+        hourly_units = self.download_dict_from_json(folder_name, "units")
+        hourly_parameters = self.download_df_from_parquet(folder_name, "data", columns=columns)
+        datum = WeatherDatum(hourly_units=hourly_units, hourly_parameters=hourly_parameters, **meta_data)
+        return datum
