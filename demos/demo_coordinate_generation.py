@@ -12,13 +12,8 @@ bottom_left = Coordinate(lon=-123.822, lat=41.883)
 upper_right = Coordinate(lon=-123.349, lat=42.236)
 
 # %%
-# Desired distance between points
-# currently in degrees. Some approximation/conversion for miles would be nice.
-km_dist = 10
-
-# %%
 # Generate locations
-location_generator = LocationGenerator(bottom_left, upper_right, km_dist)
+location_generator = LocationGenerator(bottom_left, upper_right)
 print(location_generator.coordinates)
 
 # %%
@@ -28,5 +23,3 @@ os.makedirs(out_dir, exist_ok=True)
 filepath = os.path.join(out_dir, "illinois-kerby.KML")
 
 location_generator.save_to_kml(filepath=filepath)
-
-# %%
