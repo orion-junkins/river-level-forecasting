@@ -40,7 +40,7 @@ class OpenMeteoAdapter(BaseAPIAdapter):
         self.forecast_hourly_parameters = forecast_hourly_parameters if forecast_hourly_parameters is not None else get_hourly_parameters(forecast_path)
 
     def get_historical(self, coordinate: Coordinate, start_date: str, end_date: str, columns: list[str] = None) -> Response:
-        """Make a GET request to the API for historical/archived data.
+        """Make a GET request to the Open Meteo API for historical/archived data.
 
         Args:
             coordinate (Coordinate): The location to fetch data for.
@@ -67,7 +67,7 @@ class OpenMeteoAdapter(BaseAPIAdapter):
         return invoker.get(path=self.archive_path, parameters=parameters)
 
     def get_current(self, coordinate: Coordinate, past_days: int = 92, forecast_days: int = 16, columns: list[str] = None) -> Response:
-        """Make a GET request to the API for current/forecasted data.
+        """Make a GET request to the Open Meteo API for current/forecasted data.
 
         Args:
             coordinate (Coordinate): The location to fetch data for.
