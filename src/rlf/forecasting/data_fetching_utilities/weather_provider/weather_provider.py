@@ -176,36 +176,6 @@ class WeatherProvider():
             datums.append(datum)
         return datums
 
-    def update_current_datums_in_aws(self, columns: list[str] = None) -> None:
-        """Fetch up to date current datums and upload them to AWS S3, replacing whatever data was previously stored.
-
-        Args:
-            columns (list[str], optional): The columns/parameters to fetch. All available will be fetched if left equal to None. Defaults to None.
-
-        Raises:
-            ValueError: Ensures that an AWSDispatcher has been provided, raising an error if not.
-        """
-        if self.aws_dispatcher is None:
-            raise ValueError("No AWSDispatcher provided.")
-        datums = self.fetch_current_datums(columns=columns)
-        for datum in datums:
-            self.aws_dispatcher.upload_datum(datum)
-
-    def download_current_datums_from_aws(self, columns: list[str] = None) -> list[WeatherDatum]:
-        """Download current datums from AWS. Assumes Datums exist at expected filepath.
-
-        Args:
-            columns (list[str], optional): The columns/parameters to fetch. All available will be fetched if left equal to None. Defaults to None.
-
-        Returns:
-            list[WeatherDatum]: List of WeatherDatums for all coordinates.
-        """
-        datums = []
-        for coordinate in self.coordinates:
-            datum = self.aws_dispatcher.download_datum(coordinate, columns=columns)
-            datums.append(datum)
-        return datums
-
     def fetch_current(self, columns: list[str] = None) -> list[DataFrame]:
         """Fetch current weather for all coordinates.
 
@@ -215,13 +185,7 @@ class WeatherProvider():
         Returns:
             list[DataFrame]: A list of DataFrames containing the weather data about the location.
         """
-        if self.aws_dispatcher is None:
-            datums = self.fetch_current_datums(columns=columns)
-        else:
-            try:
-                datums = self.download_current_datums_from_aws(columns=columns)
-            except FileNotFoundError:
-                datums = self.fetch_current_datums(columns=columns)
+        datums = self.fetch_current_datums(columns=columns)
         dfs = []
         for datum in datums:
             dfs.append(datum.hourly_parameters)
