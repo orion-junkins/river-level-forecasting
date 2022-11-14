@@ -1,7 +1,7 @@
-from darts import timeseries
+from darts import TimeSeries
+from darts.models.forecasting.forecasting_model import ForecastingModel
 from darts.models.forecasting.regression_ensemble_model import \
     RegressionEnsembleModel
-from darts.models.forecasting.forecasting_model import ForecastingModel
 
 from rlf.forecasting.base_forecaster import BaseForecaster
 from rlf.models.utils import repair_regression_ensemble_model
@@ -40,7 +40,7 @@ class InferenceForecaster(BaseForecaster):
             repair_regression_ensemble_model(model)
         return model
 
-    def predict(self, num_timesteps: int = 24, update: bool = False) -> timeseries:
+    def predict(self, num_timesteps: int = 24, update: bool = False) -> TimeSeries:
         """Generate a prediction.
 
         Args:
@@ -48,7 +48,7 @@ class InferenceForecaster(BaseForecaster):
             update (bool, optional): Whether or not to update underlying Dataset before inference. Defaults to False.
 
         Returns:
-            timeseries: The forecasted timeseries.
+            TimeSeries: The forecasted timeseries.
         """
         if update:
             self.dataset.update()
