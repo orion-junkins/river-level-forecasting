@@ -41,38 +41,23 @@ pip install -e .
 
 This will install the package as 'editable' meaning that any changes to the repo will automatically be reflected the next time you import a module. You will not have to reinstall the package.
 
-# Startup
-The reset of the README will serve as a high level walkthrough of the core forecasting code. 
+# Testing
+This repository uses Pytest for unit testing. In order to run all tests, from the root directory, run the following command:
+```
+pytest
+```
 
-Most relevant functionality lives in `./forecasting/`
+To run a specific test file (or subset of test files), run the following command:
+```
+pytest tests\forecasting\path\to\test\file\or\directory
+```
 
-## 1) Data Fetching
-Weather and level data must both be fetched.
-### a) Weather Data
-Weather data comes from the OpenWeatherAPI.
-Explore [./forecasting/data_fetching_utilities/weather.py](./forecasting/data_fetching_utilities/weather.py) to see how this data is fetched and cleaned.
+Some tests involve interactions with external APIs, or internal AWS S3 buckets. These tests act as higher level tests to ensure that integration with external services is functioning, but they are slow, and thus are not run by default. In order to run these tests, add the `--runslow` flag as follows:
+```
+pytest --runslow 
+```
+or 
 
-### b) Level Data
-Level data comes from [dataretrieval.nwis](https://github.com/USGS-python/dataretrieval), a lovely python package that allows direct querying of nwis data. Explore [./forecasting/data_fetching_utilities/weather.py](./forecasting/data_fetching_utilities/weather.py) to see how this is used.
-
-## 2) Building 'CatchmentData' Instances
-Inspect [./rebuild_catchment.py](rebuild_catchment.py). This builds a CatchmentData instance. Inspect [forecasting/catchment_data.py](forecasting/catchment_data.py). 
-
-The resulting CatchmentData instance is pickled and stored. From here on, only the pickle file is needed for training - everything needed lives there.
-
-## 3) Training
-Inspect [./train.py](./train.py). This file walks through the procedure of training a model from a CatchmentData instance. This script primarily leverages the Forecaster class from [./forecasting/forecaster.py](./forecasting/forecaster.py). Go through this class to understand what it can and can't do.
-
-## 4) Inference
-The forecaster is now able to make predictions (the final print statement from train.py should demonstrate this). Forecasts can be generated and viewed locally, but, for production, we will want to push them to AWS. Explore [aws_dispatcher.py](./aws_dispatcher.py), [rebuild_current_forecast.py](./rebuild_current_forecast.py) and [rebuild_historical_forecast.py](./rebuild_historical_forecast.py) to understand this process.
-
-## 5) Miscellaneous
-Some other stuff also lives in this repo. Some useful, some less so. Some should be removed or re-homed.
-### a) server_scripts
-These are aditional scripts for automation on Patrick's server. Ignore them for now, they are a bit messy but will be useful starting points if/when we start leveraging the DGX2.
-
-### b) data
-Data lives here. Ideally the large files should be stored somewhere else, but this dir works for now. Weather locations for each river are also listed here.
-
-### c) darts_custom
-This was a failed attempt to extend Darts to allow for multiple different X Covariate sets to be used in an ensemble. It seemed to work, but gave awful results and I never quite got it working. Gave up and went with a naive version instead but this code may be worth coming back to...
+```
+pytest --runslow tests\forecasting\path\to\test\file\or\directory
+```
