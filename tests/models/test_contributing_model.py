@@ -7,12 +7,12 @@ from rlf.models.contributing_model import ContributingModel
 class MockModel:
     def __init__(self, expected_columns: list[str]):
         self.expected_columns = expected_columns
-    
+
     def fit(self, past_covariates, future_covariates, **kwargs) -> "MockModel":
         assert(sorted(past_covariates.columns) == sorted(self.expected_columns))
         assert(sorted(future_covariates.columns) == sorted(self.expected_columns))
         return self
-    
+
     def predict(self, past_covariates, future_covariates, **kwargs) -> None:
         assert(sorted(past_covariates.columns) == sorted(self.expected_columns))
         assert(sorted(future_covariates.columns) == sorted(self.expected_columns))
@@ -61,7 +61,3 @@ def test_tributary_model_fit_do_not_separate_columns():
     covariates = TimeSeries.from_values(values, columns=all_columns)
 
     tm.fit(series=None, past_covariates=covariates, future_covariates=covariates)
-
-
-def test_contributing_model_pickle_unpickle():
-    pass
