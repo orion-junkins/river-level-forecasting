@@ -12,12 +12,12 @@ os.makedirs(DEFAULT_LOCAL_PATH, exist_ok=True)
 
 
 class AWSDispatcher():
-    def __init__(self, bucket_name="test-bucket-junkinso", directory_name="test_directory_name") -> None:
+    def __init__(self, bucket_name: str, directory_name: str) -> None:
         """Create a new AWS Dispatcher instance.
 
         Args:
-            bucket_name (str, optional): The target bucket for dispatching. MUST already exist in AWS. Defaults to "test-bucket-junkinso".
-            directory_name (str, optional): Directory name within the target bucket. Does not need to already exist. Defaults to "test_directory_name".
+            bucket_name (str): The target bucket for dispatching. MUST already exist in AWS.
+            directory_name (str): Directory name within the target bucket. Does not need to already exist.
         """
         self.s3 = s3fs.S3FileSystem(anon=False)
         self.working_dir = f's3://{bucket_name}/{directory_name}'
