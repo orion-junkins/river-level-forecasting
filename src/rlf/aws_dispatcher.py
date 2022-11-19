@@ -33,7 +33,7 @@ class AWSDispatcher():
         """
         path = f'{self.working_dir}/{folder_name}/{filename}.json'
 
-        self.s3.write_bytes(
+        self.s3.write_text(
             value=json.dumps(dictionary),
             path=path
         )
