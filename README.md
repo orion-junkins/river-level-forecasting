@@ -58,12 +58,12 @@ To run a specific test file (or subset of test files), run the following command
 pytest tests\forecasting\path\to\test\file\or\directory
 ```
 
-Some tests involve interactions with external APIs, or internal AWS S3 buckets. These tests act as higher level tests to ensure that integration with external services is functioning, but they are slow, and thus are not run by default. In order to run these tests, add the `--runslow` flag as follows:
+Some tests involve interactions with external APIs, or internal AWS S3 buckets. These tests act as higher level tests to ensure that integration with external services is functioning, but they are slow. In order to skip these tests, add the `--fast` flag as follows:
 ```
-pytest --runslow 
+pytest --fast 
 ```
 or 
 
 ```
-pytest --runslow tests\forecasting\path\to\test\file\or\directory
+pytest --fast tests\forecasting\path\to\test\file\or\directory
 ```
