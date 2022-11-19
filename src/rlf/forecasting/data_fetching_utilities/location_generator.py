@@ -23,8 +23,6 @@ class LocationGenerator:
 
         Raises:
             ValueError: If bottom_left and top_right do not define a valid region.
-            ValueError: _description_
-            ValueError: _description_
         """
         self.separation_degrees = separation_degrees
         self.precision = precision
