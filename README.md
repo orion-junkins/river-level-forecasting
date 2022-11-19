@@ -41,6 +41,12 @@ pip install -e .
 
 This will install the package as 'editable' meaning that any changes to the repo will automatically be reflected the next time you import a module. You will not have to reinstall the package.
 
+# AWS Interaction
+Although some functionality can be performed without AWS, much of this codebase expects/depends on having access to the associated AWS account. 
+
+In order to interact with AWS, you must have the AWS CLI configured locally. See [this quickstart guide](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-quickstart.html) or [this full guide](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-quickstart.html#cli-configure-quickstart-creds) to get started.
+
+
 # Testing
 This repository uses Pytest for unit testing. In order to run all tests, from the root directory, run the following command:
 ```
