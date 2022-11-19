@@ -7,10 +7,6 @@ def pytest_addoption(parser):
     )
 
 
-def pytest_configure(config):
-    config.addinivalue_line("markers", "slow: mark test as slow to run")
-
-
 def pytest_collection_modifyitems(config, items):
     if not config.getoption("--fast"):
         # --fast given in cli: skip slow tests

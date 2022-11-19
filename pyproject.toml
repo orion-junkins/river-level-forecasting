@@ -22,3 +22,12 @@ classifiers = [
 [project.urls]
 "Homepage" = "https://github.com/orion-junkins/river-level-forecasting"
 "Bug Tracker" = "https://github.com/orion-junkins/river-level-forecasting/issues"
+
+[tool.pytest.ini_options]
+markers = [
+  "slow: mark test as slow to run"
+]
+minversion = "7.0"
+testpaths = [
+    "tests"
+]
