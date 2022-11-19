@@ -28,5 +28,3 @@ def test_all_current_correct_num_samples(fake_weather_provider, fake_level_provi
     weather_dfs, level_df = catchment.all_current
 
     assert (len(level_df) == num_samples)
-    for weather_df in weather_dfs:
-        assert (len(weather_df) == num_samples)

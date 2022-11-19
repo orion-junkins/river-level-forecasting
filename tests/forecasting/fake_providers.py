@@ -52,8 +52,8 @@ class FakeWeatherProvider:
         self.num_locs = num_locs
         self.num_historical_samples = num_historical_samples
 
-    def fetch_current_weather(self, samples_to_fetch):
-        return weather_dfs(samples_to_fetch, self.num_locs)
+    def fetch_current(self, columns=None):
+        return weather_dfs(10, self.num_locs)
 
-    def fetch_historical_weather(self):
+    def fetch_historical(self, columns=None):
         return weather_dfs(self.num_historical_samples, self.num_locs)

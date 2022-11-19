@@ -7,7 +7,7 @@ from rlf.forecasting.data_fetching_utilities.level_provider.base_level_provider 
 class CatchmentData:
     """Abstraction for containing all data pertaining to a single catchment. Acts as a cache for fetched data with the ability to update/refetch when desired. Data is not fetched until first access. Thus, this class may be used in production environments for inference without loading excess historical data."""
 
-    def __init__(self, catchment_name: str, weather_provider: WeatherProvider, level_provider: BaseLevelProvider, num_recent_samples: int = 40*24) -> None:
+    def __init__(self, catchment_name: str, weather_provider: WeatherProvider, level_provider: BaseLevelProvider, num_recent_samples: int = 90*24) -> None:
         """
         Create a CatchmentData instance.
 
@@ -15,7 +15,7 @@ class CatchmentData:
             catchment_name (str): Name of the catchment. Should correspond to external gauge name.
             weather_provider (WeatherProvider): Provider for Weather data.
             level_provider (LevelProvider): Provider for level data.
-            num_recent_samples (_type_, optional): _description_. Defaults to 40*24.
+            num_recent_samples (_type_, optional): Number of recent level samples to fetch. Defaults to 90 days (90 days * 24 hours/day).
         """
         self.name = catchment_name
         self.weather_provider = weather_provider
@@ -56,7 +56,7 @@ class CatchmentData:
     def _fetch_all_current(self) -> None:
         """Fetch or refetch all current data, updating the member variable _all_current. This will trigger queries to the underlying weather and level providers.
         """
-        current_weather = self.weather_provider.fetch_current_weather(self.num_recent_samples)
+        current_weather = self.weather_provider.fetch_current()
         recent_level = self.level_provider.fetch_recent_level(self.num_recent_samples)
 
         self._all_current = (current_weather, recent_level)
@@ -80,6 +80,6 @@ class CatchmentData:
     def _fetch_all_historical(self) -> None:
         """Fetch or refetch all current data, updating the member variable _all_current. This will trigger queries to the underlying weather and level providers.
         """
-        historical_weather = self.weather_provider.fetch_historical_weather()
+        historical_weather = self.weather_provider.fetch_historical()
         historical_level = self.level_provider.fetch_historical_level()
         self._all_historical = (historical_weather, historical_level)
