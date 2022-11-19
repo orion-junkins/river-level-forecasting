@@ -79,7 +79,6 @@ def test_fetch_current_returns_expected_df(weather_provider):
         assert len(weather_df) == 3
 
 
-# AWS Backed tests - TODO: Flag as slow
 @pytest.fixture
 def aws_dispatcher():
     return AWSDispatcher(bucket_name="testing-bucket-junkinso", directory_name="weather_provider_testing")
