@@ -11,6 +11,7 @@ dependencies:
   - flake8      # Linter for style adherence
   - pytest      # Unit testing framework
   - boto3       # AWS S3 interaction
+  - s3fs        # AWS S3 interaction TODO: Convert to only boto3 OR only s3fs (Issue #30)
   - pip         # Package installer for dependencies not available through Conda
   - pip:
     # Add pip packages which are not available through conda here
@@ -19,3 +20,4 @@ dependencies:
     - darts==0.22   # Core Timeseries forecasting library (includes Pytorch)
     - dataretrieval # Package for fetching NWIS river level dataa
     - simplekml     # Weather location KML generation
+    - pyarrow       # Parquet file creation
