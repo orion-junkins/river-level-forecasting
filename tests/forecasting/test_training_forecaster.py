@@ -1,9 +1,9 @@
 import pytest
 
+from fake_providers import FakeLevelProvider, FakeWeatherProvider
 from rlf.forecasting.catchment_data import CatchmentData
 from rlf.forecasting.training_dataset import TrainingDataset
 from rlf.forecasting.training_forecaster import TrainingForecaster
-from fake_providers import FakeLevelProvider, FakeWeatherProvider
 
 
 @pytest.fixture
@@ -17,6 +17,6 @@ def training_dataset(catchment_data):
 
 
 def test_training_forecaster_init(training_dataset, catchment_data):
-    training_forecaster = TrainingForecaster(catchment_data=catchment_data, dataset=training_dataset)
+    training_forecaster = TrainingForecaster(model=None, catchment_data=catchment_data, dataset=training_dataset)
 
     assert (type(training_forecaster.dataset) is TrainingDataset)
