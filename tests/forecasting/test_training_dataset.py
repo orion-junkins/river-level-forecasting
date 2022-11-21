@@ -71,15 +71,15 @@ def test_data_scaled_0_1(catchment_data):
 
 
 def test_feature_engineering(catchment_data):
-    column = "weather_attr_1"
-    rolling_window_size = 3
-    rolling_sum_column = column + "_sum_" + str(rolling_window_size)
-    rolling_mean_column = column + "_mean_" + str(rolling_window_size)
+    train_ds = TrainingDataset(
+        catchment_data=catchment_data,
+        rolling_sum_columns=["weather_attr_1"],
+        rolling_mean_columns=["weather_attr_1"],
+        rolling_window_sizes=[3]
+    )
 
-    train_ds = TrainingDataset(catchment_data=catchment_data, rolling_sum_columns=[column], rolling_mean_columns=[column], rolling_window_sizes=[rolling_window_size])
+    x = train_ds.Xs[0]
+    x_df = x.pd_dataframe()
 
-    for x in train_ds.Xs:
-        x_df = x.pd_dataframe()
-        assert (x_df[column][-rolling_window_size:].sum() == x_df[rolling_sum_column][-1])
-
-        assert (x_df[column][-rolling_window_size:].mean() == x_df[rolling_mean_column][-1])
+    assert (x_df["0.250_1.250_weather_attr_1_sum_3"][-1] == 84.0)
+    assert (x_df["0.250_1.250_weather_attr_1_mean_3"][-1] == 28.0)
