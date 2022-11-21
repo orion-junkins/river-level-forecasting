@@ -1,24 +1,39 @@
 from darts import TimeSeries
 from darts.models.forecasting.forecasting_model import ForecastingModel
-from darts.models.forecasting.regression_ensemble_model import \
+from darts.models.forecasting.regression_ensemble_model import (
     RegressionEnsembleModel
+)
 
-from rlf.forecasting.base_forecaster import BaseForecaster
+from rlf.forecasting.base_forecaster import BaseForecaster, DEFAULT_WORK_DIR
+from rlf.forecasting.catchment_data import CatchmentData
+from rlf.forecasting.inference_dataset import InferenceDataset
 from rlf.models.utils import repair_regression_ensemble_model
 
 
 class InferenceForecaster(BaseForecaster):
     """Forecaster abstraction for inference/production. Top level class interacted with by the user."""
-    def __init__(self, model_type: ForecastingModel = RegressionEnsembleModel, **kwargs) -> None:
+    def __init__(
+        self,
+        dataset: InferenceDataset,
+        catchment_data: CatchmentData,
+        root_dir: str = DEFAULT_WORK_DIR,
+        filename: str = "frcstr",
+        model_type: ForecastingModel = RegressionEnsembleModel,
+
+    ) -> None:
         """Create a training forecaster. Note that many important parameters must be passed as keyword args. See BaseForecaster docs for complete list.
 
-
         Args:
+            dataset (InferenceDataset): Dataset to use for inference.
+            catchment_data (CatchmentData): CatchmentData instance to use.
+            root_dir (str, optional): Root directory where the model should be located. Defaults to DEFAULT_WORK_DIR.
+            filename (str, optional): Name of file where the pickled model is located. Defaults to "frcstr".
             model_type (ForecastingModel, optional): Darts Forecasting model type to load. Defaults to RegressionEnsembleModel.
         """
-        super().__init__(**kwargs)
+        super().__init__(catchment_data=catchment_data, root_dir=root_dir, filename=filename)
 
         self.model_type = model_type
+        self.dataset = dataset
 
     @property
     def model(self) -> ForecastingModel:
