@@ -1,6 +1,9 @@
-import pandas as pd
-import numpy as np
 from datetime import datetime, timedelta
+
+import numpy as np
+import pandas as pd
+
+from rlf.forecasting.data_fetching_utilities.weather_provider.weather_datum import WeatherDatum
 
 
 def dummy_hourly_dt_index(num_samples):
@@ -40,11 +43,20 @@ def weather_df(num_samples):
     return df
 
 
-def weather_dfs(num_samples, num_dfs):
-    dfs = []
-    for _ in range(num_dfs):
-        dfs.append(weather_df(num_samples))
-    return dfs
+def weather_datums(num_samples, num_dfs):
+    datums = []
+    for i in range(num_dfs):
+        datum = WeatherDatum(
+            longitude=i + 0.25,
+            latitude=i + 1.25,
+            elevation=0.0,
+            utc_offset_seconds=0.0,
+            timezone=None,
+            hourly_units=None,
+            hourly_parameters=weather_df(num_samples)
+        )
+        datums.append(datum)
+    return datums
 
 
 class FakeWeatherProvider:
@@ -53,7 +65,7 @@ class FakeWeatherProvider:
         self.num_historical_samples = num_historical_samples
 
     def fetch_current(self, columns=None):
-        return weather_dfs(10, self.num_locs)
+        return weather_datums(10, self.num_locs)
 
     def fetch_historical(self, columns=None):
-        return weather_dfs(self.num_historical_samples, self.num_locs)
+        return weather_datums(self.num_historical_samples, self.num_locs)

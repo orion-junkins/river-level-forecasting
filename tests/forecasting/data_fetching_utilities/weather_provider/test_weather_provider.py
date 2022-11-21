@@ -61,13 +61,12 @@ def test_fetch_historical_datums_fetches_one_per_location(weather_provider):
     assert len(weather_datums) == len(weather_provider.coordinates)
 
 
-def test_fetch_historical_returns_expected_df(weather_provider):
-    weather_dfs = weather_provider.fetch_historical()
-    for weather_df in weather_dfs:
-        assert isinstance(weather_df, pd.DataFrame)
-        assert weather_df.index.dtype == "datetime64[ns, UTC]"
-        assert list(weather_df.columns) == ["temperature_2m"]
-        assert len(weather_df) == 3
+def test_fetch_historical_returns_expected_datum(weather_provider):
+    weather_datums = weather_provider.fetch_historical()
+    for weather_datum in weather_datums:
+        assert weather_datum.hourly_parameters.index.dtype == "datetime64[ns, UTC]"
+        assert list(weather_datum.hourly_parameters.columns) == ["temperature_2m"]
+        assert len(weather_datum.hourly_parameters) == 3
 
 
 def test_fetch_current_datums_fetches_one_per_location(weather_provider):
@@ -75,13 +74,12 @@ def test_fetch_current_datums_fetches_one_per_location(weather_provider):
     assert len(weather_datums) == len(weather_provider.coordinates)
 
 
-def test_fetch_current_returns_expected_df(weather_provider):
-    weather_dfs = weather_provider.fetch_current()
-    for weather_df in weather_dfs:
-        assert isinstance(weather_df, pd.DataFrame)
-        assert weather_df.index.dtype == "datetime64[ns, UTC]"
-        assert list(weather_df.columns) == ["temperature_2m"]
-        assert len(weather_df) == 3
+def test_fetch_current_returns_expected_datum(weather_provider):
+    weather_datums = weather_provider.fetch_current()
+    for weather_datum in weather_datums:
+        assert weather_datum.hourly_parameters.index.dtype == "datetime64[ns, UTC]"
+        assert list(weather_datum.hourly_parameters.columns) == ["temperature_2m"]
+        assert len(weather_datum.hourly_parameters) == 3
 
 
 @pytest.fixture
