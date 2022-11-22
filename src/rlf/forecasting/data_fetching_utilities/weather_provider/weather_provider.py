@@ -1,12 +1,13 @@
-from pandas import DataFrame
 from datetime import datetime
 
+from pandas import DataFrame
+
+from rlf.aws_dispatcher import AWSDispatcher
+from rlf.forecasting.data_fetching_utilities.coordinate import Coordinate
 from rlf.forecasting.data_fetching_utilities.weather_provider.api.base_api_adapter import BaseAPIAdapter
 from rlf.forecasting.data_fetching_utilities.weather_provider.api.models import Response
 from rlf.forecasting.data_fetching_utilities.weather_provider.open_meteo.open_meteo_adapter import OpenMeteoAdapter
-from rlf.forecasting.data_fetching_utilities.coordinate import Coordinate
 from rlf.forecasting.data_fetching_utilities.weather_provider.weather_datum import WeatherDatum
-from rlf.aws_dispatcher import AWSDispatcher
 
 DEFAULT_START_DATE = "2020-01-01"
 DEFAULT_END_DATE = datetime.now().strftime("%Y-%m-%d")
@@ -15,7 +16,10 @@ DEFAULT_END_DATE = datetime.now().strftime("%Y-%m-%d")
 class WeatherProvider():
     """Provides a historical of forecasted weather for a given location and time period."""
 
-    def __init__(self, coordinates: Coordinate, api_adapter: BaseAPIAdapter = OpenMeteoAdapter(), aws_dispatcher: AWSDispatcher = None) -> None:
+    def __init__(self,
+                 coordinates: Coordinate,
+                 api_adapter: BaseAPIAdapter = OpenMeteoAdapter(),
+                 aws_dispatcher: AWSDispatcher = None) -> None:
         """Create a WeatherProvider for the given list of coordinates. Optionally, an AWS dispatcher can be provided, allowing data to be stored/fetched from an S3 bucket rather than re-issuing queries.
 
         Args:
@@ -61,7 +65,11 @@ class WeatherProvider():
 
         return datum
 
-    def fetch_historical_datum(self, coordinate: Coordinate, start_date: str = DEFAULT_START_DATE, end_date: str = DEFAULT_END_DATE, columns: list[str] = None) -> WeatherDatum:
+    def fetch_historical_datum(self,
+                               coordinate: Coordinate,
+                               start_date: str = DEFAULT_START_DATE,
+                               end_date: str = DEFAULT_END_DATE,
+                               columns: list[str] = None) -> WeatherDatum:
         """
         Fetch historical weather for a single coordinate or datum.
 
@@ -80,7 +88,10 @@ class WeatherProvider():
 
         return datum
 
-    def fetch_historical_datums(self, start_date: str = DEFAULT_START_DATE, end_date: str = DEFAULT_END_DATE, columns: list[str] = None) -> list[WeatherDatum]:
+    def fetch_historical_datums(self,
+                                start_date: str = DEFAULT_START_DATE,
+                                end_date: str = DEFAULT_END_DATE,
+                                columns: list[str] = None) -> list[WeatherDatum]:
         """Fetch historical weather for all coordinates.
 
         Args:
@@ -98,7 +109,10 @@ class WeatherProvider():
             datums.append(datum)
         return datums
 
-    def update_historical_datums_in_aws(self, start_date: str = DEFAULT_START_DATE, end_date: str = DEFAULT_END_DATE, columns: list[str] = None) -> None:
+    def update_historical_datums_in_aws(self,
+                                        start_date: str = DEFAULT_START_DATE,
+                                        end_date: str = DEFAULT_END_DATE,
+                                        columns: list[str] = None) -> None:
         """Refetch historical datums and store this updated data in AWS. This will overwrite whatever data was previously stored for the current river.
 
         Args:
@@ -111,7 +125,8 @@ class WeatherProvider():
         """
         if self.aws_dispatcher is None:
             raise ValueError("No AWSDispatcher provided.")
-        datums = self.fetch_historical_datums(start_date=start_date, end_date=end_date, columns=columns)
+        datums = self.fetch_historical_datums(
+            start_date=start_date, end_date=end_date, columns=columns)
         for datum in datums:
             self.aws_dispatcher.upload_datum(datum)
 

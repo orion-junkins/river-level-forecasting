@@ -3,11 +3,11 @@ from datetime import datetime
 import pandas as pd
 import pytest
 
+from rlf.aws_dispatcher import AWSDispatcher
 from rlf.forecasting.data_fetching_utilities.coordinate import Coordinate
 from rlf.forecasting.data_fetching_utilities.weather_provider.api.base_api_adapter import BaseAPIAdapter
 from rlf.forecasting.data_fetching_utilities.weather_provider.api.models import Response
 from rlf.forecasting.data_fetching_utilities.weather_provider.weather_provider import WeatherProvider
-from rlf.aws_dispatcher import AWSDispatcher
 
 
 def fake_response(coordinate):
@@ -16,17 +16,17 @@ def fake_response(coordinate):
                         message="fake message",
                         headers={"fake": "headers"},
                         data={'latitude': coordinate.lat,
-                                'longitude': coordinate.lon,
-                                'generationtime_ms': 0.1,
-                                'utc_offset_seconds': 0,
-                                'timezone': 'GMT',
-                                'timezone_abbreviation': 'GMT',
-                                'elevation': 123.4,
-                                'hourly_units': {'time': 'iso8601', 'temperature_2m': '°C'},
-                                'hourly': {'time': ['2000-01-01T00:00',
-                                                    '2000-01-01T01:00',
-                                                    '2000-01-01T02:00'],
-                                            'temperature_2m': [1.0, 2.0, 3.0]}})
+                              'longitude': coordinate.lon,
+                              'generationtime_ms': 0.1,
+                              'utc_offset_seconds': 0,
+                              'timezone': 'GMT',
+                              'timezone_abbreviation': 'GMT',
+                              'elevation': 123.4,
+                              'hourly_units': {'time': 'iso8601', 'temperature_2m': '°C'},
+                              'hourly': {'time': ['2000-01-01T00:00',
+                                                  '2000-01-01T01:00',
+                                                  '2000-01-01T02:00'],
+                                         'temperature_2m': [1.0, 2.0, 3.0]}})
     return response
 
 
