@@ -27,6 +27,13 @@ class WeatherProvider():
         self.api_adapter = api_adapter
         self.aws_dispatcher = aws_dispatcher
 
+    def _build_hourly_parameters_from_response(self, hourly_parameters_response: dict) -> DataFrame:
+        index_parameter = self.api_adapter.get_index_parameter()
+        df = DataFrame(hourly_parameters_response)
+        df.index = df[index_parameter].map(datetime.fromisoformat)
+        df.drop(columns=[index_parameter], inplace=True)
+        return df
+
     def build_datum_from_response(self, response: Response):
         """Construct a WeatherDatum from a Response.
 
@@ -49,8 +56,8 @@ class WeatherProvider():
                 "timezone", None),
             hourly_units=response.data.get(
                 "hourly_units", None),
-            hourly_parameters=DataFrame(response.data.get(
-                "hourly", None)))
+            hourly_parameters=self._build_hourly_parameters_from_response(
+                response.data.get("hourly", None)))
 
         return datum
 

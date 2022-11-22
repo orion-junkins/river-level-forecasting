@@ -1,3 +1,5 @@
+from datetime import datetime
+
 import pandas as pd
 import pytest
 
@@ -38,6 +40,9 @@ class FakeWeatherAPIAdapter(BaseAPIAdapter):
         response = fake_response(coordinate=coordinate)
         return response
 
+    def get_index_parameter(self) -> str:
+        return "time"
+
 
 @pytest.fixture
 def fake_weather_api_adapter() -> FakeWeatherAPIAdapter:
@@ -62,7 +67,8 @@ def test_fetch_historical_returns_expected_df(weather_provider):
     weather_dfs = weather_provider.fetch_historical()
     for weather_df in weather_dfs:
         assert isinstance(weather_df, pd.DataFrame)
-        assert list(weather_df.columns) == ["time", "temperature_2m"]
+        assert weather_df.index.dtype == "datetime64[ns]"
+        assert list(weather_df.columns) == ["temperature_2m"]
         assert len(weather_df) == 3
 
 
@@ -75,7 +81,8 @@ def test_fetch_current_returns_expected_df(weather_provider):
     weather_dfs = weather_provider.fetch_current()
     for weather_df in weather_dfs:
         assert isinstance(weather_df, pd.DataFrame)
-        assert list(weather_df.columns) == ["time", "temperature_2m"]
+        assert weather_df.index.dtype == "datetime64[ns]"
+        assert list(weather_df.columns) == ["temperature_2m"]
         assert len(weather_df) == 3
 
 

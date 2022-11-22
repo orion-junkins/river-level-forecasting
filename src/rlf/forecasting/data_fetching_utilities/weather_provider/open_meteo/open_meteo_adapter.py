@@ -91,3 +91,11 @@ class OpenMeteoAdapter(BaseAPIAdapter):
         }
 
         return invoker.get(path=self.forecast_path, parameters=parameters)
+
+    def get_index_parameter(self) -> str:
+        """Temporal index parameter for OpenMeteo hourly data is "time".
+
+        Returns:
+            str: "time"
+        """
+        return "time"

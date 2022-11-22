@@ -36,3 +36,12 @@ class BaseAPIAdapter(ABC):
             Response: The response payload for the request
         """
         return NotImplementedError
+
+    @abstractmethod
+    def get_index_parameter(self) -> str:
+        """Get the index parameter which is a field in the hourly section of the response that can be used as an index in a DataFrame (must be in ISO date format).
+
+        Returns:
+            str: Index parameter field to use.
+        """
+        raise NotImplementedError
