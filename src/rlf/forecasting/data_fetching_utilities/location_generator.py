@@ -1,3 +1,4 @@
+import math
 import os
 
 import simplekml
@@ -9,12 +10,26 @@ class LocationGenerator:
     """
     Driver class for generating locations given the bottom left and top right coordinates of a rectangular area.
     """
-    def __init__(self, bottom_left, top_right, separation_degrees=0.25):
-        self.lon_min = bottom_left.lon
-        self.lat_min = bottom_left.lat
-        self.lon_max = top_right.lon
-        self.lat_max = top_right.lat
+    def __init__(self, bottom_left, top_right, separation_degrees=0.25, precision=0.25):
+        """Create a Location Generator given the bottom left and top right corners of a rectangular area. Bottom left point will be floored to the nearest rounded value according to provided precision. Top right point will be ceilinged to the nearest rounded value according to provided precision.
+
+        Please Note, the logic of this class will not function if the area enclosed between bottom_left and top_right spans across the meridian.
+
+        Args:
+            bottom_left (Coordinate): Bottom left bounding coordinate.
+            top_right (Coordinate): Top Right bounding coordinate.
+            separation_degrees (float, optional): How far apart points should be in degrees. Defaults to 0.25.
+            precision (float, optional): How precise coordinate values should be. Defaults to 0.25.
+
+        Raises:
+            ValueError: If bottom_left and top_right do not define a valid region.
+        """
         self.separation_degrees = separation_degrees
+        self.precision = precision
+        self.lon_min = math.floor(bottom_left.lon/self.precision) * self.precision
+        self.lat_min = math.floor(bottom_left.lat/self.precision) * self.precision
+        self.lon_max = math.ceil(top_right.lon/self.precision) * self.precision
+        self.lat_max = math.ceil(top_right.lat/self.precision) * self.precision
 
         if not (self.separation_degrees > 0.0):
             raise ValueError("separation_degrees must be postive")
@@ -41,7 +56,7 @@ class LocationGenerator:
         Returns:
             Coordinate: The top left coordinate.
         """
-        return Coordinate(lon=self.lon_min, lat=self.lat_max)
+        return Coordinate(lon=self.lon_max, lat=self.lat_min)
 
     @property
     def bottom_right(self):
@@ -50,7 +65,7 @@ class LocationGenerator:
         Returns:
             Coordinate: The bottom right coordinate.
         """
-        return Coordinate(lon=self.lon_max, lat=self.lat_min)
+        return Coordinate(lon=self.lon_min, lat=self.lat_max)
 
     @property
     def top_right(self):
@@ -90,10 +105,12 @@ class LocationGenerator:
         lon_end = self.lon_max - self.lon_excess
 
         while lon_start < lon_end:
-            lons.append(lon_start)
+            rounded_lon = (round(lon_start/(self.precision))*self.precision)
+            lons.append(rounded_lon)
             lon_start += self.separation_degrees
 
-        lons.append(lon_end)
+        rounded_lon_end = (round(lon_end/(self.precision))*self.precision)
+        lons.append(rounded_lon_end)
 
         return lons
 
@@ -108,10 +125,12 @@ class LocationGenerator:
         lat_end = self.lat_max - self.lat_excess
 
         while lat_start < lat_end:
-            lats.append(lat_start)
+            rounded_lat_start = (round(lat_start/(self.precision))*self.precision)
+            lats.append(rounded_lat_start)
             lat_start += self.separation_degrees
 
-        lats.append(lat_end)
+        rounded_lat_end = (round(lat_end/(self.precision))*self.precision)
+        lats.append(rounded_lat_end)
         return lats
 
     def _get_coordinates(self):
