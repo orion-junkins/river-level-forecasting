@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from datetime import datetime
 
 import pandas as pd
 import pytz
@@ -47,7 +48,7 @@ class BaseLevelProvider(ABC):
         df_formatted = df_raw.copy()
 
         # Convert index to utc timestamps
-        df_formatted.index = df_formatted.index.map(lambda x: x.astimezone(pytz.utc))
+        df_formatted.index = df_formatted.index.map(self._validate_index)
 
         df_formatted = self._coerce_index_to_hourly(df_formatted)
 
@@ -85,3 +86,17 @@ class BaseLevelProvider(ABC):
             .first()
         )
         return df
+
+    @staticmethod
+    def _validate_index(x: str | datetime) -> datetime:
+        """Validate that an index value is of type datetime and in the utc timezone, and if not then convert it.
+
+        Args:
+            x (str | datetime): Index value to validate.
+
+        Returns:
+            datetime: Valid index value.
+        """
+        if isinstance(x, str):
+            x = datetime.fromisoformat(x)
+        return x.astimezone(pytz.utc)
