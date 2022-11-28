@@ -18,7 +18,7 @@ from rlf.forecasting.data_fetching_utilities.weather_provider.weather_datum impo
 )
 
 
-DEFAULT_START_DATE = "2020-01-01"
+DEFAULT_START_DATE = "2022-01-01"
 DEFAULT_END_DATE = datetime.now().strftime("%Y-%m-%d")
 
 
@@ -111,12 +111,14 @@ class WeatherProvider():
         Returns:
             list[WeatherDatum]: A list of WeatherDatum objects containing the weather data and metadata about the locations.
         """
-        datums = []
+        datums = {}
         for coordinate in self.coordinates:
             datum = self.fetch_historical_datum(
                 coordinate=coordinate, start_date=start_date, end_date=end_date, columns=columns)
-            datums.append(datum)
-        return datums
+            coord = Coordinate(datum.longitude, datum.latitude)
+            if coord not in datums:
+                datums[coord] = datum
+        return list(datums.values())
 
     def update_historical_datums_in_aws(self,
                                         start_date: str = DEFAULT_START_DATE,
@@ -154,7 +156,7 @@ class WeatherProvider():
             datums.append(datum)
         return datums
 
-    def fetch_historical(self, columns: Optional[list[str]] = None) -> list[WeatherDatum]:
+    def fetch_historical(self, columns: Optional[list[str]] = None, start_date: str = DEFAULT_START_DATE) -> list[WeatherDatum]:
         """Fetch historical weather for all coordinates. If there is an AWS dispatcher, data will be fetched from there if possible. If there is not a dispatcher, or the AWS file cannot be found, a regular datum request will be issued.
 
         Args:
@@ -164,12 +166,12 @@ class WeatherProvider():
             list[WeatherDatum]: A list of WeatherDatums containing the weather data about the location.
         """
         if self.aws_dispatcher is None:
-            datums = self.fetch_historical_datums(columns=columns)
+            datums = self.fetch_historical_datums(columns=columns, start_date=start_date)
         else:
             try:
                 datums = self.download_historical_datums_from_aws(columns=columns)
             except FileNotFoundError:
-                datums = self.fetch_historical_datums(columns=columns)
+                datums = self.fetch_historical_datums(columns=columns, start_date=start_date)
         return datums
 
     def fetch_current_datum(self, coordinate: Coordinate, columns: Optional[list[str]] = None) -> WeatherDatum:
