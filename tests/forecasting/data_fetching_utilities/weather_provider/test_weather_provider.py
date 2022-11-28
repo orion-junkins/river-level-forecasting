@@ -67,7 +67,7 @@ def test_fetch_historical_returns_expected_df(weather_provider):
     weather_dfs = weather_provider.fetch_historical()
     for weather_df in weather_dfs:
         assert isinstance(weather_df, pd.DataFrame)
-        assert weather_df.index.dtype == "datetime64[ns]"
+        assert weather_df.index.dtype == "datetime64[ns, UTC]"
         assert list(weather_df.columns) == ["temperature_2m"]
         assert len(weather_df) == 3
 
@@ -81,7 +81,7 @@ def test_fetch_current_returns_expected_df(weather_provider):
     weather_dfs = weather_provider.fetch_current()
     for weather_df in weather_dfs:
         assert isinstance(weather_df, pd.DataFrame)
-        assert weather_df.index.dtype == "datetime64[ns]"
+        assert weather_df.index.dtype == "datetime64[ns, UTC]"
         assert list(weather_df.columns) == ["temperature_2m"]
         assert len(weather_df) == 3
 

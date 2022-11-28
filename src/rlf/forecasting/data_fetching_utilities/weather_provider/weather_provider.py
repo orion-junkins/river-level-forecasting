@@ -1,6 +1,7 @@
 from datetime import datetime
 
 from pandas import DataFrame
+import pytz
 
 from rlf.aws_dispatcher import AWSDispatcher
 from rlf.forecasting.data_fetching_utilities.coordinate import Coordinate
@@ -31,10 +32,10 @@ class WeatherProvider():
         self.api_adapter = api_adapter
         self.aws_dispatcher = aws_dispatcher
 
-    def _build_hourly_parameters_from_response(self, hourly_parameters_response: dict) -> DataFrame:
+    def _build_hourly_parameters_from_response(self, hourly_parameters_response: dict, tz: str) -> DataFrame:
         index_parameter = self.api_adapter.get_index_parameter()
         df = DataFrame(hourly_parameters_response)
-        df.index = df[index_parameter].map(datetime.fromisoformat)
+        df.index = df[index_parameter].map(lambda x: datetime.fromisoformat(x).replace(tzinfo=pytz.timezone(tz)).astimezone(pytz.timezone("UTC")))
         df.drop(columns=[index_parameter], inplace=True)
         return df
 
@@ -61,7 +62,7 @@ class WeatherProvider():
             hourly_units=response.data.get(
                 "hourly_units", None),
             hourly_parameters=self._build_hourly_parameters_from_response(
-                response.data.get("hourly", None)))
+                response.data.get("hourly", None), response.data["timezone"]))
 
         return datum
 
