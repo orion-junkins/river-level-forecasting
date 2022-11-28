@@ -1,3 +1,9 @@
+import os
+import pickle
+
+from darts.dataprocessing.transformers.scaler import Scaler
+from darts.models.forecasting.linear_regression_model import LinearRegressionModel
+from darts.models.forecasting.regression_ensemble_model import RegressionEnsembleModel
 import pytest
 
 from fake_providers import FakeLevelProvider, FakeWeatherProvider
@@ -20,3 +26,26 @@ def test_training_forecaster_init(training_dataset, catchment_data):
     training_forecaster = TrainingForecaster(model=None, catchment_data=catchment_data, dataset=training_dataset)
 
     assert (type(training_forecaster.dataset) is TrainingDataset)
+
+
+def test_training_forecaster_save_model(tmp_path, catchment_data):
+    training_forecaster = TrainingForecaster(
+        RegressionEnsembleModel([LinearRegressionModel(lags=1)], 10),
+        TrainingDataset(catchment_data),
+        catchment_data,
+        root_dir=tmp_path
+    )
+
+    training_forecaster.save_model()
+    assert os.path.exists(os.path.join(tmp_path, "test_catchment"))
+    assert os.path.exists(os.path.join(tmp_path, "test_catchment", "frcstr"))
+    assert os.path.exists(os.path.join(tmp_path, "test_catchment", "scaler"))
+
+    with open(os.path.join(tmp_path, "test_catchment", "scaler"), "rb") as f:
+        scaler = pickle.load(f)
+
+    assert isinstance(scaler, dict)
+    assert "scaler" in scaler
+    assert isinstance(scaler["scaler"], Scaler)
+    assert "target_scaler" in scaler
+    assert isinstance(scaler["target_scaler"], Scaler)
