@@ -38,8 +38,8 @@ class TrainingDataset(BaseDataset):
         )
         self.scaler = Scaler(MinMaxScaler())
         self.target_scaler = Scaler(MinMaxScaler())
-        self.Xs, self.y = self._load_data()
-        self.Xs_train, self.Xs_test, self.y_train, self.y_test = self._partition(test_size)
+        self.X, self.y = self._load_data()
+        self.X_train, self.X_test, self.y_train, self.y_test = self._partition(test_size)
         # TODO add validation call - ie all X sets are same size, match y sets.
 
     def _load_data(self) -> tuple[list[TimeSeries], TimeSeries]:
@@ -49,8 +49,8 @@ class TrainingDataset(BaseDataset):
             tuple[list[TimeSeries], TimeSeries]: Tuple of (Xs and y) historical data.
         """
         historical_weather, historical_level = self.catchment_data.all_historical
-        Xs, y = self._pre_process(historical_weather, historical_level)
-        return Xs, y
+        X, y = self._pre_process(historical_weather, historical_level)
+        return X, y
 
     def _partition(
         self,
@@ -65,20 +65,14 @@ class TrainingDataset(BaseDataset):
         Returns:
             tuple[list[TimeSeries], list[TimeSeries], TimeSeries, TimeSeries]: (Xs_train, Xs_test, y_train, y_test)
         """
-        Xs_train = []
-        Xs_test = []
-        for X in self.Xs:
-            X_train, X_test = X.split_after(1-test_size)
-
-            Xs_train.append(X_train)
-            Xs_test.append(X_test)
+        X_train, X_test = self.X.split_after(1-test_size)
 
         y_train, y_test = self.y.split_after(1-test_size)
 
-        Xs_train = self.scaler.fit_transform(Xs_train)
+        X_train = self.scaler.fit_transform(X_train)
         y_train = self.target_scaler.fit_transform(y_train)
 
-        Xs_test = self.scaler.transform(Xs_test)
+        X_test = self.scaler.transform(X_test)
         y_test = self.target_scaler.transform(y_test)
 
-        return Xs_train, Xs_test, y_train, y_test
+        return X_train, X_test, y_train, y_test
