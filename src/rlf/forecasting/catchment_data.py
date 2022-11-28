@@ -84,6 +84,7 @@ class CatchmentData:
 
     def _fetch_all_historical(self) -> None:
         """Fetch or refetch all current data, updating the member variable _all_current. This will trigger queries to the underlying weather and level providers."""
-        historical_weather = self.weather_provider.fetch_historical()
         historical_level = self.level_provider.fetch_historical_level()
+        earliest_historical_level = historical_level.index.to_series().min().strftime("%Y-%m-%d")
+        historical_weather = self.weather_provider.fetch_historical(start_date=earliest_historical_level)
         self._all_historical = (historical_weather, historical_level)
