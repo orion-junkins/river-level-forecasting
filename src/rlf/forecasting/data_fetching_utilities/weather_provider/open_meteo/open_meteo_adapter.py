@@ -1,8 +1,10 @@
+from typing import Optional
+
 from rlf.forecasting.data_fetching_utilities.coordinate import Coordinate
 from rlf.forecasting.data_fetching_utilities.weather_provider.api.base_api_adapter import BaseAPIAdapter
-from rlf.forecasting.data_fetching_utilities.weather_provider.open_meteo.parameters import get_hourly_parameters
 from rlf.forecasting.data_fetching_utilities.weather_provider.api.models import Response
 from rlf.forecasting.data_fetching_utilities.weather_provider.api.rest_invoker import RestInvoker
+from rlf.forecasting.data_fetching_utilities.weather_provider.open_meteo.parameters import get_hourly_parameters
 
 
 class OpenMeteoAdapter(BaseAPIAdapter):
@@ -15,8 +17,8 @@ class OpenMeteoAdapter(BaseAPIAdapter):
                  version: str = "v1",
                  archive_path: str = "era5",
                  forecast_path: str = "gfs",
-                 archive_hourly_parameters: list[str] = None,
-                 forecast_hourly_parameters: list[str] = None) -> None:
+                 archive_hourly_parameters: Optional[list[str]] = None,
+                 forecast_hourly_parameters: Optional[list[str]] = None) -> None:
         """
         Adapts the OpenMeteo API to be used by the RequestBuilder
 
@@ -39,7 +41,11 @@ class OpenMeteoAdapter(BaseAPIAdapter):
         self.archive_hourly_parameters = archive_hourly_parameters if archive_hourly_parameters is not None else get_hourly_parameters(archive_path)
         self.forecast_hourly_parameters = forecast_hourly_parameters if forecast_hourly_parameters is not None else get_hourly_parameters(forecast_path)
 
-    def get_historical(self, coordinate: Coordinate, start_date: str, end_date: str, columns: list[str] = None) -> Response:
+    def get_historical(self,
+                       coordinate: Coordinate,
+                       start_date: str,
+                       end_date: str,
+                       columns: Optional[list[str]] = None) -> Response:
         """Make a GET request to the Open Meteo API for historical/archived data.
 
         Args:
@@ -66,7 +72,11 @@ class OpenMeteoAdapter(BaseAPIAdapter):
 
         return invoker.get(path=self.archive_path, parameters=parameters)
 
-    def get_current(self, coordinate: Coordinate, past_days: int = 92, forecast_days: int = 16, columns: list[str] = None) -> Response:
+    def get_current(self,
+                    coordinate: Coordinate,
+                    past_days: int = 92,
+                    forecast_days: int = 16,
+                    columns: Optional[list[str]] = None) -> Response:
         """Make a GET request to the Open Meteo API for current/forecasted data.
 
         Args:
@@ -91,3 +101,11 @@ class OpenMeteoAdapter(BaseAPIAdapter):
         }
 
         return invoker.get(path=self.forecast_path, parameters=parameters)
+
+    def get_index_parameter(self) -> str:
+        """Temporal index parameter for OpenMeteo hourly data is "time".
+
+        Returns:
+            str: "time"
+        """
+        return "time"

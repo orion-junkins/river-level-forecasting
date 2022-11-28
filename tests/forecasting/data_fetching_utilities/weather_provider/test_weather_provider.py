@@ -1,11 +1,11 @@
 import pandas as pd
 import pytest
 
+from rlf.aws_dispatcher import AWSDispatcher
 from rlf.forecasting.data_fetching_utilities.coordinate import Coordinate
 from rlf.forecasting.data_fetching_utilities.weather_provider.api.base_api_adapter import BaseAPIAdapter
 from rlf.forecasting.data_fetching_utilities.weather_provider.api.models import Response
 from rlf.forecasting.data_fetching_utilities.weather_provider.weather_provider import WeatherProvider
-from rlf.aws_dispatcher import AWSDispatcher
 
 
 def fake_response(coordinate):
@@ -14,17 +14,17 @@ def fake_response(coordinate):
                         message="fake message",
                         headers={"fake": "headers"},
                         data={'latitude': coordinate.lat,
-                                'longitude': coordinate.lon,
-                                'generationtime_ms': 0.1,
-                                'utc_offset_seconds': 0,
-                                'timezone': 'GMT',
-                                'timezone_abbreviation': 'GMT',
-                                'elevation': 123.4,
-                                'hourly_units': {'time': 'iso8601', 'temperature_2m': '°C'},
-                                'hourly': {'time': ['2000-01-01T00:00',
-                                                    '2000-01-01T01:00',
-                                                    '2000-01-01T02:00'],
-                                            'temperature_2m': [1.0, 2.0, 3.0]}})
+                              'longitude': coordinate.lon,
+                              'generationtime_ms': 0.1,
+                              'utc_offset_seconds': 0,
+                              'timezone': 'GMT',
+                              'timezone_abbreviation': 'GMT',
+                              'elevation': 123.4,
+                              'hourly_units': {'time': 'iso8601', 'temperature_2m': '°C'},
+                              'hourly': {'time': ['2000-01-01T00:00',
+                                                  '2000-01-01T01:00',
+                                                  '2000-01-01T02:00'],
+                                         'temperature_2m': [1.0, 2.0, 3.0]}})
     return response
 
 
@@ -37,6 +37,9 @@ class FakeWeatherAPIAdapter(BaseAPIAdapter):
     def get_historical(self, coordinate: Coordinate, **kwargs) -> Response:
         response = fake_response(coordinate=coordinate)
         return response
+
+    def get_index_parameter(self) -> str:
+        return "time"
 
 
 @pytest.fixture
@@ -62,7 +65,8 @@ def test_fetch_historical_returns_expected_df(weather_provider):
     weather_dfs = weather_provider.fetch_historical()
     for weather_df in weather_dfs:
         assert isinstance(weather_df, pd.DataFrame)
-        assert list(weather_df.columns) == ["time", "temperature_2m"]
+        assert weather_df.index.dtype == "datetime64[ns, UTC]"
+        assert list(weather_df.columns) == ["temperature_2m"]
         assert len(weather_df) == 3
 
 
@@ -75,7 +79,8 @@ def test_fetch_current_returns_expected_df(weather_provider):
     weather_dfs = weather_provider.fetch_current()
     for weather_df in weather_dfs:
         assert isinstance(weather_df, pd.DataFrame)
-        assert list(weather_df.columns) == ["time", "temperature_2m"]
+        assert weather_df.index.dtype == "datetime64[ns, UTC]"
+        assert list(weather_df.columns) == ["temperature_2m"]
         assert len(weather_df) == 3
 
 
