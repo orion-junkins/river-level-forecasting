@@ -1,11 +1,13 @@
-import os
 import json
-import s3fs
-import pyarrow.parquet as pq
-from pandas import DataFrame
-from rlf.forecasting.data_fetching_utilities.coordinate import Coordinate
+import os
 
+from pandas import DataFrame
+import pyarrow.parquet as pq
+import s3fs
+
+from rlf.forecasting.data_fetching_utilities.coordinate import Coordinate
 from rlf.forecasting.data_fetching_utilities.weather_provider.weather_datum import WeatherDatum
+
 
 DEFAULT_LOCAL_PATH = os.path.join("data", "aws_dispatch")
 os.makedirs(DEFAULT_LOCAL_PATH, exist_ok=True)

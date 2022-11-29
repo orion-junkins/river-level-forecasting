@@ -1,14 +1,25 @@
 from abc import ABC
+from typing import Optional
 
-from darts import timeseries
-from pandas import DataFrame
+from darts import TimeSeries
+from darts.timeseries import concatenate
+from pandas import DataFrame, Timestamp
 
 from rlf.forecasting.catchment_data import CatchmentData
+from rlf.forecasting.data_fetching_utilities.coordinate import Coordinate
+from rlf.forecasting.data_fetching_utilities.weather_provider.weather_datum import WeatherDatum
 
 
 class BaseDataset(ABC):
     """Abstract base class for all Datasets."""
-    def __init__(self, catchment_data: CatchmentData = None, rolling_sum_columns: list[str] = [], rolling_mean_columns: list[str] = [], rolling_window_sizes: list[int] = [10*24, 30*24]) -> None:
+
+    def __init__(
+        self,
+        catchment_data: CatchmentData,
+        rolling_sum_columns: Optional[list[str]] = None,
+        rolling_mean_columns: Optional[list[str]] = None,
+        rolling_window_sizes: list[int] = (10*24, 30*24)
+    ) -> None:
         """Create a new Dataset instance.
 
         Args:
@@ -18,75 +29,139 @@ class BaseDataset(ABC):
             rolling_window_sizes (list[int], optional): For which window sizes should rolling sum and mean variables be engineered. Defaults to [10*24, 30*24] (10 days and 30 days).
         """
         self.catchment_data = catchment_data
-        self.rolling_sum_columns = rolling_sum_columns
-        self.rolling_mean_columns = rolling_mean_columns
+        self.rolling_sum_columns = rolling_sum_columns if rolling_sum_columns is not None else []
+        self.rolling_mean_columns = rolling_mean_columns if rolling_mean_columns is not None else []
         self.rolling_window_sizes = rolling_window_sizes
+        self.subsets = dict()
 
-    @staticmethod
-    def pre_process(Xs: list[DataFrame], y: DataFrame, rolling_sum_columns: list[str] = [], rolling_mean_columns: list[str] = [], rolling_window_sizes: list[int] = [10*24, 30*24], allow_future_X: bool = False) -> tuple[list[timeseries], timeseries]:
+    def _pre_process(
+        self,
+        Xs: list[WeatherDatum],
+        y: DataFrame,
+        allow_future_X: bool = False
+    ) -> tuple[list[TimeSeries], TimeSeries]:
         """
         Pre process data. This includes adding engineered features and trimming datasets to ensure X, y consistency.
 
         Args:
-            Xs (list[DataFrame]): List of all X sets.
+            Xs (list[WeatherDatum]): List of all X sets.
             y (DataFrame): Dataframe containing y set.
-            rolling_sum_columns (list[str], optional): For which columns should a rolling sum variable be engineered. Defaults to [].
-            rolling_mean_columns (list[str], optional): For which columns should a rolling mean variable be engineered. Defaults to [].
-            rolling_window_sizes (list[int], optional): For which window sizes should rolling sum and mean variables be engineered. Defaults to [10*24, 30*24] (10 days and 30 days).
             allow_future_X (bool, optional): Determines if end date of X sets can exceed end date of y set. Only True for current data which includes forecasts (level data into future is not yet known, but weather is). Defaults to False.
 
         Returns:
-            tuple[list[timeseries], timeseries]: Tuple containing (processed_Xs, y)
+            tuple[list[TimeSeries], TimeSeries]: Tuple containing (processed_Xs, y)
         """
-        y = timeseries.TimeSeries.from_dataframe(y)
+        # find the boundaries that are valid for all datasets
+        first_date, last_date = self._find_timestamp_boundaries(Xs, y)
 
-        processed_Xs = []
+        y = TimeSeries.from_dataframe(y).slice(first_date, last_date)
 
-        for X_cur in Xs:
-            X_cur = BaseDataset.add_engineered_features(X_cur, rolling_sum_columns=rolling_sum_columns, rolling_mean_columns=rolling_mean_columns, rolling_window_sizes=rolling_window_sizes)
-            X_cur = timeseries.TimeSeries.from_dataframe(X_cur)
+        X_last_date = None if allow_future_X else last_date
+        processed_Xs = [self._process_datum(datum, first_date, X_last_date) for datum in Xs]
+        global_X = concatenate(processed_Xs, axis="component")
 
-            if X_cur.start_time() < y.start_time():
-                _, X_cur = X_cur.split_before(y.start_time())    # X starts before y, drop X before y start
+        return global_X, y
 
-            if not allow_future_X:
-                if X_cur.end_time() > y.end_time():
-                    X_cur, _ = X_cur.split_after(y.end_time())  # X ends after y, drop X after y end
+    def _process_datum(self, datum: WeatherDatum, first_date: Timestamp, last_date: Timestamp | None) -> TimeSeries:
+        """Process a single X datum.
 
-            processed_Xs.append(X_cur)
+        Processing an X datum involves cleaning the data, adding engineered features, renaming the columns, bounding the time index, and converting to a TimeSeries.
+        NaNs that are not trailing will be linearly interpolated.
+        The subsets attribute will be updated with the generated prefix for this datum.
 
-        if y.start_time() < processed_Xs[0].start_time():
-            _, y = y.split_before(processed_Xs[0].start_time())  # y starts before X, drop y before X start
+        Args:
+            datum (WeatherDatum): Datum to process.
+            first_date (Timestamp): First allowed date for the time index. Any dates prior to this should be dropped.
+            last_date (Timestamp): Last allowed date for the time index. Any dates after this should be dropped. If None then no bounding in this direction is done.
 
-        if y.end_time() > processed_Xs[0].end_time():  # y ends after X, drop y after X end
-            y, _ = y.split_after(processed_Xs[0].end_time())
+        Raises:
+            ValueError: If the generated prefix for this datum already exists.
 
-        return (processed_Xs, y)
+        Returns:
+            TimeSeries: Processed datum.
+        """
+        X = datum.hourly_parameters
+
+        X = self._strip_trailing_nans(X)
+
+        X.interpolate(inplace=True)
+
+        X = self._add_engineered_features(X)
+
+        prefix = f"{datum.longitude:.3f}_{datum.latitude:.3f}_"
+        if prefix not in self.subsets:
+            X.columns = [prefix + c for c in X.columns]
+            self.subsets[prefix] = Coordinate(lon=datum.longitude, lat=datum.latitude)
+        else:
+            raise ValueError(f"Prefix will be represented twice in the global X set: {prefix}")
+
+        print(f"Length of X: {len(X)}")
+
+        X = TimeSeries.from_dataframe(X)
+
+        if last_date is not None:
+            X = X.slice(first_date, last_date)
+        else:
+            # darts has a bug where if you split on the start_time
+            # then it throws a "TimeSeries can't be empty" ValueError
+            if first_date != X.start_time():
+                _, X = X.split_before(first_date)
+
+        return X
 
     @staticmethod
-    def add_engineered_features(df: DataFrame, rolling_sum_columns: list[str] = [], rolling_mean_columns: list[str] = [], rolling_window_sizes: list[int] = [10*24, 30*24]) -> DataFrame:
+    def _strip_trailing_nans(df: DataFrame) -> DataFrame:
+        """Strip out the trailing NaNs that can be found in WeatherProvider data.
+
+        Trailing NaNs are found by detecting the latest date with a non-NaN value in any column and dropping everything after that.
+
+        Args:
+            df (DataFrame): DataFrame to remove trailing NaNs from.
+
+        Returns:
+            DataFrame: DataFrame with trailing NaNs removed.
+        """
+        last_date = df.apply(lambda x: x.last_valid_index()).max()
+        df = df[df.index.to_series() <= last_date].copy()
+        return df
+
+    def _add_engineered_features(self, df: DataFrame) -> DataFrame:
         """
         Generate and add engineered features.
 
         Args:
             df (DataFrame): Data from which features should be engineered.
-            rolling_sum_columns (list[str], optional): For which columns should a rolling sum variable be engineered. Defaults to [].
-            rolling_mean_columns (list[str], optional): For which columns should a rolling mean variable be engineered. Defaults to [].
-            rolling_window_sizes (list[int], optional): For which window sizes should rolling sum and mean variables be engineered. Defaults to [10*24, 30*24] (10 days and 30 days).
 
         Returns:
             DataFrame: Data including new features.
         """
         df['day_of_year'] = df.index.day_of_year
 
-        for window_size in rolling_window_sizes:
-            for rolling_sum_col in rolling_sum_columns:
-                new_col_name = rolling_sum_col + "_sum_" + str(window_size)
+        for window_size in self.rolling_window_sizes:
+            for rolling_sum_col in self.rolling_sum_columns:
+                new_col_name = f"{rolling_sum_col}_sum_{window_size}"
                 df[new_col_name] = df[rolling_sum_col].rolling(window=window_size).sum()
 
-            for rolling_mean_col in rolling_mean_columns:
-                new_col_name = rolling_mean_col + "_mean_" + str(window_size)
+            for rolling_mean_col in self.rolling_mean_columns:
+                new_col_name = f"{rolling_mean_col}_mean_{window_size}"
                 df[new_col_name] = df[rolling_mean_col].rolling(window=window_size).mean()
 
         df.dropna(inplace=True)
+
         return df
+
+    @staticmethod
+    def _find_timestamp_boundaries(Xs: list[DataFrame], y: DataFrame) -> tuple[Timestamp, Timestamp]:
+        """Find the first and last timestamp that guarantees data in all datasets.
+
+        Args:
+            Xs (list[DataFrame]): All X dataframes to check.
+            y (DataFrame): y dataframe to check.
+
+        Returns:
+            tuple[Timestamp, Timestamp]: first timestamp, last timestamp inclusive.
+        """
+        all_dfs = [X.hourly_parameters for X in Xs] + [y]
+        first_timestamp = max([df.index.to_series().min() for df in all_dfs])
+        last_timestamp = min([df.apply(lambda x: x.last_valid_index()).max() for df in all_dfs])
+        return first_timestamp, last_timestamp
