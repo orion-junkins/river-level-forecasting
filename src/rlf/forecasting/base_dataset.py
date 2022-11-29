@@ -102,7 +102,10 @@ class BaseDataset(ABC):
         if last_date is not None:
             X = X.slice(first_date, last_date)
         else:
-            _, X = X.split_before(first_date)
+            # darts has a bug where if you split on the start_time
+            # then it throws a "TimeSeries can't be empty" ValueError
+            if first_date != X.start_time():
+                _, X = X.split_before(first_date)
 
         return X
 

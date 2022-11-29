@@ -67,5 +67,5 @@ class FakeWeatherProvider:
     def fetch_current(self, columns=None):
         return weather_datums(10, self.num_locs)
 
-    def fetch_historical(self, columns=None):
+    def fetch_historical(self, columns=None, start_date=None):
         return weather_datums(self.num_historical_samples, self.num_locs)

@@ -4,6 +4,7 @@ import pandas as pd
 
 from rlf.forecasting.base_dataset import BaseDataset
 
+
 class FakeCatchmentData:
     def __init__(self):
         self.name = "test_name"
