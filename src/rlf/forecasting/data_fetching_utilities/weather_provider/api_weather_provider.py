@@ -97,10 +97,10 @@ class APIWeatherProvider(BaseWeatherProvider):
 
         return datum
 
-    def fetch_historical_datums(self,
-                                start_date: str = DEFAULT_START_DATE,
-                                end_date: str = DEFAULT_END_DATE,
-                                columns: Optional[list[str]] = None) -> list[WeatherDatum]:
+    def fetch_historical(self,
+                         start_date: str = DEFAULT_START_DATE,
+                         end_date: str = DEFAULT_END_DATE,
+                         columns: Optional[list[str]] = None) -> list[WeatherDatum]:
         """Fetch historical weather for all coordinates.
 
         Args:
@@ -120,18 +120,6 @@ class APIWeatherProvider(BaseWeatherProvider):
                 datums[coord] = datum
         return list(datums.values())
 
-    def fetch_historical(self, columns: Optional[list[str]] = None, start_date: str = DEFAULT_START_DATE) -> list[WeatherDatum]:
-        """Fetch historical weather for all coordinates.
-
-        Args:
-            columns (list[str], optional): The columns/parameters to fetch. All available will be fetched if left equal to None. Defaults to None.
-
-        Returns:
-            list[WeatherDatum]: A list of WeatherDatums containing the weather data about the location.
-        """
-        datums = self.fetch_historical_datums(columns=columns, start_date=start_date)
-        return datums
-
     def fetch_current_datum(self, coordinate: Coordinate, columns: Optional[list[str]] = None) -> WeatherDatum:
         """Fetch current weather for a single coordinate.
 
@@ -148,22 +136,6 @@ class APIWeatherProvider(BaseWeatherProvider):
 
         return datum
 
-    def fetch_current_datums(self, columns: list[str] = None) -> list[WeatherDatum]:
-        """Fetch current weather for all coordinates.
-
-        Args:
-            columns (list[str], optional): The columns/parameters to fetch. All available will be fetched if left equal to None. Defaults to None.
-
-        Returns:
-            list[WeatherDatum]: A list of WeatherDatum objects containing the weather data and metadata about the location or datum
-        """
-        datums = []
-        for coordinate in self.coordinates:
-            datum = self.fetch_current_datum(
-                coordinate=coordinate, columns=columns)
-            datums.append(datum)
-        return datums
-
     def fetch_current(self, columns: Optional[list[str]] = None) -> list[WeatherDatum]:
         """Fetch current weather for all coordinates.
 
@@ -173,5 +145,9 @@ class APIWeatherProvider(BaseWeatherProvider):
         Returns:
             list[WeatherDatum]: A list of WeatherDatums containing the weather data about the location.
         """
-        datums = self.fetch_current_datums(columns=columns)
+        datums = []
+        for coordinate in self.coordinates:
+            datum = self.fetch_current_datum(
+                coordinate=coordinate, columns=columns)
+            datums.append(datum)
         return datums

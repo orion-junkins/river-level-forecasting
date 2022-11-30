@@ -54,8 +54,8 @@ def weather_provider(fake_weather_api_adapter) -> APIWeatherProvider:
     return weather_provider
 
 
-def test_fetch_historical_datums_fetches_one_per_location(weather_provider):
-    weather_datums = weather_provider.fetch_historical_datums()
+def test_fetch_historical_fetches_one_per_location(weather_provider):
+    weather_datums = weather_provider.fetch_historical()
     assert len(weather_datums) == len(weather_provider.coordinates)
 
 
@@ -67,8 +67,8 @@ def test_fetch_historical_returns_expected_datum(weather_provider):
         assert len(weather_datum.hourly_parameters) == 3
 
 
-def test_fetch_current_datums_fetches_one_per_location(weather_provider):
-    weather_datums = weather_provider.fetch_current_datums()
+def test_fetch_current_fetches_one_per_location(weather_provider):
+    weather_datums = weather_provider.fetch_current()
     assert len(weather_datums) == len(weather_provider.coordinates)
 
 
