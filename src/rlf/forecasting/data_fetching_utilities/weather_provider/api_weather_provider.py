@@ -4,12 +4,16 @@ from typing import Optional
 from pandas import DataFrame
 import pytz
 
+
 from rlf.aws_dispatcher import AWSDispatcher
 from rlf.forecasting.data_fetching_utilities.coordinate import Coordinate
 from rlf.forecasting.data_fetching_utilities.weather_provider.api.base_api_adapter import (
     BaseAPIAdapter
 )
 from rlf.forecasting.data_fetching_utilities.weather_provider.api.models import Response
+from rlf.forecasting.data_fetching_utilities.weather_provider.base_weather_provider import (
+    BaseWeatherProvider
+)
 from rlf.forecasting.data_fetching_utilities.weather_provider.open_meteo.open_meteo_adapter import (
     OpenMeteoAdapter
 )
@@ -22,14 +26,14 @@ DEFAULT_START_DATE = "2022-01-01"
 DEFAULT_END_DATE = datetime.now().strftime("%Y-%m-%d")
 
 
-class WeatherProvider():
+class APIWeatherProvider(BaseWeatherProvider):
     """Provides a historical of forecasted weather for a given location and time period."""
 
     def __init__(self,
                  coordinates: Coordinate,
                  api_adapter: BaseAPIAdapter = OpenMeteoAdapter(),
                  aws_dispatcher: Optional[AWSDispatcher] = None) -> None:
-        """Create a WeatherProvider for the given list of coordinates. Optionally, an AWS dispatcher can be provided, allowing data to be stored/fetched from an S3 bucket rather than re-issuing queries.
+        """Create an APIWeatherProvider for the given list of coordinates. Optionally, an AWS dispatcher can be provided, allowing data to be stored/fetched from an S3 bucket rather than re-issuing queries.
 
         Args:
             coordinates (list[Coordinate(longitude: float, latitude: float)]): Named tuple WSG84 coordinates: (longitude, latitude).
