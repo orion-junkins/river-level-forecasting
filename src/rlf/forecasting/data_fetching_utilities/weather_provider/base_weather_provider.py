@@ -42,5 +42,4 @@ class BaseWeatherProvider(ABC):
         Returns:
             list[WeatherDatum]: A list of WeatherDatums containing the weather data about the location.
         """
-        datums = self.fetch_current_datums(columns=columns)
-        return datums
+        pass
