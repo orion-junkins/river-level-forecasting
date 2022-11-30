@@ -1,7 +1,7 @@
 from pandas import DataFrame
 
 from rlf.forecasting.data_fetching_utilities.level_provider.base_level_provider import BaseLevelProvider
-from rlf.forecasting.data_fetching_utilities.weather_provider.weather_provider import WeatherProvider
+from rlf.forecasting.data_fetching_utilities.weather_provider.base_weather_provider import BaseWeatherProvider
 
 
 class CatchmentData:
@@ -10,7 +10,7 @@ class CatchmentData:
     def __init__(
         self,
         catchment_name: str,
-        weather_provider: WeatherProvider,
+        weather_provider: BaseWeatherProvider,
         level_provider: BaseLevelProvider,
         num_recent_samples: int = 90*24
     ) -> None:
@@ -19,8 +19,8 @@ class CatchmentData:
 
         Args:
             catchment_name (str): Name of the catchment. Should correspond to external gauge name.
-            weather_provider (WeatherProvider): Provider for Weather data.
-            level_provider (LevelProvider): Provider for level data.
+            weather_provider (BaseWeatherProvider): Provider for Weather data.
+            level_provider (BaseLevelProvider): Provider for level data.
             num_recent_samples (int, optional): Number of recent level samples to fetch. Defaults to 90 days (90 days * 24 hours/day).
         """
         self.name = catchment_name
