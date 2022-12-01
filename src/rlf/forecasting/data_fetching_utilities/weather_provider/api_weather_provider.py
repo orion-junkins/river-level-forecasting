@@ -105,7 +105,7 @@ class APIWeatherProvider(BaseWeatherProvider):
                          start_date: str = DEFAULT_START_DATE,
                          end_date: str = DEFAULT_END_DATE,
                          columns: Optional[list[str]] = None,
-                         sleep_duration: str = 0) -> list[WeatherDatum]:
+                         sleep_duration: int = 0) -> list[WeatherDatum]:
         """Fetch historical weather for all coordinates.
 
         Args:
