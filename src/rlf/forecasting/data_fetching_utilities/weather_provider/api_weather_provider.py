@@ -1,4 +1,5 @@
 from datetime import datetime
+import time
 from typing import Optional
 
 from pandas import DataFrame
@@ -100,7 +101,8 @@ class APIWeatherProvider(BaseWeatherProvider):
     def fetch_historical(self,
                          start_date: str = DEFAULT_START_DATE,
                          end_date: str = DEFAULT_END_DATE,
-                         columns: Optional[list[str]] = None) -> list[WeatherDatum]:
+                         columns: Optional[list[str]] = None,
+                         sleep_duration=0) -> list[WeatherDatum]:
         """Fetch historical weather for all coordinates.
 
         Args:
@@ -118,6 +120,7 @@ class APIWeatherProvider(BaseWeatherProvider):
             coord = Coordinate(datum.longitude, datum.latitude)
             if coord not in datums:
                 datums[coord] = datum
+            time.sleep(sleep_duration)
         return list(datums.values())
 
     def fetch_current_datum(self, coordinate: Coordinate, columns: Optional[list[str]] = None) -> WeatherDatum:
@@ -136,7 +139,7 @@ class APIWeatherProvider(BaseWeatherProvider):
 
         return datum
 
-    def fetch_current(self, columns: Optional[list[str]] = None) -> list[WeatherDatum]:
+    def fetch_current(self, columns: Optional[list[str]] = None, sleep_duration=0) -> list[WeatherDatum]:
         """Fetch current weather for all coordinates.
 
         Args:
@@ -150,4 +153,5 @@ class APIWeatherProvider(BaseWeatherProvider):
             datum = self.fetch_current_datum(
                 coordinate=coordinate, columns=columns)
             datums.append(datum)
+            time.sleep(sleep_duration)
         return datums
