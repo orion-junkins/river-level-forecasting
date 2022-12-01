@@ -47,13 +47,18 @@ class AWSDispatcher():
             folder_name (str): Folder of the file.
             filename (str): Name for the file.
 
+        Raises:
+            FileNotFoundError: Raised if the file cannot be found at the expected path in AWS.
+
         Returns:
             dict: The resulting dictionary.
         """
         path = f'{self.working_dir}/{folder_name}/{filename}.json'
-
-        with self.s3.open(path, 'rb') as f:
-            data = json.load(f)
+        try:
+            with self.s3.open(path, 'rb') as f:
+                data = json.load(f)
+        except FileNotFoundError:
+            raise FileNotFoundError("Could not find a json file at path: " + path)
 
         return data
 
@@ -81,14 +86,19 @@ class AWSDispatcher():
             filename (str): Name for the file.
             columns (list[str], optional): Columns to fetch. All available will be fetched if set to None. Defaults to None.
 
+        Raises:
+            FileNotFoundError: Raised if the file cannot be found at the expected path in AWS.
+
         Returns:
             DataFrame: Downloaded DataFrame.
         """
         path = f'{self.working_dir}/{folder_name}/{filename}.parquet'
-
-        dataset = pq.ParquetDataset(path, filesystem=self.s3)
-        table = dataset.read(columns=columns)
-        df = table.to_pandas()
+        try:
+            dataset = pq.ParquetDataset(path, filesystem=self.s3)
+            table = dataset.read(columns=columns)
+            df = table.to_pandas()
+        except FileNotFoundError:
+            raise FileNotFoundError("Could not find a parquet file at path: " + path)
         return df
 
     def upload_datum(self, datum: WeatherDatum) -> None:
@@ -110,12 +120,19 @@ class AWSDispatcher():
             coordinate (Coordinate): Coordinate to fetch Datum for.
             columns (list[str], optional): Columns to fetch. All available will be fetched if set to None. Defaults to None.
 
+        Raises:
+            FileNotFoundError: Raised if any needed files cannot be found at the expected paths in AWS.
+
         Returns:
             WeatherDatum: Downloaded WeatherDatum
         """
         folder_name = f'lon_{coordinate.lon:.3f}_lat_{coordinate.lat:.3f}'
-        meta_data = self.download_dict_from_json(folder_name, "meta")
-        hourly_units = self.download_dict_from_json(folder_name, "units")
-        hourly_parameters = self.download_df_from_parquet(folder_name, "data", columns=columns)
+        try:
+            meta_data = self.download_dict_from_json(folder_name, "meta")
+            hourly_units = self.download_dict_from_json(folder_name, "units")
+            hourly_parameters = self.download_df_from_parquet(folder_name, "data", columns=columns)
+        except FileNotFoundError as e:
+            print("Error occured while fetching saved datum from AWS for coordinate: " + str(coordinate))
+            raise e
         datum = WeatherDatum(hourly_units=hourly_units, hourly_parameters=hourly_parameters, **meta_data)
         return datum
