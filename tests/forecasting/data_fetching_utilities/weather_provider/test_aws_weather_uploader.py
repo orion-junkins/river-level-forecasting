@@ -10,7 +10,6 @@ from rlf.forecasting.data_fetching_utilities.weather_provider.aws_weather_upload
 
 DEFAULT_START_DATE = "2020-01-01"
 END_DATE = "2020-02-01"
-CURRENT_TIMESTAMP = "22-12-04_09-25"
 
 
 @pytest.fixture
