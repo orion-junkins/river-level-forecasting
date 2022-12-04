@@ -48,20 +48,23 @@ class APIWeatherProvider(BaseWeatherProvider):
         df.drop(columns=[index_parameter], inplace=True)
         return df
 
-    def build_datum_from_response(self, response: Response) -> WeatherDatum:
+    def build_datum_from_response(self, response: Response, precision: float = 0.25) -> WeatherDatum:
         """Construct a WeatherDatum from a Response.
 
         Args:
             response (Response): The Response to draw data from.
+            precision (float): The precision for rounding lat and lon. Defaults to 0.25.
 
         Returns:
             WeatherDatum: The constructed WeatherDatum instance.
         """
+        lon = response.data.get("longitude", None)
+        lat = response.data.get("latitude", None)
+        rounded_lon = round(lon/precision) * precision
+        rounded_lat = round(lat/precision) * precision
         datum = WeatherDatum(
-            longitude=response.data.get(
-                "longitude", None),
-            latitude=response.data.get(
-                "latitude", None),
+            longitude=rounded_lon,
+            latitude=rounded_lat,
             elevation=response.data.get(
                 "elevation", None),
             utc_offset_seconds=response.data.get(
