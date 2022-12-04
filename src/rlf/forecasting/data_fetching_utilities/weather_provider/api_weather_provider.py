@@ -102,13 +102,14 @@ class APIWeatherProvider(BaseWeatherProvider):
                          start_date: str = DEFAULT_START_DATE,
                          end_date: str = DEFAULT_END_DATE,
                          columns: Optional[list[str]] = None,
-                         sleep_duration=0) -> list[WeatherDatum]:
+                         sleep_duration: str = 0) -> list[WeatherDatum]:
         """Fetch historical weather for all coordinates.
 
         Args:
             start_date (str, optional): iso8601 format YYYY-MM-DD. Defaults to DEFAULT_START_DATE.
             end_date (str, optional): iso8601 format YYYY-MM-DD. Defaults to DEFAULT_END_DATE.
             columns (list[str], optional): The columns/parameters to fetch. All available will be fetched if left equal to None. Defaults to None.
+            sleep_duration (int, optional): How many seconds to sleep after each query. Helps prevent throttling. Defaults to 0.
 
         Returns:
             list[WeatherDatum]: A list of WeatherDatum objects containing the weather data and metadata about the locations.
@@ -139,11 +140,12 @@ class APIWeatherProvider(BaseWeatherProvider):
 
         return datum
 
-    def fetch_current(self, columns: Optional[list[str]] = None, sleep_duration=0) -> list[WeatherDatum]:
+    def fetch_current(self, columns: Optional[list[str]] = None, sleep_duration: int = 0) -> list[WeatherDatum]:
         """Fetch current weather for all coordinates.
 
         Args:
             columns (list[str], optional): The columns/parameters to fetch. All available will be fetched if left equal to None. Defaults to None.
+            sleep_duration (int, optional): How many seconds to sleep after each query. Helps prevent throttling. Defaults to 0.
 
         Returns:
             list[WeatherDatum]: A list of WeatherDatums containing the weather data about the location.
