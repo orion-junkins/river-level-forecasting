@@ -76,4 +76,27 @@ class AWSWeatherUploader():
                 partition_end_date.year + years_per_query)
 
         for datum in datums:
-            self.aws_dispatcher.upload_datum(datum)
+            self.aws_dispatcher.upload_datum(datum, "historical")
+
+    def upload_current(self,
+                       columns: Optional[list[str]] = None,
+                       sleep_duration: int = 0,
+                       dir_path: str = None) -> None:
+        """Refetch current datums and store this updated data in AWS. This will overwrite whatever data was previously stored for the current river.
+
+        Args:
+            columns (list[str], optional): The columns/parameters to fetch. All available will be fetched if left equal to None. Defaults to None.
+            sleep_duration (int, optional): How long to sleep after each query. Helps prevent throttling. Defaults to 0.
+            dir_path (str, optional): The subdir (within 'current') to store datums. Generally set equal to the timestamp of collection. Defaults to None.
+        """
+        if dir_path is None:
+            dir_path = "current"
+        else:
+            dir_path = f'current/{dir_path}'
+
+        datums = self.weather_provider.fetch_current(
+            columns=columns,
+            sleep_duration=sleep_duration)
+
+        for datum in datums:
+            self.aws_dispatcher.upload_datum(datum, dir_path=dir_path)
