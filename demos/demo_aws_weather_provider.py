@@ -35,7 +35,7 @@ datums[0].hourly_parameters
 
 # %% ------------------------------
 # Supply a timestamp to the AWSWeatherProvider
-weather_provider.set_timestamp("22-12-03_20-09")
+weather_provider.set_timestamp("22-12-03_20-28")
 
 # Fetch 'current' data logged at the given timestamp
 datums = weather_provider.fetch_current()
