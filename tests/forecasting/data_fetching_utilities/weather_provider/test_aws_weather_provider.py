@@ -7,16 +7,18 @@ from rlf.forecasting.data_fetching_utilities.weather_provider.aws_weather_provid
 
 @pytest.fixture
 def aws_dispatcher() -> AWSDispatcher:
-    return AWSDispatcher("historical-weather", "testing")
+    return AWSDispatcher("all-weather-data", "testing")
+
+
+@pytest.fixture
+def coordinates() -> list[Coordinate]:
+    return [Coordinate(lon=-120.75, lat=44.25), Coordinate(lon=-121.0, lat=44.5)]
 
 
 @ pytest.fixture
-def weather_provider(aws_dispatcher) -> AWSWeatherProvider:
-    coordinates = [Coordinate(lon=1.0, lat=2.0),
-                   Coordinate(lon=3.0, lat=4.0)]
-    weather_provider = AWSWeatherProvider(
+def weather_provider(aws_dispatcher, coordinates) -> AWSWeatherProvider:
+    return AWSWeatherProvider(
         coordinates=coordinates, aws_dispatcher=aws_dispatcher)
-    return weather_provider
 
 
 def test_fetch_historical(weather_provider):

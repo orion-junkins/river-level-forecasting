@@ -13,7 +13,7 @@ END_DATE = "2020-02-01"
 
 @pytest.fixture
 def coordinates() -> list[Coordinate]:
-    return [Coordinate(lon=1.0, lat=2.0), Coordinate(lon=3.0, lat=4.0)]
+    return [Coordinate(lon=-120.75, lat=44.25), Coordinate(lon=-121.0, lat=44.5)]
 
 
 @pytest.fixture
@@ -23,7 +23,7 @@ def api_weather_provider(coordinates):
 
 @pytest.fixture
 def aws_dispatcher() -> AWSDispatcher:
-    return AWSDispatcher("historical-weather", "testing")
+    return AWSDispatcher("all-weather-data", "testing")
 
 
 @pytest.fixture
