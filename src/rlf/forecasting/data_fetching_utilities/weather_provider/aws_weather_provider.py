@@ -23,20 +23,24 @@ class AWSWeatherProvider(BaseWeatherProvider):
 
     def __init__(self,
                  coordinates: Coordinate,
-                 aws_dispatcher: AWSDispatcher) -> None:
+                 aws_dispatcher: AWSDispatcher,
+                 current_timestamp: str = None) -> None:
         """Create an APIWeatherProvider for the given list of coordinates.
 
         Args:
             coordinates (list[Coordinate(longitude: float, latitude: float)]): Named tuple WSG84 coordinates: (longitude, latitude).
             aws_dispatcher (AWSDispatcher): The AWSDispatcher instance from which data will be drawn.
+            current_timestamp (str): The 'current' timestamp for which current data will be fetched.
         """
         self.coordinates = coordinates
         self.aws_dispatcher = aws_dispatcher
+        self.current_timestamp = current_timestamp
 
-    def download_historical_datums_from_aws(self, columns: Optional[list[str]] = None) -> list[WeatherDatum]:
-        """Download historical datums from AWS. Assumes datums exist in expected location.
+    def download_datums_from_aws(self, dir_path: str, columns: Optional[list[str]] = None) -> list[WeatherDatum]:
+        """Download datums from AWS. Assumes datums exist in expected location.
 
         Args:
+            dir_path (str): The directory path relative to the working directory of the aws_dispatcher.
             columns (list[str], optional): The columns/parameters to fetch. All available will be fetched if left equal to None. Defaults to None.
 
         Raises:
@@ -48,7 +52,7 @@ class AWSWeatherProvider(BaseWeatherProvider):
         datums = []
         for coordinate in self.coordinates:
             datum = self.aws_dispatcher.download_datum(
-                coordinate, columns=columns)
+                coordinate, columns=columns, dir_path=dir_path)
             datums.append(datum)
         return datums
 
@@ -61,15 +65,15 @@ class AWSWeatherProvider(BaseWeatherProvider):
         Returns:
             list[WeatherDatum]: A list of WeatherDatums containing the weather data about the location.
         """
-        datums = self.download_historical_datums_from_aws(columns=columns)
+        datums = self.download_datums_from_aws(dir_path="historical", columns=columns)
 
         if start_date is not None:
-            start_dt = datetime.datetime.strptime(
+            start_dt = datetime.strptime(
                 start_date, '%Y-%m-%d').replace(tzinfo=pytz.UTC)
 
             if end_date is not None:
-                end_dt = datetime.datetime.strptime(
-                    start_date, '%Y-%m-%d').replace(tzinfo=pytz.UTC)
+                end_dt = datetime.strptime(
+                    end_date, '%Y-%m-%d').replace(tzinfo=pytz.UTC)
                 for datum in datums:
                     datum.hourly_parameters = datum.hourly_parameters[start_dt:end_dt]
             else:
@@ -86,5 +90,13 @@ class AWSWeatherProvider(BaseWeatherProvider):
         Returns:
             list[WeatherDatum]: A list of WeatherDatums containing the weather data about the location.
         """
-        raise (
-            NotImplementedError)  # TODO Implement fetching of evaluation snapshots as "current"
+        if self.current_timestamp is None:
+            raise ValueError("Cannot fetch current data without a timestamp.")
+
+        dir_path = f'current/{self.current_timestamp}'
+        datums = self.download_datums_from_aws(dir_path=dir_path, columns=columns)
+
+        return datums
+
+    def set_timestamp(self, new_timestamp):
+        self.current_timestamp = new_timestamp
