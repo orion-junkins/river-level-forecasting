@@ -5,7 +5,7 @@ from rlf.forecasting.data_fetching_utilities.coordinate import Coordinate
 from rlf.forecasting.data_fetching_utilities.weather_provider.api_weather_provider import APIWeatherProvider
 
 # Declare coordinates
-coordinates = [Coordinate(lon=-120.75, lat=44.25), Coordinate(lon=-121.5, lat=44.25)]
+coordinates = [Coordinate(lon=-120.75, lat=44.25), Coordinate(lon=-121.0, lat=44.5)]
 
 # Create an AWSWeatherProvider using the defined coordinates
 weather_provider = APIWeatherProvider(coordinates)
