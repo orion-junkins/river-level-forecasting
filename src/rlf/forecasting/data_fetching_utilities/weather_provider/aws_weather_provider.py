@@ -99,4 +99,9 @@ class AWSWeatherProvider(BaseWeatherProvider):
         return datums
 
     def set_timestamp(self, new_timestamp):
+        """Set the current timestamp for the weather provider. Fetched "current" weather will be relative to this point in time. Expected to be a valid directory in AWS.
+
+        Args:
+            new_timestamp (string): Timestamp in the format "YY-mm-DD_HH-MM". Expected to match a directory in the current weather dir for the AWSProvider.
+        """
         self.current_timestamp = new_timestamp
