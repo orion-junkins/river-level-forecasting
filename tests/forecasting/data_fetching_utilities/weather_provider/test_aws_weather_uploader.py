@@ -15,7 +15,7 @@ CURRENT_TIMESTAMP = "22-12-04_09-25"
 
 @pytest.fixture
 def coordinates() -> list[Coordinate]:
-    return [Coordinate(lon=-120.75, lat=44.25), Coordinate(lon=-121.0, lat=44.5)]
+    return [Coordinate(lon=-120.8, lat=44.2), Coordinate(lon=-121.8, lat=44.3)]
 
 
 @pytest.fixture

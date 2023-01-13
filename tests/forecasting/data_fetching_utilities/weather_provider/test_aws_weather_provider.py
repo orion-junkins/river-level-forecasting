@@ -12,7 +12,7 @@ def aws_dispatcher() -> AWSDispatcher:
 
 @pytest.fixture
 def coordinates() -> list[Coordinate]:
-    return [Coordinate(lon=-120.75, lat=44.25), Coordinate(lon=-121.0, lat=44.5)]
+    return [Coordinate(lon=-120.8, lat=44.2), Coordinate(lon=-121.8, lat=44.3)]
 
 
 @ pytest.fixture
@@ -32,7 +32,7 @@ def test_fetch_historical(weather_provider):
 
 @pytest.mark.slow
 def test_fetch_current(weather_provider):
-    weather_provider.set_timestamp("22-12-07_15-14")
+    weather_provider.set_timestamp("23-01-13_14-38")
     weather_datums = weather_provider.fetch_current()
     assert len(weather_datums) == len(weather_provider.coordinates)
     for weather_datum in weather_datums:

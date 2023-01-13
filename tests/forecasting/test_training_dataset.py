@@ -77,5 +77,5 @@ def test_feature_engineering(catchment_data):
 
     x_df = train_ds.X.pd_dataframe()
 
-    assert (x_df["0.250_1.250_weather_attr_1_sum_3"][-1] == 84.0)
-    assert (x_df["0.250_1.250_weather_attr_1_mean_3"][-1] == 28.0)
+    assert (x_df["0.10_1.10_weather_attr_1_sum_3"][-1] == 84.0)
+    assert (x_df["0.10_1.10_weather_attr_1_mean_3"][-1] == 28.0)

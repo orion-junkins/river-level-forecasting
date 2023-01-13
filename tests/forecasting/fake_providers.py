@@ -47,8 +47,8 @@ def weather_datums(num_samples, num_dfs):
     datums = []
     for i in range(num_dfs):
         datum = WeatherDatum(
-            longitude=i + 0.25,
-            latitude=i + 1.25,
+            longitude=i + 0.1,
+            latitude=i + 1.1,
             elevation=0.0,
             utc_offset_seconds=0.0,
             timezone=None,
