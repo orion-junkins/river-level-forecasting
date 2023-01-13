@@ -1,11 +1,9 @@
-import pandas as pd
 import pytest
 
-from rlf.aws_dispatcher import AWSDispatcher
 from rlf.forecasting.data_fetching_utilities.coordinate import Coordinate
 from rlf.forecasting.data_fetching_utilities.weather_provider.api.base_api_adapter import BaseAPIAdapter
 from rlf.forecasting.data_fetching_utilities.weather_provider.api.models import Response
-from rlf.forecasting.data_fetching_utilities.weather_provider.weather_provider import WeatherProvider
+from rlf.forecasting.data_fetching_utilities.weather_provider.api_weather_provider import APIWeatherProvider
 
 
 def fake_response(coordinate):
@@ -48,16 +46,16 @@ def fake_weather_api_adapter() -> FakeWeatherAPIAdapter:
 
 
 @ pytest.fixture
-def weather_provider(fake_weather_api_adapter) -> WeatherProvider:
+def weather_provider(fake_weather_api_adapter) -> APIWeatherProvider:
     coordinates = [Coordinate(lon=1.0, lat=2.0),
                    Coordinate(lon=3.0, lat=4.0)]
-    weather_provider = WeatherProvider(
+    weather_provider = APIWeatherProvider(
         coordinates=coordinates, api_adapter=fake_weather_api_adapter)
     return weather_provider
 
 
-def test_fetch_historical_datums_fetches_one_per_location(weather_provider):
-    weather_datums = weather_provider.fetch_historical_datums()
+def test_fetch_historical_fetches_one_per_location(weather_provider):
+    weather_datums = weather_provider.fetch_historical()
     assert len(weather_datums) == len(weather_provider.coordinates)
 
 
@@ -69,8 +67,8 @@ def test_fetch_historical_returns_expected_datum(weather_provider):
         assert len(weather_datum.hourly_parameters) == 3
 
 
-def test_fetch_current_datums_fetches_one_per_location(weather_provider):
-    weather_datums = weather_provider.fetch_current_datums()
+def test_fetch_current_fetches_one_per_location(weather_provider):
+    weather_datums = weather_provider.fetch_current()
     assert len(weather_datums) == len(weather_provider.coordinates)
 
 
@@ -80,36 +78,3 @@ def test_fetch_current_returns_expected_datum(weather_provider):
         assert weather_datum.hourly_parameters.index.dtype == "datetime64[ns, UTC]"
         assert list(weather_datum.hourly_parameters.columns) == ["temperature_2m"]
         assert len(weather_datum.hourly_parameters) == 3
-
-
-@pytest.fixture
-def aws_dispatcher():
-    return AWSDispatcher(bucket_name="testing-bucket-junkinso", directory_name="weather_provider_testing")
-
-
-@ pytest.fixture
-def aws_weather_provider(fake_weather_api_adapter, aws_dispatcher) -> WeatherProvider:
-    coordinates = [Coordinate(lon=1.0, lat=2.0),
-                   Coordinate(lon=3.0, lat=4.0)]
-    weather_provider = WeatherProvider(
-        coordinates=coordinates, api_adapter=fake_weather_api_adapter, aws_dispatcher=aws_dispatcher)
-    return weather_provider
-
-
-@pytest.mark.slow
-def test_historical_data_aws(aws_weather_provider):
-    aws_weather_provider.update_historical_datums_in_aws()
-    datums = aws_weather_provider.download_historical_datums_from_aws()
-    for datum in datums:
-        assert isinstance(datum.hourly_parameters, pd.DataFrame)
-        assert list(datum.hourly_parameters.columns) == ["time", "temperature_2m"]
-        assert len(datum.hourly_parameters) == 3
-
-
-@pytest.mark.slow
-def test_fetch_historical_aws(aws_weather_provider):
-    weather_dfs = aws_weather_provider.fetch_historical()
-    for weather_df in weather_dfs:
-        assert isinstance(weather_df, pd.DataFrame)
-        assert list(weather_df.columns) == ["time", "temperature_2m"]
-        assert len(weather_df) == 3

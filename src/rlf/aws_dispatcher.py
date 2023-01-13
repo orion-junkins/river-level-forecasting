@@ -95,30 +95,37 @@ class AWSDispatcher():
         path = f'{self.working_dir}/{folder_name}/{filename}.parquet'
         try:
             dataset = pq.ParquetDataset(path, filesystem=self.s3)
+            if columns is not None:
+                columns.append('time')
             table = dataset.read(columns=columns)
             df = table.to_pandas()
         except FileNotFoundError:
             raise FileNotFoundError("Could not find a parquet file at path: " + path)
         return df
 
-    def upload_datum(self, datum: WeatherDatum) -> None:
+    def upload_datum(self, datum: WeatherDatum, dir_path: str = None) -> None:
         """Upload an entire WeatherDatum to S3.
 
         Args:
             datum (WeatherDatum): The Datum to upload.
+            dir_path (str): Directory path to which datum should be uploaded.
         """
-        folder_name = f'lon_{datum.longitude:.3f}_lat_{datum.latitude:.3f}'
+        if dir_path is None:
+            folder_name = f'lon_{datum.longitude:.2f}_lat_{datum.latitude:.2f}'
+        else:
+            folder_name = f'{dir_path}/lon_{datum.longitude:.2f}_lat_{datum.latitude:.2f}'
 
         self.upload_as_json(datum.meta_data, folder_name, "meta")
         self.upload_as_json(datum.hourly_units, folder_name, "units")
         self.upload_as_parquet(datum.hourly_parameters, folder_name, "data")
 
-    def download_datum(self, coordinate: Coordinate, columns: list[str] = None) -> WeatherDatum:
+    def download_datum(self, coordinate: Coordinate, columns: list[str] = None,  dir_path: str = None) -> WeatherDatum:
         """Download an entire WeatherDatum from S3.
 
         Args:
             coordinate (Coordinate): Coordinate to fetch Datum for.
             columns (list[str], optional): Columns to fetch. All available will be fetched if set to None. Defaults to None.
+            dir_path (str): Directory path to which datum should be uploaded.
 
         Raises:
             FileNotFoundError: Raised if any needed files cannot be found at the expected paths in AWS.
@@ -126,7 +133,7 @@ class AWSDispatcher():
         Returns:
             WeatherDatum: Downloaded WeatherDatum
         """
-        folder_name = f'lon_{coordinate.lon:.3f}_lat_{coordinate.lat:.3f}'
+        folder_name = f'{dir_path}/lon_{coordinate.lon:.2f}_lat_{coordinate.lat:.2f}'
         try:
             meta_data = self.download_dict_from_json(folder_name, "meta")
             hourly_units = self.download_dict_from_json(folder_name, "units")

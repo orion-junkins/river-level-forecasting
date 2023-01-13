@@ -88,7 +88,7 @@ class BaseDataset(ABC):
 
         X = self._add_engineered_features(X)
 
-        prefix = f"{datum.longitude:.3f}_{datum.latitude:.3f}_"
+        prefix = f"{datum.longitude:.2f}_{datum.latitude:.2f}_"
         if prefix not in self.subsets:
             X.columns = [prefix + c for c in X.columns]
             self.subsets[prefix] = Coordinate(lon=datum.longitude, lat=datum.latitude)
