@@ -137,6 +137,8 @@ class AWSDispatcher():
         try:
             meta_data = self.download_dict_from_json(folder_name, "meta")
             hourly_units = self.download_dict_from_json(folder_name, "units")
+            if columns is not None:
+                hourly_units = dict((key, hourly_units[key]) for key in columns)
             hourly_parameters = self.download_df_from_parquet(folder_name, "data", columns=columns)
         except FileNotFoundError as e:
             print("Error occured while fetching saved datum from AWS for coordinate: " + str(coordinate))
