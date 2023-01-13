@@ -30,7 +30,7 @@ class AWSWeatherProvider(BaseWeatherProvider):
         Args:
             coordinates (list[Coordinate(longitude: float, latitude: float)]): Named tuple WSG84 coordinates: (longitude, latitude).
             aws_dispatcher (AWSDispatcher): The AWSDispatcher instance from which data will be drawn.
-            current_timestamp (str): The 'current' timestamp for which current data will be fetched.
+            current_timestamp (str): The 'current' timestamp for which current data will be fetched. Expected in the form "YY-mm-DD_HH-MM" in UTC. Expected to match a directory in the current weather dir for the AWSProvider.
         """
         self.coordinates = coordinates
         self.aws_dispatcher = aws_dispatcher
@@ -61,6 +61,8 @@ class AWSWeatherProvider(BaseWeatherProvider):
 
         Args:
             columns (list[str], optional): The columns/parameters to fetch. All available will be fetched if left equal to None. Defaults to None.
+            start_date (str): The starting date for the requested data. In the format "YYYY-MM-DD".
+            end_date (str): The ending date for the requested data. In the format "YYYY-MM-DD".
 
         Returns:
             list[WeatherDatum]: A list of WeatherDatums containing the weather data about the location.
@@ -98,10 +100,10 @@ class AWSWeatherProvider(BaseWeatherProvider):
 
         return datums
 
-    def set_timestamp(self, new_timestamp):
+    def set_timestamp(self, new_timestamp: str) -> None:
         """Set the current timestamp for the weather provider. Fetched "current" weather will be relative to this point in time. Expected to be a valid directory in AWS.
 
         Args:
-            new_timestamp (string): Timestamp in the format "YY-mm-DD_HH-MM". Expected to match a directory in the current weather dir for the AWSProvider.
+            new_timestamp (str): Timestamp in the format "YY-mm-DD_HH-MM" in UTC. Expected to match a directory in the current weather dir for the AWSProvider.
         """
         self.current_timestamp = new_timestamp

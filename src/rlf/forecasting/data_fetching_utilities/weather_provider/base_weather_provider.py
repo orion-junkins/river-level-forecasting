@@ -24,8 +24,10 @@ class BaseWeatherProvider(ABC):
     @abstractmethod
     def fetch_historical(self, columns: Optional[list[str]] = None, start_date: str = DEFAULT_START_DATE) -> list[WeatherDatum]:
         """Fetch historical weather for all coordinates.
+
         Args:
             columns (list[str], optional): The columns/parameters to fetch. All available will be fetched if left equal to None. Defaults to None.
+            start_date (str, optional): iso8601 format YYYY-MM-DD. Expected in UTC. Defaults to DEFAULT_START_DATE.
 
         Returns:
             list[WeatherDatum]: A list of WeatherDatums containing the weather data about the location.

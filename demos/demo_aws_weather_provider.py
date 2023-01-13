@@ -1,4 +1,4 @@
-# Demo of the APIWeatherProvider class. Demonstrates fetching historical and current data. Also demonstrates fetching column subsets.
+# Demo of the AWSWeatherProvider class. Demonstrates fetching historical and current data. Also demonstrates fetching column subsets.
 # Expects that data exists in AWS for the specified coordinates and timestamps.
 # Run the scripts in `scripts/upload/weather/` to upload weather to AWS.
 # %% ------------------------------
