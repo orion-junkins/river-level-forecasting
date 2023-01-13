@@ -2,7 +2,7 @@ from datetime import datetime
 from typing import Optional
 
 import pandas as pd
-import pytz 
+import pytz
 
 from rlf.aws_dispatcher import AWSDispatcher
 from rlf.forecasting.data_fetching_utilities.weather_provider.base_weather_provider import (
