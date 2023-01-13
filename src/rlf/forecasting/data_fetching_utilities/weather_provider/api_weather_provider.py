@@ -48,7 +48,7 @@ class APIWeatherProvider(BaseWeatherProvider):
         df.drop(columns=[index_parameter], inplace=True)
         return df
 
-    def build_datum_from_response(self, response: Response, precision: float = 0.25) -> WeatherDatum:
+    def build_datum_from_response(self, response: Response, precision: float = 0.1) -> WeatherDatum:
         """Construct a WeatherDatum from a Response.
 
         Args:

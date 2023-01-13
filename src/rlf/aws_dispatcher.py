@@ -111,9 +111,9 @@ class AWSDispatcher():
             dir_path (str): Directory path to which datum should be uploaded.
         """
         if dir_path is None:
-            folder_name = f'lon_{datum.longitude:.3f}_lat_{datum.latitude:.3f}'
+            folder_name = f'lon_{datum.longitude:.2f}_lat_{datum.latitude:.2f}'
         else:
-            folder_name = f'{dir_path}/lon_{datum.longitude:.3f}_lat_{datum.latitude:.3f}'
+            folder_name = f'{dir_path}/lon_{datum.longitude:.2f}_lat_{datum.latitude:.2f}'
 
         self.upload_as_json(datum.meta_data, folder_name, "meta")
         self.upload_as_json(datum.hourly_units, folder_name, "units")
@@ -133,7 +133,7 @@ class AWSDispatcher():
         Returns:
             WeatherDatum: Downloaded WeatherDatum
         """
-        folder_name = f'{dir_path}/lon_{coordinate.lon:.3f}_lat_{coordinate.lat:.3f}'
+        folder_name = f'{dir_path}/lon_{coordinate.lon:.2f}_lat_{coordinate.lat:.2f}'
         try:
             meta_data = self.download_dict_from_json(folder_name, "meta")
             hourly_units = self.download_dict_from_json(folder_name, "units")
