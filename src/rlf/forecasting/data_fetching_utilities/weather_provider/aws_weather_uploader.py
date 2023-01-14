@@ -81,13 +81,13 @@ class AWSWeatherUploader():
 
     def upload_current(self,
                        columns: Optional[list[str]] = None,
-                       sleep_duration: int = 0,
+                       sleep_duration: float = 0.0,
                        dir_path: str = None) -> None:
         """Refetch current datums and store this updated data in AWS. This will overwrite whatever data was previously stored for the current river.
 
         Args:
             columns (list[str], optional): The columns/parameters to fetch. All available will be fetched if left equal to None. Defaults to None.
-            sleep_duration (int, optional): How long to sleep after each query. Helps prevent throttling. Defaults to 0.
+            sleep_duration (float, optional): How long to sleep after each query. Helps prevent throttling. Defaults to 0.0.
             dir_path (str, optional): The subdir (within 'current') to store datums. Generally set equal to the timestamp of collection. Defaults to None.
         """
         if dir_path is None:
