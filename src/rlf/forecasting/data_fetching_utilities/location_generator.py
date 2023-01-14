@@ -10,7 +10,7 @@ class LocationGenerator:
     """
     Driver class for generating locations given the bottom left and top right coordinates of a rectangular area.
     """
-    def __init__(self, bottom_left, top_right, separation_degrees=0.25, precision=0.25):
+    def __init__(self, bottom_left, top_right, separation_degrees=0.1, precision=0.1):
         """Create a Location Generator given the bottom left and top right corners of a rectangular area. Bottom left point will be floored to the nearest rounded value according to provided precision. Top right point will be ceilinged to the nearest rounded value according to provided precision.
 
         Please Note, the logic of this class will not function if the area enclosed between bottom_left and top_right spans across the meridian.
@@ -18,8 +18,8 @@ class LocationGenerator:
         Args:
             bottom_left (Coordinate): Bottom left bounding coordinate.
             top_right (Coordinate): Top Right bounding coordinate.
-            separation_degrees (float, optional): How far apart points should be in degrees. Defaults to 0.25.
-            precision (float, optional): How precise coordinate values should be. Defaults to 0.25.
+            separation_degrees (float, optional): How far apart points should be in degrees. Defaults to 0.1.
+            precision (float, optional): How precise coordinate values should be. Defaults to 0.1.
 
         Raises:
             ValueError: If bottom_left and top_right do not define a valid region.
@@ -56,7 +56,7 @@ class LocationGenerator:
         Returns:
             Coordinate: The top left coordinate.
         """
-        return Coordinate(lon=self.lon_max, lat=self.lat_min)
+        return Coordinate(lon=self.lon_min, lat=self.lat_max)
 
     @property
     def bottom_right(self):
@@ -65,7 +65,7 @@ class LocationGenerator:
         Returns:
             Coordinate: The bottom right coordinate.
         """
-        return Coordinate(lon=self.lon_min, lat=self.lat_max)
+        return Coordinate(lon=self.lon_max, lat=self.lat_min)
 
     @property
     def top_right(self):
