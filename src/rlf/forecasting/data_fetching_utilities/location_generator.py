@@ -76,24 +76,6 @@ class LocationGenerator:
         """
         return Coordinate(lon=self.lon_max, lat=self.lat_max)
 
-    @property
-    def lat_excess(self):
-        """The amount of excess latitudinal distance in degrees that cannot be evenly divided by lat_separation.
-
-        Returns:
-            float: The amount of excess distance in degrees.
-        """
-        return (0.5 * ((self.lat_max - self.lat_min) % self.separation_degrees))
-
-    @property
-    def lon_excess(self):
-        """The amount of excess longitudinal distance in degrees that cannot be evenly divided by lon_separation.
-
-        Returns:
-            float: The amount of excess distance in degrees.
-        """
-        return (0.5 * ((self.lon_max - self.lon_min) % self.separation_degrees))
-
     def _coordinate_lons(self):
         """The longitude values for the generated coordinates.
 
@@ -101,16 +83,12 @@ class LocationGenerator:
             list[float]: The longitude values for the generated coordinates.
         """
         lons = []
-        lon_start = self.lon_min + self.lon_excess
-        lon_end = self.lon_max - self.lon_excess
-
-        while lon_start < lon_end:
-            rounded_lon = (round(lon_start/(self.precision))*self.precision)
+        lon_start = self.lon_min
+        lon_end = self.lon_max
+        while lon_start < lon_end + (self.precision/2):
+            rounded_lon = round((lon_start/(self.precision))*self.precision, 4)
             lons.append(rounded_lon)
             lon_start += self.separation_degrees
-
-        rounded_lon_end = (round(lon_end/(self.precision))*self.precision)
-        lons.append(rounded_lon_end)
 
         return lons
 
@@ -121,16 +99,13 @@ class LocationGenerator:
             list[float]: The latitude values for the generated coordinates.
         """
         lats = []
-        lat_start = self.lat_min + self.lat_excess
-        lat_end = self.lat_max - self.lat_excess
-
-        while lat_start < lat_end:
-            rounded_lat_start = (round(lat_start/(self.precision))*self.precision)
-            lats.append(rounded_lat_start)
+        lat_start = self.lat_min
+        lat_end = self.lat_max
+        while lat_start < lat_end + (self.precision/2):
+            rounded_lat = round((lat_start/(self.precision))*self.precision, 4)
+            lats.append(rounded_lat)
             lat_start += self.separation_degrees
 
-        rounded_lat_end = (round(lat_end/(self.precision))*self.precision)
-        lats.append(rounded_lat_end)
         return lats
 
     def _get_coordinates(self):
