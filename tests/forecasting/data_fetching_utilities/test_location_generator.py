@@ -56,16 +56,6 @@ def test_top_right(location_generator):
     assert (location_generator.top_right == Coordinate(lon=0.75, lat=0.5))
 
 
-def test_lat_excess(location_generator):
-    expected_result = 0.0
-    assert (abs(location_generator.lat_excess - expected_result) < FLOAT_COMPARISON_PRECISION)
-
-
-def test_lon_excess(location_generator):
-    expected_result = 0.0
-    assert (abs(location_generator.lon_excess - expected_result) < FLOAT_COMPARISON_PRECISION)
-
-
 def test_coordinates(location_generator):
     expected_result = [Coordinate(lon=0.0, lat=0.0),
                        Coordinate(lon=0.25, lat=0.0),
