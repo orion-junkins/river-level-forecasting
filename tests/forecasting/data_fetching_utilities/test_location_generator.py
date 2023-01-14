@@ -9,12 +9,12 @@ FLOAT_COMPARISON_PRECISION = 0.0001
 
 @pytest.fixture
 def bottom_left():
-    return Coordinate(lon=0.2, lat=0.00001)
+    return Coordinate(lon=0.21, lat=0.0)
 
 
 @pytest.fixture
 def top_right():
-    return Coordinate(lon=0.6, lat=0.4)
+    return Coordinate(lon=0.38, lat=0.19)
 
 
 @pytest.fixture
@@ -41,34 +41,31 @@ def test_bottom_lat_must_be_less_than_top_lat(bottom_left):
 
 
 def test_bottom_left(location_generator):
-    assert (location_generator.bottom_left == Coordinate(lon=0,  lat=0))
+    assert (location_generator.bottom_left == Coordinate(lon=0.2,  lat=0))
 
 
 def test_bottom_right(location_generator):
-    assert (location_generator.bottom_right == Coordinate(lon=0.0, lat=0.5))
+    assert (location_generator.bottom_right == Coordinate(lon=0.4, lat=0.0))
 
 
 def test_top_left(location_generator):
-    assert (location_generator.top_left == Coordinate(lon=0.75,  lat=0.0))
+    assert (location_generator.top_left == Coordinate(lon=0.2,  lat=0.2))
 
 
 def test_top_right(location_generator):
-    assert (location_generator.top_right == Coordinate(lon=0.75, lat=0.5))
+    assert (location_generator.top_right == Coordinate(lon=0.4, lat=0.2))
 
 
 def test_coordinates(location_generator):
-    expected_result = [Coordinate(lon=0.0, lat=0.0),
-                       Coordinate(lon=0.25, lat=0.0),
-                       Coordinate(lon=0.5, lat=0.0),
-                       Coordinate(lon=0.75, lat=0.0),
-                       Coordinate(lon=0.0, lat=0.25),
-                       Coordinate(lon=0.25, lat=0.25),
-                       Coordinate(lon=0.5, lat=0.25),
-                       Coordinate(lon=0.75, lat=0.25),
-                       Coordinate(lon=0.0, lat=0.5),
-                       Coordinate(lon=0.25, lat=0.5),
-                       Coordinate(lon=0.5, lat=0.5),
-                       Coordinate(lon=0.75, lat=0.5)]
+    expected_result = [Coordinate(lon=0.2, lat=0.0),
+                       Coordinate(lon=0.3, lat=0.0),
+                       Coordinate(lon=0.4, lat=0.0),
+                       Coordinate(lon=0.2, lat=0.1),
+                       Coordinate(lon=0.3, lat=0.1),
+                       Coordinate(lon=0.4, lat=0.1),
+                       Coordinate(lon=0.2, lat=0.2),
+                       Coordinate(lon=0.3, lat=0.2),
+                       Coordinate(lon=0.4, lat=0.2)]
     for (expected, generated) in zip(expected_result, location_generator.coordinates):
         assert (abs(expected.lat - generated.lat) < FLOAT_COMPARISON_PRECISION)
         assert (abs(expected.lon - generated.lon) < FLOAT_COMPARISON_PRECISION)
