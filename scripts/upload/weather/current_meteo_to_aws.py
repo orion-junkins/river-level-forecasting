@@ -1,15 +1,24 @@
 # Helper script for uploading current weather from OpenMeteo to AWS. Intended to be run as scheduled lambda function to log evaluation datasets, or locally for testing purposes.
 from datetime import datetime
 import json
+import sys
 
 from rlf.aws_dispatcher import AWSDispatcher
 from rlf.forecasting.data_fetching_utilities.coordinate import Coordinate
 from rlf.forecasting.data_fetching_utilities.weather_provider.api_weather_provider import APIWeatherProvider
 from rlf.forecasting.data_fetching_utilities.weather_provider.aws_weather_uploader import AWSWeatherUploader
 
+# Parse command line args
+args = [arg for arg in sys.argv[1:] if not arg.startswith("-")]
+
+# Use provided path if one is given, else default to expected path in data dir
+if len(args) == 1:
+    CATCHMENT_FILEPATH = args[0]
+else:
+    CATCHMENT_FILEPATH = "data/catchments_short.json"
+
 # Tunable parameters
-CATCHMENT_FILEPATH = "path/to/catchment/file.json"
-SLEEP_DURATION = 1
+SLEEP_DURATION = 0.2
 BUCKET_NAME = "all-weather-data"
 AWS_DIR_NAME = "open-meteo"
 
@@ -24,6 +33,8 @@ for coord in coordinates_raw:
     new_coord = Coordinate(lon=coord[0], lat=coord[1])
     coordinates.append(new_coord)
 coordinates = list(set(coordinates))
+
+print(f'Uploading current weather data for {len(coordinates)} points')
 
 # Generate timestamp string for directory naming
 now = datetime.now()

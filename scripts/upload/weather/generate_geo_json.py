@@ -1,18 +1,27 @@
 # Helper script for selecting locations. Assumes that the specified "KML_DIR_PATH" exists containing catchment definition KML files as created with the "Drainage Area Delineation" provided with the WATERS Geo Dataset. These KML files should be named "[Gauge_name] - #[Gauge_id]". For example: "CANYON CREEK NEAR AMBOY, WA - #14219000.kml" This script will produce a GeoJSON file at the specified output path containing a list of the coordinates that define the drainage, the size of the drainage, the bounding coordinates for the grid imposed over the drainage, and a list of coordinates that make up the imposed grid itself.
 # If only coordinate values are needed (most use cases) set COORDINATES_ONLY to True to exclude storage intensive catchment definitions.
-import re
 import json
 import os
+import re
+import sys
+
 from rlf.forecasting.data_fetching_utilities.coordinate import Coordinate
 from rlf.forecasting.data_fetching_utilities.location_generator import \
     LocationGenerator
 
-# Specify the input and output paths
-OUTPUT_FILEPATH = "path/for/generated/file.json"
-KML_DIR_PATH = "path/to/dir/of/catchment/kmls"
+# Parse command line args
+opts = [opt for opt in sys.argv[1:] if opt.startswith("-")]
+args = [arg for arg in sys.argv[1:] if not arg.startswith("-")]
 
-# Specify if only coordinates are needed (creates a much smaller file when set to True)
-COORDINATES_ONLY = True
+# Define the input and output paths
+if len(args) == 2:
+    KML_DIR_PATH = args[0]
+    OUTPUT_FILEPATH = args[1]
+else:
+    raise ValueError(f'Usage: {sys.argv[0]} (-long) KML_DIR_PATH OUTPUT_FILEPATH')
+
+# Specify if only coordinates are needed (creates a much smaller file when True)
+COORDINATES_ONLY = not ("-long" in opts)
 
 
 def process_kml(path, gauge_id, gauge_name):

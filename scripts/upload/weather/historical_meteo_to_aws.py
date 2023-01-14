@@ -1,15 +1,23 @@
 # Helper script for uploading historical weather from OpenMeteo to AWS. Intended to be modified & run as needed to upload new historical datasets.
 import json
+import sys
 
 from rlf.aws_dispatcher import AWSDispatcher
 from rlf.forecasting.data_fetching_utilities.coordinate import Coordinate
 from rlf.forecasting.data_fetching_utilities.weather_provider.api_weather_provider import APIWeatherProvider
 from rlf.forecasting.data_fetching_utilities.weather_provider.aws_weather_uploader import AWSWeatherUploader
 
+# Parse command line args
+args = [arg for arg in sys.argv[1:] if not arg.startswith("-")]
+
+if len(args) == 3:
+    CATCHMENT_FILEPATH = args[0]
+    START_DATE = args[1]
+    END_DATE = args[2]
+else:
+    raise ValueError(f'Usage: {sys.argv[0]} CATCHMENT_FILEPATH START_DATE END_DATE, where dates are given in the form "yyy-mm-dd"')
+
 # Tunable parameters
-CATCHMENT_FILEPATH = "path/to/catchment/file.json"
-START_DATE = "2010-01-01"
-END_DATE = "2021-01-01"
 SLEEP_DURATION = 5
 BUCKET_NAME = "all-weather-data"
 AWS_DIR_NAME = "open-meteo"
@@ -25,6 +33,8 @@ for coord in coordinates_raw:
     new_coord = Coordinate(lon=coord[0], lat=coord[1])
     coordinates.append(new_coord)
 coordinates = list(set(coordinates))
+
+print(f'Uploading historical weather data for {len(coordinates)} points')
 
 # Instantiate an APIWeatherProvider, AWSDispatcher, and AWSWeatherUploader
 api_weather_provider = APIWeatherProvider(coordinates=coordinates)
