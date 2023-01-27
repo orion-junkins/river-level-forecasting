@@ -177,8 +177,7 @@ class APIWeatherProvider(BaseWeatherProvider):
         """
         datums = []
         for coordinate in self.coordinates:
-            datum = self.fetch_current_datum(
-                coordinate=coordinate, columns=columns)
+            datum = self.fetch_current_datum(coordinate=coordinate, columns=columns)
             datums.append(datum)
             time.sleep(sleep_duration)
         return datums
