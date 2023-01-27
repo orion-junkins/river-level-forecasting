@@ -141,8 +141,7 @@ class APIWeatherProvider(BaseWeatherProvider):
         """
         datums = {}
         for coordinate in self.coordinates:
-            datum = self.fetch_historical_datum(
-                coordinate=coordinate, start_date=start_date, end_date=end_date, columns=columns)
+            datum = self.fetch_historical_datum(coordinate=coordinate, start_date=start_date, end_date=end_date, columns=columns)
             coord = Coordinate(datum.longitude, datum.latitude)
             if coord not in datums:
                 datums[coord] = datum
