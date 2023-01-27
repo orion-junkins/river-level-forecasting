@@ -53,15 +53,15 @@ class APIWeatherProvider(BaseWeatherProvider):
 
         Args:
             response (Response): The Response to draw data from.
-            precision (float): The precision for rounding lat and lon. Defaults to 0.25.
+            precision (float): The precision for rounding lat and lon. Defaults to 0.1.
 
         Returns:
             WeatherDatum: The constructed WeatherDatum instance.
         """
         lon = response.data.get("longitude", None)
         lat = response.data.get("latitude", None)
-        rounded_lon = round(lon/precision) * precision
-        rounded_lat = round(lat/precision) * precision
+        rounded_lon = round(lon / precision) * precision
+        rounded_lat = round(lat / precision) * precision
         datum = WeatherDatum(
             longitude=rounded_lon,
             latitude=rounded_lat,
