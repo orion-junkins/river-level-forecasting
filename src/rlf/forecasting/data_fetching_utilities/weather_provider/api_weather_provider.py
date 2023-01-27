@@ -58,6 +58,7 @@ class APIWeatherProvider(BaseWeatherProvider):
 
         Args:
             response (Response): The Response to draw data from.
+            coordinate (Coordinate): The coordinate that is requested by the user.
             precision (float): The precision for rounding lat and lon. Defaults to 0.25.
 
         Returns:
