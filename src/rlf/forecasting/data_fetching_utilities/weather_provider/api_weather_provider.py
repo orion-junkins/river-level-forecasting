@@ -44,8 +44,7 @@ class APIWeatherProvider(BaseWeatherProvider):
     def _build_hourly_parameters_from_response(self, hourly_parameters_response: dict, tz: str) -> DataFrame:
         index_parameter = self.api_adapter.get_index_parameter()
         df = DataFrame(hourly_parameters_response)
-        df.index = df[index_parameter].map(lambda x: datetime.fromisoformat(
-            x).replace(tzinfo=pytz.timezone(tz)).astimezone(pytz.timezone("UTC")))
+        df.index = df[index_parameter].map(lambda x: datetime.fromisoformat(x).replace(tzinfo=pytz.timezone(tz)).astimezone(pytz.timezone("UTC")))
         df.drop(columns=[index_parameter], inplace=True)
         return df
 
@@ -54,7 +53,7 @@ class APIWeatherProvider(BaseWeatherProvider):
 
         Args:
             response (Response): The Response to draw data from.
-            precision (float): The precision for rounding lat and lon. Defaults to 0.1.
+            precision (float): The precision for rounding lat and lon. Defaults to 0.25.
 
         Returns:
             WeatherDatum: The constructed WeatherDatum instance.
@@ -96,8 +95,7 @@ class APIWeatherProvider(BaseWeatherProvider):
         Returns:
             WeatherDatum: A Datum object containing the weather data and metadata about a coordinate.
         """
-        response = self.api_adapter.get_historical(
-            coordinate=coordinate, start_date=start_date, end_date=end_date, columns=columns)
+        response = self.api_adapter.get_historical(coordinate=coordinate, start_date=start_date, end_date=end_date, columns=columns)
 
         datum = self.build_datum_from_response(response)
 
@@ -139,8 +137,7 @@ class APIWeatherProvider(BaseWeatherProvider):
         Returns:
             WeatherDatum: A Datum object containing the weather data and metadata about a coordinate
         """
-        response = self.api_adapter.get_current(
-            coordinate=coordinate, columns=columns)
+        response = self.api_adapter.get_current(coordinate=coordinate, columns=columns)
 
         datum = self.build_datum_from_response(response)
 
