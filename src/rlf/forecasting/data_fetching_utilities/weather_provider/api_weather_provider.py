@@ -28,8 +28,7 @@ DEFAULT_END_DATE = datetime.now().strftime("%Y-%m-%d")
 
 RESPONSE_TOLERANCE = 0.06
 
-logging.basicConfig(level=logging.INFO,
-                    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 
 
 class APIWeatherProvider(BaseWeatherProvider):
@@ -50,8 +49,7 @@ class APIWeatherProvider(BaseWeatherProvider):
     def _build_hourly_parameters_from_response(self, hourly_parameters_response: dict, tz: str) -> DataFrame:
         index_parameter = self.api_adapter.get_index_parameter()
         df = DataFrame(hourly_parameters_response)
-        df.index = df[index_parameter].map(lambda x: datetime.fromisoformat(
-            x).replace(tzinfo=pytz.timezone(tz)).astimezone(pytz.timezone("UTC")))
+        df.index = df[index_parameter].map(lambda x: datetime.fromisoformat(x).replace(tzinfo=pytz.timezone(tz)).astimezone(pytz.timezone("UTC")))
         df.drop(columns=[index_parameter], inplace=True)
         return df
 
@@ -72,11 +70,11 @@ class APIWeatherProvider(BaseWeatherProvider):
         lon = response.data.get("longitude", None)
         lat = response.data.get("latitude", None)
 
-        rounded_lon = round(lon/precision) * precision
-        rounded_lat = round(lat/precision) * precision
+        rounded_lon = round(lon / precision) * precision
+        rounded_lat = round(lat / precision) * precision
 
-        difference_rounded_lon = rounded_lon-requested_lon
-        difference_rounded_lat = rounded_lat-requested_lat
+        difference_rounded_lon = rounded_lon - requested_lon
+        difference_rounded_lat = rounded_lat - requested_lat
 
         if abs(difference_rounded_lon) > RESPONSE_TOLERANCE or abs(difference_rounded_lat) > RESPONSE_TOLERANCE:
             logging.info(
@@ -119,8 +117,7 @@ class APIWeatherProvider(BaseWeatherProvider):
         Returns:
             WeatherDatum: A Datum object containing the weather data and metadata about a coordinate.
         """
-        response = self.api_adapter.get_historical(
-            coordinate=coordinate, start_date=start_date, end_date=end_date, columns=columns)
+        response = self.api_adapter.get_historical(coordinate=coordinate, start_date=start_date, end_date=end_date, columns=columns)
 
         datum = self.build_datum_from_response(response, coordinate)
 
@@ -162,8 +159,7 @@ class APIWeatherProvider(BaseWeatherProvider):
         Returns:
             WeatherDatum: A Datum object containing the weather data and metadata about a coordinate
         """
-        response = self.api_adapter.get_current(
-            coordinate=coordinate, columns=columns)
+        response = self.api_adapter.get_current(coordinate=coordinate, columns=columns)
 
         datum = self.build_datum_from_response(response, coordinate)
 
