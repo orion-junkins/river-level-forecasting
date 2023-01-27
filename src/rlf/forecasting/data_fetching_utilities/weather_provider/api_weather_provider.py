@@ -79,11 +79,12 @@ class APIWeatherProvider(BaseWeatherProvider):
 
         if abs(difference_rounded_lon) > RESPONSE_TOLERANCE or abs(difference_rounded_lat) > RESPONSE_TOLERANCE:
             logging.info(
+                "The API responded with a location outside the requested location tolerance."
                 f"The requested location ({requested_lon}, {requested_lat}) was rounded to ({rounded_lon}, "
                 f"{rounded_lat}) with a difference of ({difference_rounded_lon}, {difference_rounded_lat}). "
                 f"This is outside the acceptable range of {RESPONSE_TOLERANCE}. "
-                f"To change the tolerance, change the RESPONSE_TOLERANCE constant in the APIWeatherProvider class. "
-                f"To change the rounding precision, change the precision argument in the build_datum_from_response method.")
+                "To change the tolerance, change the RESPONSE_TOLERANCE constant in the APIWeatherProvider class. "
+                "To change the rounding precision, change the precision argument in the build_datum_from_response method.")
 
         datum = WeatherDatum(
             longitude=rounded_lon,
