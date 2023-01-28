@@ -26,7 +26,7 @@ from rlf.forecasting.data_fetching_utilities.weather_provider.weather_datum impo
 DEFAULT_START_DATE = "2022-01-01"
 DEFAULT_END_DATE = datetime.now().strftime("%Y-%m-%d")
 
-RESPONSE_TOLERANCE = 0.06
+RESPONSE_TOLERANCE = 0.05
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 
