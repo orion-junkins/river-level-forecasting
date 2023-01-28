@@ -53,13 +53,13 @@ class APIWeatherProvider(BaseWeatherProvider):
         df.drop(columns=[index_parameter], inplace=True)
         return df
 
-    def build_datum_from_response(self, response: Response, coordinate: Coordinate, precision: float = 0.1) -> WeatherDatum:
+    def build_datum_from_response(self, response: Response, coordinate: Coordinate, precision: int = 5) -> WeatherDatum:
         """Construct a WeatherDatum from a Response.
 
         Args:
             response (Response): The Response to draw data from.
             coordinate (Coordinate): The coordinate that is requested by the user.
-            precision (float): The precision for rounding lat and lon. Defaults to 0.25.
+            precision (float): The decimal precision to round the response coordinates to. Defaults to 5.
 
         Returns:
             WeatherDatum: The constructed WeatherDatum instance.
@@ -68,27 +68,25 @@ class APIWeatherProvider(BaseWeatherProvider):
         requested_lon = coordinate.lon
         requested_lat = coordinate.lat
 
-        lon = response.data.get("longitude", None)
-        lat = response.data.get("latitude", None)
+        response_lon = response.data.get("longitude", None)
+        response_lat = response.data.get("latitude", None)
 
-        rounded_lon = round(lon / precision) * precision
-        rounded_lat = round(lat / precision) * precision
+        response_rounded_lon = round(response_lon, precision)
+        response_rounded_lat = round(response_lat, precision)
 
-        difference_rounded_lon = rounded_lon - requested_lon
-        difference_rounded_lat = rounded_lat - requested_lat
+        difference_rounded_lon = response_rounded_lon - requested_lon
+        difference_rounded_lat = response_rounded_lat - requested_lat
 
         if abs(difference_rounded_lon) > RESPONSE_TOLERANCE or abs(difference_rounded_lat) > RESPONSE_TOLERANCE:
             logging.info(
                 "The API responded with a location outside the requested location tolerance."
-                f"The requested location ({requested_lon}, {requested_lat}) was rounded to ({rounded_lon}, "
-                f"{rounded_lat}) with a difference of ({difference_rounded_lon}, {difference_rounded_lat}). "
-                f"This is outside the acceptable range of {RESPONSE_TOLERANCE}. "
+                f"The requested location is ({requested_lon}, {requested_lat}) vs. the response location ({response_lon}, {response_lat}). "
                 "To change the tolerance, change the RESPONSE_TOLERANCE constant in the APIWeatherProvider class. "
                 "To change the rounding precision, change the precision argument in the build_datum_from_response method.")
 
         datum = WeatherDatum(
-            longitude=rounded_lon,
-            latitude=rounded_lat,
+            longitude=requested_lon,
+            latitude=requested_lat,
             elevation=response.data.get(
                 "elevation", None),
             utc_offset_seconds=response.data.get(
