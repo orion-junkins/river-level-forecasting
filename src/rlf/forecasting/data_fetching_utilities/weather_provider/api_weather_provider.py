@@ -77,12 +77,22 @@ class APIWeatherProvider(BaseWeatherProvider):
         difference_rounded_lon = response_rounded_lon - requested_lon
         difference_rounded_lat = response_rounded_lat - requested_lat
 
-        if abs(difference_rounded_lon) > RESPONSE_TOLERANCE or abs(difference_rounded_lat) > RESPONSE_TOLERANCE:
-            logging.info(
-                "The API responded with a location outside the requested location tolerance."
-                f"The requested location is ({requested_lon}, {requested_lat}) vs. the response location ({response_lon}, {response_lat}). "
-                "To change the tolerance, change the RESPONSE_TOLERANCE constant in the APIWeatherProvider class. "
-                "To change the rounding precision, change the precision argument in the build_datum_from_response method.")
+        if difference_rounded_lat != 0 or difference_rounded_lon != 0:
+            if abs(difference_rounded_lon) > RESPONSE_TOLERANCE or abs(difference_rounded_lat) > RESPONSE_TOLERANCE:
+                logging.error(
+                    "The API responded with a location outside the requested location tolerance. "
+                    f"The requested location is ({requested_lon}, {requested_lat}) vs. the response location ({response_lon}, {response_lat}). "
+                    f"The difference in longitude is {difference_rounded_lon} and the difference in latitude is {difference_rounded_lat}. "
+                    "To change the tolerance, change the RESPONSE_TOLERANCE constant in the APIWeatherProvider class. "
+                    "To change the rounding precision, change the precision argument in the build_datum_from_response method.")
+
+            elif abs(difference_rounded_lon) < RESPONSE_TOLERANCE or abs(difference_rounded_lat) < RESPONSE_TOLERANCE:
+                logging.warn(
+                    "The API responded with a location within the requested location tolerance, but not equal. "
+                    f"The requested location is ({requested_lon}, {requested_lat}) vs. the response location ({response_lon}, {response_lat}). "
+                    f"The difference in longitude is {difference_rounded_lon} and the difference in latitude is {difference_rounded_lat}. "
+                    "To change the tolerance, change the RESPONSE_TOLERANCE constant in the APIWeatherProvider class. "
+                    "To change the rounding precision, change the precision argument in the build_datum_from_response method.")
 
         datum = WeatherDatum(
             longitude=requested_lon,
