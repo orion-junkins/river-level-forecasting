@@ -97,6 +97,8 @@ class APIWeatherProvider(BaseWeatherProvider):
         datum = WeatherDatum(
             longitude=requested_lon,
             latitude=requested_lat,
+            api_response_longitude=response_lon,
+            api_response_latitude=response_lat,
             elevation=response.data.get(
                 "elevation", None),
             utc_offset_seconds=response.data.get(
