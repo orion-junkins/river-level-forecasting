@@ -8,8 +8,10 @@ class WeatherDatum:
     """A datum represents data associated with a single geographical location via a coordinate system. This class packages data from any datum into a single structure containing the information about this point. Each datum can have an interval of measurements in hourly time steps.
 
     Args:
-        longitude (float): WGS84 datum longitude value between [-180, 180]
-        latitude (float): WGS84 datum latitude value between [-90, 90]
+        longitude (float): the requested WGS84 datum longitude value between [-180, 180]
+        latitude (float): the requested WGS84 datum latitude value between [-90, 90]
+        api_response_longitude (float): the longitude value returned by the API
+        api_response_latitude (float): the latitude value returned by the API
         elevation (int): elevation of the location using WGS84
         utc_offset_seconds (float): offset seconds from UTC
         timezone (str): database timezone string
@@ -18,6 +20,8 @@ class WeatherDatum:
     """
     longitude: float
     latitude: float
+    api_response_longitude: float
+    api_response_latitude: float
     elevation: float
     utc_offset_seconds: float
     timezone: str
@@ -33,6 +37,8 @@ class WeatherDatum:
         """
         return {"longitude": self.longitude,
                 "latitude": self.latitude,
+                "api_response_longitude": self.api_response_longitude,
+                "api_response_latitude": self.api_response_latitude,
                 "elevation": self.elevation,
                 "utc_offset_seconds": self.utc_offset_seconds,
                 "timezone": self.timezone}
