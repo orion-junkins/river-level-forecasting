@@ -28,8 +28,6 @@ DEFAULT_END_DATE = datetime.now().strftime("%Y-%m-%d")
 
 RESPONSE_TOLERANCE = 0.05
 
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-
 
 class APIWeatherProvider(BaseWeatherProvider):
     """Provides a historical of forecasted weather for a given location and time period."""
