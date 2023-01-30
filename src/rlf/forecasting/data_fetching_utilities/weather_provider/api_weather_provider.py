@@ -57,7 +57,7 @@ class APIWeatherProvider(BaseWeatherProvider):
         Args:
             response (Response): The Response to draw data from.
             coordinate (Coordinate): The coordinate that is requested by the user.
-            precision (float): The decimal precision to round the response coordinates to. Defaults to 5.
+            precision (int): The precision to round the response coordinates to. Defaults to 5 decimal places.
 
         Returns:
             WeatherDatum: The constructed WeatherDatum instance.
