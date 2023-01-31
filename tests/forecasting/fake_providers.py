@@ -49,6 +49,8 @@ def weather_datums(num_samples, num_dfs):
         datum = WeatherDatum(
             longitude=i + 0.1,
             latitude=i + 1.1,
+            api_response_longitude=i + 0.1,
+            api_response_latitude=i + 1.1,
             elevation=0.0,
             utc_offset_seconds=0.0,
             timezone=None,

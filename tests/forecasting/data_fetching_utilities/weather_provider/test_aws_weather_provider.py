@@ -4,6 +4,9 @@ from rlf.aws_dispatcher import AWSDispatcher
 from rlf.forecasting.data_fetching_utilities.coordinate import Coordinate
 from rlf.forecasting.data_fetching_utilities.weather_provider.aws_weather_provider import AWSWeatherProvider
 
+# It is expected that datums will be stored for this timestamp in the bucket specified for the coordinates specified.
+CURRENT_TESTING_TIMESTAMP = "23-01-31_07-42"
+
 
 @pytest.fixture
 def aws_dispatcher() -> AWSDispatcher:
@@ -32,7 +35,7 @@ def test_fetch_historical(weather_provider):
 
 @pytest.mark.slow
 def test_fetch_current(weather_provider):
-    weather_provider.set_timestamp("23-01-13_14-38")
+    weather_provider.set_timestamp(CURRENT_TESTING_TIMESTAMP)
     weather_datums = weather_provider.fetch_current()
     assert len(weather_datums) == len(weather_provider.coordinates)
     for weather_datum in weather_datums:

@@ -25,7 +25,8 @@ def weather_df(num_samples):
 
 @pytest.fixture
 def datum():
-    return WeatherDatum(longitude=0, latitude=0, elevation=0, utc_offset_seconds=0,
+    return WeatherDatum(longitude=0, latitude=0, api_response_longitude=0,
+                        api_response_latitude=0, elevation=0, utc_offset_seconds=0,
                         timezone="Fake Time Zone", hourly_units="Fake Units", hourly_parameters=weather_df(10))
 
 
