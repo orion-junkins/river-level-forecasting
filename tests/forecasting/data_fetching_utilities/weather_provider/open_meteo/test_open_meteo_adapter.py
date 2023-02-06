@@ -50,5 +50,7 @@ def test_get_current_columns_subset(fake_coordinate):
     adapter = OpenMeteoAdapter()
     response = adapter.get_current(coordinate=fake_coordinate, past_days=1, forecast_days=1, columns=["temperature_2m"])
     assert response.status_code == 200
+    assert pytest.approx(110.0) == response.data["longitude"]
+    assert pytest.approx(30.0) == response.data["latitude"]
     assert len(response.data["hourly"]) == 2  # Time column and 'temperature_2m' column
     assert len(response.data["hourly_units"]) == 2
