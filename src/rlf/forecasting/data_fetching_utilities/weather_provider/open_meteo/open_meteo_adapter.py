@@ -65,9 +65,11 @@ class OpenMeteoAdapter(BaseAPIAdapter):
         parameters = {
             "longitude": coordinate.lon,
             "latitude": coordinate.lat,
+            "elevation": "nan",
             "start_date": start_date,
             "end_date": end_date,
-            "hourly": hourly_params
+            "hourly": hourly_params,
+            "cell_selection": "nearest",
         }
 
         return invoker.get(path=self.archive_path, parameters=parameters)
