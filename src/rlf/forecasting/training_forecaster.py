@@ -1,6 +1,6 @@
-import pickle
-
 from darts.models.forecasting.forecasting_model import ForecastingModel
+import os
+import pickle
 
 from rlf.forecasting.catchment_data import CatchmentData
 from rlf.forecasting.base_forecaster import BaseForecaster, DEFAULT_WORK_DIR
@@ -37,6 +37,13 @@ class TrainingForecaster(BaseForecaster):
 
         self.model = model
         self.dataset = dataset
+
+        os.makedirs(self.work_dir, exist_ok=True)
+        if (os.path.isfile(self.model_save_path)):
+            raise ValueError(f"{self.model_save_path} already exists. Specify a unique save path.")
+
+        if (os.path.isfile(self.scaler_save_path)):
+            raise ValueError(f"{self.scaler_save_path} already exists. Specify a unique save path.")
 
     def fit(self) -> None:
         """Fit the underlying Darts ForecastingModel model."""
