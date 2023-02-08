@@ -1,6 +1,8 @@
 from datetime import datetime, timedelta
+
 import pandas as pd
 import pytest
+import pytz
 
 from rlf.aws_dispatcher import AWSDispatcher
 from rlf.forecasting.data_fetching_utilities.coordinate import Coordinate
@@ -64,7 +66,7 @@ def test_upload_historical(aws_weather_uploader, weather_provider):
 @pytest.mark.slow
 def test_upload_current(aws_weather_uploader, weather_provider):
     # Generate timestamp string for directory naming
-    now = datetime.now()
+    now = datetime.now().astimezone(pytz.timezone("UTC"))
     timestamp = now.strftime("%y-%m-%d_%H-%M")
     dir_path = str(timestamp)
 
@@ -74,6 +76,7 @@ def test_upload_current(aws_weather_uploader, weather_provider):
     aws_weather_uploader.upload_current(dir_path=dir_path)
     weather_provider.set_timestamp(dir_path)
     weather_datums = weather_provider.fetch_current()
+
     assert len(weather_datums) == len(weather_provider.coordinates)
 
     for weather_datum in weather_datums:

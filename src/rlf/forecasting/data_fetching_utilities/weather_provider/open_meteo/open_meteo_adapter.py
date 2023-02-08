@@ -65,9 +65,11 @@ class OpenMeteoAdapter(BaseAPIAdapter):
         parameters = {
             "longitude": coordinate.lon,
             "latitude": coordinate.lat,
+            "elevation": "nan",
             "start_date": start_date,
             "end_date": end_date,
-            "hourly": hourly_params
+            "hourly": hourly_params,
+            "cell_selection": "nearest",
         }
 
         return invoker.get(path=self.archive_path, parameters=parameters)
@@ -95,9 +97,11 @@ class OpenMeteoAdapter(BaseAPIAdapter):
         parameters = {
             "longitude": coordinate.lon,
             "latitude": coordinate.lat,
+            "elevation": "nan",
             "past_days": past_days,
             "forecast_days": forecast_days,
-            "hourly": hourly_params
+            "hourly": hourly_params,
+            "cell_selection": "nearest",
         }
 
         return invoker.get(path=self.forecast_path, parameters=parameters)
