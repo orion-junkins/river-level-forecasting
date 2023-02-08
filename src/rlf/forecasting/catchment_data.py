@@ -1,3 +1,4 @@
+from typing import Optional
 from pandas import DataFrame
 
 from rlf.forecasting.data_fetching_utilities.level_provider.base_level_provider import BaseLevelProvider
@@ -12,7 +13,8 @@ class CatchmentData:
         catchment_name: str,
         weather_provider: BaseWeatherProvider,
         level_provider: BaseLevelProvider,
-        num_recent_samples: int = 90*24
+        num_recent_samples: int = 90*24,
+        columns: Optional[list[str]] = None
     ) -> None:
         """
         Create a CatchmentData instance.
@@ -27,6 +29,7 @@ class CatchmentData:
         self.weather_provider = weather_provider
         self.level_provider = level_provider
         self.num_recent_samples = num_recent_samples
+        self.columns = columns
 
         self._all_current = (None, None)  # (weather_data, level_data)
         self._all_historical = (None, None)  # (weather_data, level_data)
@@ -61,7 +64,7 @@ class CatchmentData:
 
     def _fetch_all_current(self) -> None:
         """Fetch or refetch all current data, updating the member variable _all_current. This will trigger queries to the underlying weather and level providers."""
-        current_weather = self.weather_provider.fetch_current()
+        current_weather = self.weather_provider.fetch_current(columns=self.columns)
         recent_level = self.level_provider.fetch_recent_level(self.num_recent_samples)
 
         self._all_current = (current_weather, recent_level)
@@ -86,5 +89,5 @@ class CatchmentData:
         """Fetch or refetch all current data, updating the member variable _all_current. This will trigger queries to the underlying weather and level providers."""
         historical_level = self.level_provider.fetch_historical_level()
         earliest_historical_level = historical_level.index.to_series().min().strftime("%Y-%m-%d")
-        historical_weather = self.weather_provider.fetch_historical(start_date=earliest_historical_level)
+        historical_weather = self.weather_provider.fetch_historical(start_date=earliest_historical_level, columns=self.columns)
         self._all_historical = (historical_weather, historical_level)
