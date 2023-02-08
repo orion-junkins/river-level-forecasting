@@ -72,14 +72,15 @@ class AWSWeatherProvider(BaseWeatherProvider):
         if start_date is not None:
             start_dt = datetime.strptime(
                 start_date, '%Y-%m-%d').replace(tzinfo=pytz.UTC)
-
-            if end_date is not None:
-                end_dt = datetime.strptime(
-                    end_date, '%Y-%m-%d').replace(tzinfo=pytz.UTC)
-                for datum in datums:
-                    datum.hourly_parameters = datum.hourly_parameters[start_dt:end_dt]
-            else:
-                datum.hourly_parameters = datum.hourly_parameters[start_dt:]
+        else:
+            start_dt = None
+        if end_date is not None:
+            end_dt = datetime.strptime(
+                end_date, '%Y-%m-%d').replace(tzinfo=pytz.UTC)
+        else:
+            end_dt = None
+        for datum in datums:
+            datum.hourly_parameters = datum.hourly_parameters[start_dt:end_dt]
 
         return datums
 
