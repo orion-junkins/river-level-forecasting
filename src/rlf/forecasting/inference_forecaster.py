@@ -50,7 +50,7 @@ class InferenceForecaster(BaseForecaster):
         Returns:
             ForecastingModel: Loaded ForecastingModel.
         """
-        model = self.model_type.load(self.ensemble_save_path)
+        model = self.model_type.load(self.model_save_path)
         if isinstance(model, RegressionEnsembleModel):
             repair_regression_ensemble_model(model)
         return model
