@@ -41,6 +41,21 @@ pip install -e .
 
 This will install the package as 'editable' meaning that any changes to the repo will automatically be reflected the next time you import a module. You will not have to reinstall the package.
 
+# GPU Training
+If you wish to train on a GPU, you will need to have CUDA installed on your machine and install the cudatoolkit package that corresponds to your CUDA version.
+
+For example, for CUDA 11.7, run the following command:
+```
+conda install cudatoolkit=11.7 -c nvidia
+```
+
+To test that install has succeeded, run the following in python:
+```
+import torch
+torch.cuda.is_available()
+```
+It must return "True". Refer to Pytorch setup guide if this fails.
+
 # AWS Interaction
 Although some functionality can be performed without AWS, much of this codebase expects/depends on having access to the associated AWS account. 
 
