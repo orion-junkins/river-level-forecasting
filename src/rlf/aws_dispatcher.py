@@ -95,7 +95,7 @@ class AWSDispatcher():
         path = f'{self.working_dir}/{folder_name}/{filename}.parquet'
         try:
             dataset = pq.ParquetDataset(path, filesystem=self.s3)
-            if columns is not None:
+            if columns is not None and 'time' not in columns:
                 columns.append('time')
             table = dataset.read(columns=columns)
             df = table.to_pandas()
