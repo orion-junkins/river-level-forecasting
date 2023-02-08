@@ -33,13 +33,6 @@ class BaseForecaster(ABC):
         self.scaler_filename = scaler_filename
         self.work_dir = os.path.join(root_dir, self.catchment_data.name)
 
-        os.makedirs(self.work_dir, exist_ok=True)
-        if (os.path.isfile(self.model_save_path)):
-            raise ValueError(f"{self.model_save_path} already exists. Specify a unique save path.")
-
-        if (os.path.isfile(self.scaler_save_path)):
-            raise ValueError(f"{self.scaler_save_path} already exists. Specify a unique save path.")
-
     @property
     def name(self) -> str:
         """The name of the catchment.
