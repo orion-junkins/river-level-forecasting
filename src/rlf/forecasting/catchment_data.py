@@ -24,6 +24,7 @@ class CatchmentData:
             weather_provider (BaseWeatherProvider): Provider for Weather data.
             level_provider (BaseLevelProvider): Provider for level data.
             num_recent_samples (int, optional): Number of recent level samples to fetch. Defaults to 90 days (90 days * 24 hours/day).
+            columns (list[str], optional): The columns/parameters to fetch. All available will be fetched if left equal to None. Defaults to None.
         """
         self.name = catchment_name
         self.weather_provider = weather_provider
