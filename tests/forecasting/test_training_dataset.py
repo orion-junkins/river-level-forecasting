@@ -57,12 +57,12 @@ def test_data_scaled_0_1(catchment_data):
     train_ds = TrainingDataset(catchment_data=catchment_data)
 
     assert (train_ds.y_train.values().min() >= 0.0)
-    assert (train_ds.y_train.values().max() <= 1.0)
+    assert (pytest.approx(train_ds.y_train.values().max()) == 1.0)
     assert (train_ds.y_test.values().min() >= -0.1)
     assert (train_ds.y_test.values().max() <= 1.1)
 
     assert (train_ds.X_train.values().min() >= 0.0)
-    assert (train_ds.X_train.values().max() <= 1.0)
+    assert (pytest.approx(train_ds.X_train.values().max()) == 1.0)
     assert (train_ds.X_test.values().min() >= -0.1)
     assert (train_ds.X_test.values().max() <= 1.1)
 
