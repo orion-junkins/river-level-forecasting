@@ -79,3 +79,15 @@ def test_feature_engineering(catchment_data):
 
     assert (x_df["0.10_1.10_weather_attr_1_sum_3"][-1] == 84.0)
     assert (x_df["0.10_1.10_weather_attr_1_mean_3"][-1] == 28.0)
+
+
+def test_correct_precision(catchment_data):
+    train_ds = TrainingDataset(catchment_data=catchment_data)
+
+    assert train_ds.X.dtype == "float32"
+    assert train_ds.y.dtype == "float32"
+
+    assert train_ds.X_train.dtype == "float32"
+    assert train_ds.X_test.dtype == "float32"
+    assert train_ds.y_train.dtype == "float32"
+    assert train_ds.y_test.dtype == "float32"
