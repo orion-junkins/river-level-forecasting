@@ -60,6 +60,9 @@ class BaseDataset(ABC):
         processed_Xs = [self._process_datum(datum, first_date, X_last_date) for datum in Xs]
         global_X = concatenate(processed_Xs, axis="component")
 
+        global_X = global_X.astype("float32")
+        y = y.astype("float32")
+
         return global_X, y
 
     def _process_datum(self, datum: WeatherDatum, first_date: Timestamp, last_date: Timestamp | None) -> TimeSeries:
