@@ -18,7 +18,7 @@ dependencies:
     # Add pip packages which are not available through conda here
     # Note: to version lock a pip package, use '==' not '=' ie:
     # - packageName==0.123
-    - darts==0.22   # Core Timeseries forecasting library (includes Pytorch)
+    - darts==0.23   # Core Timeseries forecasting library (includes Pytorch)
     - dataretrieval # Package for fetching NWIS river level dataa
     - simplekml     # Weather location KML generation
     - pyarrow       # Parquet file creation
