@@ -42,11 +42,11 @@ class TrainingDataset(BaseDataset):
         self.X_train, self.X_test, self.y_train, self.y_test = self._partition(test_size)
         # TODO add validation call - ie all X sets are same size, match y sets.
 
-    def _load_data(self) -> tuple[list[TimeSeries], TimeSeries]:
+    def _load_data(self) -> tuple[TimeSeries, TimeSeries]:
         """Load and process data.
 
         Returns:
-            tuple[list[TimeSeries], TimeSeries]: Tuple of (Xs and y) historical data.
+            tuple[TimeSeries, TimeSeries]: Tuple of (X and y) historical data.
         """
         historical_weather, historical_level = self.catchment_data.all_historical
         X, y = self._pre_process(historical_weather, historical_level)
