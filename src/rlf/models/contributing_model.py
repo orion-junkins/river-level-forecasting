@@ -27,8 +27,8 @@ class ContributingModel(GlobalForecastingModel):
         self,
         *,
         series: TimeSeries,
-        past_covariates: CovariateType = None,
-        future_covariates: CovariateType = None,
+        past_covariates: Optional[CovariateType] = None,
+        future_covariates: Optional[CovariateType] = None,
         **kwargs,
     ) -> GlobalForecastingModel:
         """Fit the base model to given series and covariates.
@@ -48,9 +48,9 @@ class ContributingModel(GlobalForecastingModel):
     def predict(
         self,
         n: int,
-        series: CovariateType = None,
-        past_covariates: CovariateType = None,
-        future_covariates: CovariateType = None,
+        series: Optional[CovariateType] = None,
+        past_covariates: Optional[CovariateType] = None,
+        future_covariates: Optional[CovariateType] = None,
         **kwargs,
     ) -> TimeSeries:
         """Predict n points using the supplied data.
@@ -73,8 +73,8 @@ class ContributingModel(GlobalForecastingModel):
 
     def _preprocess_input_data(
         self,
-        past_covariates: CovariateType = None,
-        future_covariates: CovariateType = None
+        past_covariates: Optional[CovariateType] = None,
+        future_covariates: Optional[CovariateType] = None
     ) -> tuple[CovariateType, CovariateType]:
         """If a column prefix is being used then return a filtered set of columns otherwise return the covariates.
 

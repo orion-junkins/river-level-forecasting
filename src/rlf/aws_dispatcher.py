@@ -7,6 +7,7 @@ import s3fs
 
 from rlf.forecasting.data_fetching_utilities.coordinate import Coordinate
 from rlf.forecasting.data_fetching_utilities.weather_provider.weather_datum import WeatherDatum
+from typing import Optional
 
 
 DEFAULT_LOCAL_PATH = os.path.join("data", "aws_dispatch")
@@ -78,7 +79,7 @@ class AWSDispatcher():
             path=path
         )
 
-    def download_df_from_parquet(self, folder_name: str, filename: str, columns: list[str] = None) -> DataFrame:
+    def download_df_from_parquet(self, folder_name: str, filename: str, columns: Optional[list[str]] = None) -> DataFrame:
         """Download a parquet file from AWS and parse it into a DataFRame
 
         Args:
@@ -103,7 +104,7 @@ class AWSDispatcher():
             raise FileNotFoundError("Could not find a parquet file at path: " + path)
         return df
 
-    def upload_datum(self, datum: WeatherDatum, dir_path: str = None) -> None:
+    def upload_datum(self, datum: WeatherDatum, dir_path: Optional[str] = None) -> None:
         """Upload an entire WeatherDatum to S3.
 
         Args:
@@ -119,7 +120,7 @@ class AWSDispatcher():
         self.upload_as_json(datum.hourly_units, folder_name, "units")
         self.upload_as_parquet(datum.hourly_parameters, folder_name, "data")
 
-    def download_datum(self, coordinate: Coordinate, columns: list[str] = None,  dir_path: str = None) -> WeatherDatum:
+    def download_datum(self, coordinate: Coordinate, columns: Optional[list[str]] = None,  dir_path: Optional[str] = None) -> WeatherDatum:
         """Download an entire WeatherDatum from S3.
 
         Args:

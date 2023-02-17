@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from datetime import datetime
 from typing import Optional
 
 
@@ -8,6 +9,7 @@ from rlf.forecasting.data_fetching_utilities.weather_provider.weather_datum impo
 )
 
 DEFAULT_START_DATE = "2022-01-01"
+DEFAULT_END_DATE = datetime.now().strftime("%Y-%m-%d")
 
 
 class BaseWeatherProvider(ABC):
@@ -22,12 +24,18 @@ class BaseWeatherProvider(ABC):
         self.coordinates = coordinates
 
     @abstractmethod
-    def fetch_historical(self, columns: Optional[list[str]] = None, start_date: str = DEFAULT_START_DATE) -> list[WeatherDatum]:
+    def fetch_historical(self,
+                         columns: Optional[list[str]] = None,
+                         start_date: str = DEFAULT_START_DATE,
+                         end_date: str = DEFAULT_END_DATE,
+                         sleep_duration: float = 0.0) -> list[WeatherDatum]:
         """Fetch historical weather for all coordinates.
 
         Args:
             columns (list[str], optional): The columns/parameters to fetch. All available will be fetched if left equal to None. Defaults to None.
-            start_date (str, optional): iso8601 format YYYY-MM-DD. Expected in UTC. Defaults to DEFAULT_START_DATE.
+            start_date (str, optional): iso8601 format YYYY-MM-DD. Defaults to DEFAULT_START_DATE.
+            end_date (str, optional): iso8601 format YYYY-MM-DD. Defaults to DEFAULT_END_DATE.
+            sleep_duration (float, optional): How many seconds to sleep after each query. Helps prevent throttling. Defaults to 0.0.
 
         Returns:
             list[WeatherDatum]: A list of WeatherDatums containing the weather data about the location.
@@ -35,11 +43,14 @@ class BaseWeatherProvider(ABC):
         pass
 
     @abstractmethod
-    def fetch_current(self, columns: Optional[list[str]] = None) -> list[WeatherDatum]:
+    def fetch_current(self,
+                      columns: Optional[list[str]] = None,
+                      sleep_duration: float = 0.0) -> list[WeatherDatum]:
         """Fetch current weather for all coordinates.
 
         Args:
             columns (list[str], optional): The columns/parameters to fetch. All available will be fetched if left equal to None. Defaults to None.
+            sleep_duration (float, optional): How many seconds to sleep after each query. Helps prevent throttling. Defaults to 0.0.
 
         Returns:
             list[WeatherDatum]: A list of WeatherDatums containing the weather data about the location.
