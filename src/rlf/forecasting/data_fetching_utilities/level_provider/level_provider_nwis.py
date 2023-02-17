@@ -4,6 +4,7 @@ import dataretrieval.nwis as nwis
 import pandas as pd
 
 from rlf.forecasting.data_fetching_utilities.level_provider.base_level_provider import BaseLevelProvider
+from typing import Optional
 
 
 class LevelProviderNWIS(BaseLevelProvider):
@@ -41,7 +42,7 @@ class LevelProviderNWIS(BaseLevelProvider):
         """
         return self.fetch_level()
 
-    def fetch_level(self, start: str = "1900-01-01", end: str = None, parameterCd: str = '00060', drop_cols: list[str] = ["00060_cd", "site_no"], rename_dict: dict = {"00060": "level"}) -> pd.DataFrame:
+    def fetch_level(self, start: str = "1900-01-01", end: Optional[str] = None, parameterCd: str = '00060', drop_cols: list[str] = ["00060_cd", "site_no"], rename_dict: dict = {"00060": "level"}) -> pd.DataFrame:
         """
         Fetch level data for the given gauge ID. Fetches instant values from start to end.
         Drops and renames columns according to given args.

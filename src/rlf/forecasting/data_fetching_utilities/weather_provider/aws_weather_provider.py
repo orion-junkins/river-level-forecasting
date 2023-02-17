@@ -24,7 +24,7 @@ class AWSWeatherProvider(BaseWeatherProvider):
     def __init__(self,
                  coordinates: Coordinate,
                  aws_dispatcher: AWSDispatcher,
-                 current_timestamp: str = None) -> None:
+                 current_timestamp: Optional[str] = None) -> None:
         """Create an APIWeatherProvider for the given list of coordinates.
 
         Args:
@@ -56,17 +56,25 @@ class AWSWeatherProvider(BaseWeatherProvider):
             datums.append(datum)
         return datums
 
-    def fetch_historical(self, columns: Optional[list[str]] = None, start_date: str = None, end_date: str = None) -> list[WeatherDatum]:
+    def fetch_historical(self,
+                         columns: Optional[list[str]] = None,
+                         start_date: Optional[str] = None,
+                         end_date: Optional[str] = None,
+                         sleep_duration: float = 0.0) -> list[WeatherDatum]:
         """Fetch historical weather for all coordinates. If there is an AWS dispatcher, data will be fetched from there if possible. If there is not a dispatcher, or the AWS file cannot be found, a regular datum request will be issued.
 
         Args:
             columns (list[str], optional): The columns/parameters to fetch. All available will be fetched if left equal to None. Defaults to None.
             start_date (str): The starting date for the requested data. In the format "YYYY-MM-DD".
             end_date (str): The ending date for the requested data. In the format "YYYY-MM-DD".
+            sleep_duration (float, optional): How many seconds to sleep after each query. Helps prevent throttling. Defaults to 0.0.
 
         Returns:
             list[WeatherDatum]: A list of WeatherDatums containing the weather data about the location.
         """
+        if sleep_duration != 0.0:
+            raise ValueError("sleep_duration is not supported (and generally not needed) for aws_weather_provider")
+
         datums = self.download_datums_from_aws(dir_path="historical", columns=columns)
 
         if start_date is not None:
@@ -84,15 +92,19 @@ class AWSWeatherProvider(BaseWeatherProvider):
 
         return datums
 
-    def fetch_current(self, columns: Optional[list[str]] = None) -> list[WeatherDatum]:
+    def fetch_current(self, columns: Optional[list[str]] = None, sleep_duration: float = 0.0) -> list[WeatherDatum]:
         """Fetch current weather for all coordinates.
 
         Args:
             columns (list[str], optional): The columns/parameters to fetch. All available will be fetched if left equal to None. Defaults to None.
+            sleep_duration (float, optional): How many seconds to sleep after each query. Helps prevent throttling. Defaults to 0.0.
 
         Returns:
             list[WeatherDatum]: A list of WeatherDatums containing the weather data about the location.
         """
+        if sleep_duration != 0.0:
+            raise ValueError("sleep_duration is not supported (and generally not needed) for aws_weather_provider")
+
         if self.current_timestamp is None:
             raise ValueError("Cannot fetch current data without a timestamp.")
 

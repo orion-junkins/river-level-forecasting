@@ -9,6 +9,7 @@ dependencies:
   # - packageName=0.123
   - python=3.10
   - flake8      # Linter for style adherence
+  - mypy        # Static type checker
   - pytest      # Unit testing framework
   - boto3       # AWS S3 interaction
   - s3fs        # AWS S3 interaction TODO: Convert to only boto3 OR only s3fs (Issue #30)

@@ -17,7 +17,7 @@ class InferenceDataset(BaseDataset):
         catchment_data: CatchmentData,
         rolling_sum_columns: Optional[list[str]] = None,
         rolling_mean_columns: Optional[list[str]] = None,
-        rolling_window_sizes: list[int] = (10*24, 30*24)
+        rolling_window_sizes: list[int] = [10*24, 30*24]
     ) -> None:
         """
         Generate an inference Dataset from a CatchmentData instance using the given test and validation sizes.
