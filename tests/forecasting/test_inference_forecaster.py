@@ -85,7 +85,7 @@ def test_inference_forecaster_init(catchment_data):
 
 
 def test_inference_forecaster_predict(inference_dataset, catchment_data):
-    mock_model = MockModel(24, inference_dataset.y, inference_dataset.Xs, [n for n in range(24)])
+    mock_model = MockModel(24, inference_dataset.y, inference_dataset.X, [n for n in range(24)])
     inference_forecaster = FakeInferenceForecaster(mock_model, catchment_data=catchment_data, dataset=inference_dataset)
     actual_results = inference_forecaster.predict()
     expected_results = [n for n in range(24)]

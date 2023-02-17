@@ -94,4 +94,7 @@ class InferenceForecaster(BaseForecaster):
         if update:
             self.dataset.update()
 
-        return self.model.predict(num_timesteps, series=self.dataset.y, past_covariates=self.dataset.Xs)
+        # scaled_predictions = self.model.predict(num_timesteps, series=self.dataset.y, past_covariates=self.dataset.Xs)
+        # rescaled_predictions = self.dataset.target_scaler.inverse_transform(scaled_predictions)
+
+        return self.model.predict(num_timesteps, series=self.dataset.y, past_covariates=self.dataset.X)
