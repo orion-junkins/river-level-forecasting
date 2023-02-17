@@ -32,6 +32,5 @@ def test_data_scaled_0_1(inference_dataset):
     assert (inference_dataset.y.values().min() >= -0.1)
     assert (inference_dataset.y.values().max() <= 1.1)
 
-    for x in inference_dataset.Xs:
-        assert (x.values().min() >= -0.1)
-        assert (x.values().max() <= 1.1)
+    assert inference_dataset.X.values().min() >= -0.1
+    assert inference_dataset.X.values().max() <= 1.1
