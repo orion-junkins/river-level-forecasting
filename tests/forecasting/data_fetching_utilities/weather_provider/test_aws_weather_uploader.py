@@ -41,6 +41,7 @@ def weather_provider(coordinates, aws_dispatcher) -> AWSWeatherProvider:
     return weather_provider
 
 
+@pytest.mark.aws
 @pytest.mark.slow
 def test_upload_historical(aws_weather_uploader, weather_provider):
     aws_weather_uploader.upload_historical(start_date=DEFAULT_START_DATE, end_date=END_DATE)
@@ -63,6 +64,7 @@ def test_upload_historical(aws_weather_uploader, weather_provider):
         assert (expected_end_date.day == actual_end_date.day)
 
 
+@pytest.mark.aws
 @pytest.mark.slow
 def test_upload_current(aws_weather_uploader, weather_provider):
     # Generate timestamp string for directory naming
