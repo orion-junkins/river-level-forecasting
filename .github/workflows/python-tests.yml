@@ -31,4 +31,4 @@ jobs:
     - name: Run Tests
       shell: bash -el {0}
       run: |
-        pytest tests
+        pytest tests -m 'not aws'
