@@ -7,7 +7,7 @@ dependencies:
   # Add additional Conda dependencies here
   # Version lock critical packages using '=' ie:
   # - packageName=0.123
-  - python=3.10
+  - python>=3.8
   - flake8      # Linter for style adherence
   - mypy        # Static type checker
   - pytest      # Unit testing framework
