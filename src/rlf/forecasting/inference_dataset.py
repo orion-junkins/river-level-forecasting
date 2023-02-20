@@ -1,4 +1,4 @@
-from typing import List, Optional
+from typing import List, Optional, Tuple
 
 from darts import TimeSeries
 from darts.dataprocessing.transformers import Scaler
@@ -45,7 +45,7 @@ class InferenceDataset(BaseDataset):
 
         # TODO add validation call - ie all X sets are same size, match y sets.
 
-    def _get_data(self, update: bool = False) -> tuple[List[TimeSeries], TimeSeries]:
+    def _get_data(self, update: bool = False) -> Tuple[List[TimeSeries], TimeSeries]:
         """Retrieve data from catchment data instance. Update (re-fetch latest) only if specified.
 
         Args:

@@ -1,4 +1,4 @@
-from typing import List, Optional
+from typing import List, Optional, Tuple
 
 from darts import TimeSeries
 from darts.dataprocessing.transformers import Scaler
@@ -42,7 +42,7 @@ class TrainingDataset(BaseDataset):
         self.X_train, self.X_test, self.y_train, self.y_test = self._partition(test_size)
         # TODO add validation call - ie all X sets are same size, match y sets.
 
-    def _load_data(self) -> tuple[TimeSeries, TimeSeries]:
+    def _load_data(self) -> Tuple[TimeSeries, TimeSeries]:
         """Load and process data.
 
         Returns:
@@ -55,7 +55,7 @@ class TrainingDataset(BaseDataset):
     def _partition(
         self,
         test_size: float
-    ) -> tuple[List[TimeSeries], List[TimeSeries], TimeSeries, TimeSeries]:
+    ) -> Tuple[List[TimeSeries], List[TimeSeries], TimeSeries, TimeSeries]:
         """
         Partition data using the specified test size.
 

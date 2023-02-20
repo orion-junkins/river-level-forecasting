@@ -1,4 +1,4 @@
-from typing import List, Optional, Sequence
+from typing import List, Optional, Sequence, Tuple
 
 from darts import TimeSeries
 from darts.models.forecasting.forecasting_model import GlobalForecastingModel
@@ -75,7 +75,7 @@ class ContributingModel(GlobalForecastingModel):
         self,
         past_covariates: Optional[CovariateType] = None,
         future_covariates: Optional[CovariateType] = None
-    ) -> tuple[CovariateType, CovariateType]:
+    ) -> Tuple[CovariateType, CovariateType]:
         """If a column prefix is being used then return a filtered set of columns otherwise return the covariates.
 
         Args:
@@ -104,5 +104,5 @@ class ContributingModel(GlobalForecastingModel):
     def _find_columns_to_keep(self, all_columns: List[str]) -> set[str]:
         return {c for c in all_columns if c.startswith(self._column_prefix)}
 
-    def _model_encoder_settings(self) -> tuple[int, int, bool, bool]:
+    def _model_encoder_settings(self) -> Tuple[int, int, bool, bool]:
         return self._base_model._model_encoder_settings()
