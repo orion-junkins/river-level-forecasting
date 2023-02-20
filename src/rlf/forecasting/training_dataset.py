@@ -1,4 +1,4 @@
-from typing import List, Optional, Tuple
+from typing import List, Optional, Sequence, Tuple
 
 from darts import TimeSeries
 from darts.dataprocessing.transformers import Scaler
@@ -17,7 +17,7 @@ class TrainingDataset(BaseDataset):
         test_size: float = 0.1,
         rolling_sum_columns: Optional[List[str]] = None,
         rolling_mean_columns: Optional[List[str]] = None,
-        rolling_window_sizes: List[int] = (10*24, 30*24)
+        rolling_window_sizes: Sequence[int] = (10*24, 30*24)
     ) -> None:
         """Generate a Dataset for training from a CatchmentData instance.
 
