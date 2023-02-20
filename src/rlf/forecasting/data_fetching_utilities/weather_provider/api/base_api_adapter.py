@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Optional
+from typing import List, Optional
 
 from rlf.forecasting.data_fetching_utilities.coordinate import Coordinate
 from rlf.forecasting.data_fetching_utilities.weather_provider.api.models import Response
@@ -13,7 +13,7 @@ class BaseAPIAdapter(ABC):
                        coordinate: Coordinate,
                        start_date: str,
                        end_date: str,
-                       columns: Optional[list[str]] = None) -> Response:
+                       columns: Optional[List[str]] = None) -> Response:
         """Make a GET request to the API for historical/archived data.
 
         Args:
@@ -32,7 +32,7 @@ class BaseAPIAdapter(ABC):
                     coordinate: Coordinate,
                     past_days: int = 92,
                     forecast_days: int = 16,
-                    columns: Optional[list[str]] = None) -> Response:
+                    columns: Optional[List[str]] = None) -> Response:
         """Make a GET request to the API for current/forecasted data.
 
         Args:

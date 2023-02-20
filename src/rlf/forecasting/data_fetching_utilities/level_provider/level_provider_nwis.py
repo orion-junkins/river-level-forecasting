@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta
+from typing import List
 
 import dataretrieval.nwis as nwis
 import pandas as pd
@@ -42,7 +43,7 @@ class LevelProviderNWIS(BaseLevelProvider):
         """
         return self.fetch_level()
 
-    def fetch_level(self, start: str = "1900-01-01", end: Optional[str] = None, parameterCd: str = '00060', drop_cols: list[str] = ["00060_cd", "site_no"], rename_dict: dict = {"00060": "level"}) -> pd.DataFrame:
+    def fetch_level(self, start: str = "1900-01-01", end: Optional[str] = None, parameterCd: str = '00060', drop_cols: List[str] = ["00060_cd", "site_no"], rename_dict: dict = {"00060": "level"}) -> pd.DataFrame:
         """
         Fetch level data for the given gauge ID. Fetches instant values from start to end.
         Drops and renames columns according to given args.

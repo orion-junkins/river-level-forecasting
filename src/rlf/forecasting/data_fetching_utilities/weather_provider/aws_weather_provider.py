@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Optional
+from typing import List, Optional
 import pytz
 
 
@@ -36,7 +36,7 @@ class AWSWeatherProvider(BaseWeatherProvider):
         self.aws_dispatcher = aws_dispatcher
         self.current_timestamp = current_timestamp
 
-    def download_datums_from_aws(self, dir_path: str, columns: Optional[list[str]] = None) -> list[WeatherDatum]:
+    def download_datums_from_aws(self, dir_path: str, columns: Optional[List[str]] = None) -> List[WeatherDatum]:
         """Download datums from AWS. Assumes datums exist in expected location.
 
         Args:
@@ -57,10 +57,10 @@ class AWSWeatherProvider(BaseWeatherProvider):
         return datums
 
     def fetch_historical(self,
-                         columns: Optional[list[str]] = None,
+                         columns: Optional[List[str]] = None,
                          start_date: Optional[str] = None,
                          end_date: Optional[str] = None,
-                         sleep_duration: float = 0.0) -> list[WeatherDatum]:
+                         sleep_duration: float = 0.0) -> List[WeatherDatum]:
         """Fetch historical weather for all coordinates. If there is an AWS dispatcher, data will be fetched from there if possible. If there is not a dispatcher, or the AWS file cannot be found, a regular datum request will be issued.
 
         Args:
@@ -92,7 +92,7 @@ class AWSWeatherProvider(BaseWeatherProvider):
 
         return datums
 
-    def fetch_current(self, columns: Optional[list[str]] = None, sleep_duration: float = 0.0) -> list[WeatherDatum]:
+    def fetch_current(self, columns: Optional[List[str]] = None, sleep_duration: float = 0.0) -> List[WeatherDatum]:
         """Fetch current weather for all coordinates.
 
         Args:

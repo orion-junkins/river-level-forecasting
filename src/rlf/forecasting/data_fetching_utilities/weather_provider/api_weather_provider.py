@@ -1,7 +1,7 @@
 from datetime import datetime
 import logging
 import time
-from typing import Optional
+from typing import List, Optional
 
 from pandas import DataFrame
 import pytz
@@ -115,7 +115,7 @@ class APIWeatherProvider(BaseWeatherProvider):
                                coordinate: Coordinate,
                                start_date: str = DEFAULT_START_DATE,
                                end_date: str = DEFAULT_END_DATE,
-                               columns: Optional[list[str]] = None) -> WeatherDatum:
+                               columns: Optional[List[str]] = None) -> WeatherDatum:
         """
         Fetch historical weather for a single coordinate or datum.
 
@@ -135,10 +135,10 @@ class APIWeatherProvider(BaseWeatherProvider):
         return datum
 
     def fetch_historical(self,
-                         columns: Optional[list[str]] = None,
+                         columns: Optional[List[str]] = None,
                          start_date: str = DEFAULT_START_DATE,
                          end_date: str = DEFAULT_END_DATE,
-                         sleep_duration: float = 0.0) -> list[WeatherDatum]:
+                         sleep_duration: float = 0.0) -> List[WeatherDatum]:
         """Fetch historical weather for all coordinates.
 
         Args:
@@ -159,7 +159,7 @@ class APIWeatherProvider(BaseWeatherProvider):
             time.sleep(sleep_duration)
         return list(datums.values())
 
-    def fetch_current_datum(self, coordinate: Coordinate, columns: Optional[list[str]] = None) -> WeatherDatum:
+    def fetch_current_datum(self, coordinate: Coordinate, columns: Optional[List[str]] = None) -> WeatherDatum:
         """Fetch current weather for a single coordinate.
 
         Args:
@@ -175,7 +175,7 @@ class APIWeatherProvider(BaseWeatherProvider):
 
         return datum
 
-    def fetch_current(self, columns: Optional[list[str]] = None, sleep_duration: float = 0.0) -> list[WeatherDatum]:
+    def fetch_current(self, columns: Optional[List[str]] = None, sleep_duration: float = 0.0) -> List[WeatherDatum]:
         """Fetch current weather for all coordinates.
 
         Args:

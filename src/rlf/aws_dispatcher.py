@@ -1,5 +1,6 @@
 import json
 import os
+from typing import List
 
 from pandas import DataFrame
 import pyarrow.parquet as pq
@@ -79,7 +80,7 @@ class AWSDispatcher():
             path=path
         )
 
-    def download_df_from_parquet(self, folder_name: str, filename: str, columns: Optional[list[str]] = None) -> DataFrame:
+    def download_df_from_parquet(self, folder_name: str, filename: str, columns: Optional[List[str]] = None) -> DataFrame:
         """Download a parquet file from AWS and parse it into a DataFRame
 
         Args:
@@ -120,7 +121,7 @@ class AWSDispatcher():
         self.upload_as_json(datum.hourly_units, folder_name, "units")
         self.upload_as_parquet(datum.hourly_parameters, folder_name, "data")
 
-    def download_datum(self, coordinate: Coordinate, columns: Optional[list[str]] = None,  dir_path: Optional[str] = None) -> WeatherDatum:
+    def download_datum(self, coordinate: Coordinate, columns: Optional[List[str]] = None,  dir_path: Optional[str] = None) -> WeatherDatum:
         """Download an entire WeatherDatum from S3.
 
         Args:

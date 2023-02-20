@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import List, Optional
 
 from darts import TimeSeries
 from darts.dataprocessing.transformers import Scaler
@@ -15,9 +15,9 @@ class TrainingDataset(BaseDataset):
         self,
         catchment_data: CatchmentData,
         test_size: float = 0.1,
-        rolling_sum_columns: Optional[list[str]] = None,
-        rolling_mean_columns: Optional[list[str]] = None,
-        rolling_window_sizes: list[int] = (10*24, 30*24)
+        rolling_sum_columns: Optional[List[str]] = None,
+        rolling_mean_columns: Optional[List[str]] = None,
+        rolling_window_sizes: List[int] = (10*24, 30*24)
     ) -> None:
         """Generate a Dataset for training from a CatchmentData instance.
 
@@ -55,7 +55,7 @@ class TrainingDataset(BaseDataset):
     def _partition(
         self,
         test_size: float
-    ) -> tuple[list[TimeSeries], list[TimeSeries], TimeSeries, TimeSeries]:
+    ) -> tuple[List[TimeSeries], List[TimeSeries], TimeSeries, TimeSeries]:
         """
         Partition data using the specified test size.
 

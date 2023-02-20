@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import List, Optional
 
 from rlf.forecasting.data_fetching_utilities.coordinate import Coordinate
 from rlf.forecasting.data_fetching_utilities.weather_provider.api.base_api_adapter import BaseAPIAdapter
@@ -17,8 +17,8 @@ class OpenMeteoAdapter(BaseAPIAdapter):
                  version: str = "v1",
                  archive_path: str = "era5",
                  forecast_path: str = "gfs",
-                 archive_hourly_parameters: Optional[list[str]] = None,
-                 forecast_hourly_parameters: Optional[list[str]] = None) -> None:
+                 archive_hourly_parameters: Optional[List[str]] = None,
+                 forecast_hourly_parameters: Optional[List[str]] = None) -> None:
         """
         Adapts the OpenMeteo API to be used by the RequestBuilder
 
@@ -45,7 +45,7 @@ class OpenMeteoAdapter(BaseAPIAdapter):
                        coordinate: Coordinate,
                        start_date: str,
                        end_date: str,
-                       columns: Optional[list[str]] = None) -> Response:
+                       columns: Optional[List[str]] = None) -> Response:
         """Make a GET request to the Open Meteo API for historical/archived data.
 
         Args:
@@ -78,7 +78,7 @@ class OpenMeteoAdapter(BaseAPIAdapter):
                     coordinate: Coordinate,
                     past_days: int = 92,
                     forecast_days: int = 16,
-                    columns: Optional[list[str]] = None) -> Response:
+                    columns: Optional[List[str]] = None) -> Response:
         """Make a GET request to the Open Meteo API for current/forecasted data.
 
         Args:

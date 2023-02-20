@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import List, Optional
 from pandas import DataFrame
 
 from rlf.forecasting.data_fetching_utilities.level_provider.base_level_provider import BaseLevelProvider
@@ -14,7 +14,7 @@ class CatchmentData:
         weather_provider: BaseWeatherProvider,
         level_provider: BaseLevelProvider,
         num_recent_samples: int = 90*24,
-        columns: Optional[list[str]] = None
+        columns: Optional[List[str]] = None
     ) -> None:
         """
         Create a CatchmentData instance.
@@ -52,7 +52,7 @@ class CatchmentData:
         return len(current_weather)
 
     @property
-    def all_current(self) -> tuple[list[DataFrame], DataFrame]:
+    def all_current(self) -> tuple[List[DataFrame], DataFrame]:
         """All current data. A tuple containing a list of current weather data with one DataFrame per location, and a single DataFrame of level data.
 
         Returns:
@@ -75,7 +75,7 @@ class CatchmentData:
         self._fetch_all_current()
 
     @property
-    def all_historical(self) -> tuple[list[DataFrame], DataFrame]:
+    def all_historical(self) -> tuple[List[DataFrame], DataFrame]:
         """All historical data. A tuple containing a list of historical weather data with one DataFrame per location, and a single DataFrame of level data.
 
         Returns:

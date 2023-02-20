@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta
+from typing import List
 
 import pandas as pd
 import pytest
@@ -15,7 +16,7 @@ END_DATE = "2020-02-01"
 
 
 @pytest.fixture
-def coordinates() -> list[Coordinate]:
+def coordinates() -> List[Coordinate]:
     return [Coordinate(lon=-120.8, lat=44.2), Coordinate(lon=-121.8, lat=44.3)]
 
 

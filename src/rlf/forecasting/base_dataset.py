@@ -1,5 +1,5 @@
 from abc import ABC
-from typing import Optional
+from typing import List, Optional
 
 from darts import TimeSeries
 from darts.timeseries import concatenate
@@ -16,9 +16,9 @@ class BaseDataset(ABC):
     def __init__(
         self,
         catchment_data: CatchmentData,
-        rolling_sum_columns: Optional[list[str]] = None,
-        rolling_mean_columns: Optional[list[str]] = None,
-        rolling_window_sizes: list[int] = [10*24, 30*24]
+        rolling_sum_columns: Optional[List[str]] = None,
+        rolling_mean_columns: Optional[List[str]] = None,
+        rolling_window_sizes: List[int] = [10*24, 30*24]
     ) -> None:
         """Create a new Dataset instance.
 
@@ -36,7 +36,7 @@ class BaseDataset(ABC):
 
     def _pre_process(
         self,
-        Xs: list[WeatherDatum],
+        Xs: List[WeatherDatum],
         y: DataFrame,
         allow_future_X: bool = False
     ) -> tuple[TimeSeries, TimeSeries]:
@@ -154,7 +154,7 @@ class BaseDataset(ABC):
         return df
 
     @staticmethod
-    def _find_timestamp_boundaries(Xs: list[DataFrame], y: DataFrame) -> tuple[Timestamp, Timestamp]:
+    def _find_timestamp_boundaries(Xs: List[DataFrame], y: DataFrame) -> tuple[Timestamp, Timestamp]:
         """Find the first and last timestamp that guarantees data in all datasets.
 
         Args:
