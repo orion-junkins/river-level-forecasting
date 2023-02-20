@@ -1,4 +1,4 @@
-from typing import List, Optional, Sequence, Tuple
+from typing import List, Optional, Set, Sequence, Tuple
 
 from darts import TimeSeries
 from darts.models.forecasting.forecasting_model import GlobalForecastingModel
@@ -101,7 +101,7 @@ class ContributingModel(GlobalForecastingModel):
         columns_to_keep = self._find_columns_to_keep(all_columns)
         return [c for c in all_columns if c not in columns_to_keep]
 
-    def _find_columns_to_keep(self, all_columns: List[str]) -> set[str]:
+    def _find_columns_to_keep(self, all_columns: List[str]) -> Set[str]:
         return {c for c in all_columns if c.startswith(self._column_prefix)}
 
     def _model_encoder_settings(self) -> Tuple[int, int, bool, bool]:
