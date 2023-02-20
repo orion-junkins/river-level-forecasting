@@ -1,4 +1,4 @@
-from typing import List, Optional, Set, Sequence, Tuple
+from typing import List, Optional, Set, Tuple
 
 from darts import TimeSeries
 from darts.models.forecasting.forecasting_model import GlobalForecastingModel
