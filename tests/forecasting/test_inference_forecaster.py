@@ -6,12 +6,29 @@ from rlf.forecasting.training_dataset import TrainingDataset
 from rlf.forecasting.inference_forecaster import InferenceForecaster
 from fake_providers import FakeLevelProvider, FakeWeatherProvider
 
+
+class FakeObject:
+    def __init__(self, attributes: dict) -> None:
+        self._fake_attributes = attributes
+
+    def __getattr__(self, __name: str):
+        return self._fake_attributes[__name]
+
+
 class MockModel:
     def __init__(self, expected_n, expected_series, expected_past_covariates, prediction):
         self.expected_n = expected_n
         self.expected_series = expected_series
         self.expected_past_covariates = expected_past_covariates
         self.prediction = prediction
+        self.models = [FakeObject({
+            "_column_prefix": "prefix_",
+            "_base_model": FakeObject({
+                "future_covariate_series": FakeObject({
+                    "columns": ["prefix_A", "prefix_B"]
+                })
+            })
+        })]
 
     def predict(self, n, series, past_covariates):
         assert n == self.expected_n
@@ -19,14 +36,25 @@ class MockModel:
         assert past_covariates == self.expected_past_covariates
         return self.prediction
 
+
+class FakeScaler:
+    def __init__(self, scale):
+        self._scale = scale
+
+    def transform(self, X):
+        return X * self._scale
+
 class FakeInferenceForecaster(InferenceForecaster):
 
     def __init__(self, mock_model, *args, **kwargs):
-        super().__init__(*args, **kwargs)
         self._mock_model = mock_model
+        super().__init__(*args, **kwargs)
 
     def _load_ensemble(self):
         return self._mock_model
+
+    def _load_scalers(self):
+        return {"scaler": FakeScaler(1.0), "target_scaler": FakeScaler(1.0)}
 
 
 class FakeScaler:
@@ -86,7 +114,7 @@ def test_inference_forecaster_init(catchment_data):
 
 def test_inference_forecaster_predict(inference_dataset, catchment_data):
     mock_model = MockModel(24, inference_dataset.y, inference_dataset.X, [n for n in range(24)])
-    inference_forecaster = FakeInferenceForecaster(mock_model, catchment_data=catchment_data, dataset=inference_dataset)
+    inference_forecaster = FakeInferenceForecaster(mock_model, catchment_data=catchment_data)
     actual_results = inference_forecaster.predict()
     expected_results = [n for n in range(24)]
 
