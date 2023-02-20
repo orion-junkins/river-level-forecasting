@@ -39,9 +39,9 @@ class BaseDataset(ABC):
         Xs: list[WeatherDatum],
         y: DataFrame,
         allow_future_X: bool = False
-    ) -> tuple[list[TimeSeries], TimeSeries]:
+    ) -> tuple[TimeSeries, TimeSeries]:
         """
-        Pre process data. This includes adding engineered features and trimming datasets to ensure X, y consistency.
+        Pre process data. This includes adding engineered features and trimming datasets to ensure X, y consistency. Also merges all Xs into a single TimeSeries with prefixed column names.
 
         Args:
             Xs (list[WeatherDatum]): List of all X sets.
@@ -49,7 +49,7 @@ class BaseDataset(ABC):
             allow_future_X (bool, optional): Determines if end date of X sets can exceed end date of y set. Only True for current data which includes forecasts (level data into future is not yet known, but weather is). Defaults to False.
 
         Returns:
-            tuple[list[TimeSeries], TimeSeries]: Tuple containing (processed_Xs, y)
+            tuple[TimeSeries, TimeSeries]: Tuple containing (X_concatenated, y)
         """
         # find the boundaries that are valid for all datasets
         first_date, last_date = self._find_timestamp_boundaries(Xs, y)
@@ -58,12 +58,12 @@ class BaseDataset(ABC):
 
         X_last_date = None if allow_future_X else last_date
         processed_Xs = [self._process_datum(datum, first_date, X_last_date) for datum in Xs]
-        global_X = concatenate(processed_Xs, axis="component")
+        X_concatenated = concatenate(processed_Xs, axis="component")
 
-        global_X = global_X.astype("float32")
+        X_concatenated = X_concatenated.astype("float32")
         y = y.astype("float32")
 
-        return global_X, y
+        return X_concatenated, y
 
     def _process_datum(self, datum: WeatherDatum, first_date: Timestamp, last_date: Timestamp | None) -> TimeSeries:
         """Process a single X datum.
