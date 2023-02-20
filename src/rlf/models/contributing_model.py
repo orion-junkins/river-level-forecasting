@@ -1,3 +1,4 @@
+import pickle
 from typing import List, Optional, Set, Tuple
 
 from darts import TimeSeries
@@ -106,3 +107,45 @@ class ContributingModel(GlobalForecastingModel):
 
     def _model_encoder_settings(self) -> Tuple[int, int, bool, bool]:
         return self._base_model._model_encoder_settings()
+
+    def save(self, path: str) -> None:
+        """Save this contributing model to disk.
+
+        This method will save the contributing model in two pieces.
+        The first one, which will be named path, will be this contributing model object except for its base model.
+        The base model's class will be saved with the contributing model instead.
+        The second piece will be the actual base model.
+        The base model's save method will be called with the suffix "_base_model" appended to path.
+        Note, the base model will likely save itself in two seperate pieces itself.
+
+        Args:
+            path (str): Path to save this model to. Must include the intended filename.
+        """
+        with open(path, "wb") as f:
+            base_model = self._base_model
+            self._base_model = self._base_model.__class__
+            pickle.dump(self, f)
+            self._base_model = base_model
+
+        self._base_model.save(path + "_base_model")
+
+    @classmethod
+    def load(cls, path: str) -> "ContributingModel":
+        """Load a contributing model object from disk.
+
+        Loading a contributing model involves first unpickling the ContributingModel object located at path.
+        Next, the base model will be loaded by invoking the load class method of the base model.
+        This method assumes that the naming conventions of ContributingModel.save is being used.
+
+        Args:
+            path (str): Path to a file containing a pickled ContributingModel.
+
+        Returns:
+            ContributingModel: Fully loaded ContributingModel
+        """
+        with open(path, "rb") as f:
+            contributing_model = pickle.load(f)
+
+        contributing_model._base_model = contributing_model._base_model.load(path + "_base_model")
+
+        return contributing_model
