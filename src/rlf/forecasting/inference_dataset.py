@@ -45,7 +45,7 @@ class InferenceDataset(BaseDataset):
 
         # TODO add validation call - ie all X sets are same size, match y sets.
 
-    def _get_data(self, update: bool = False) -> tuple[TimeSeries, TimeSeries]:
+    def _get_data(self, update: bool = False) -> Tuple[TimeSeries, TimeSeries]:
         """Retrieve data from catchment data instance. Update (re-fetch latest) only if specified.
 
         Args:
