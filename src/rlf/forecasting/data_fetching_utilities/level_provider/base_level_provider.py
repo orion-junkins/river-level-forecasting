@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 from datetime import datetime
+from typing import Union
 
 import pandas as pd
 import pytz
@@ -88,7 +89,7 @@ class BaseLevelProvider(ABC):
         return df
 
     @staticmethod
-    def _validate_index(x: str | datetime) -> datetime:
+    def _validate_index(x: Union[str, datetime]) -> datetime:
         """Validate that an index value is of type datetime and in the utc timezone, and if not then convert it.
 
         Args:

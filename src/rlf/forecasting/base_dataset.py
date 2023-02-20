@@ -65,7 +65,7 @@ class BaseDataset(ABC):
 
         return X_concatenated, y
 
-    def _process_datum(self, datum: WeatherDatum, first_date: Timestamp, last_date: Timestamp | None) -> TimeSeries:
+    def _process_datum(self, datum: WeatherDatum, first_date: Timestamp, last_date: Optional[Timestamp]) -> TimeSeries:
         """Process a single X datum.
 
         Processing an X datum involves cleaning the data, adding engineered features, renaming the columns, bounding the time index, and converting to a TimeSeries.

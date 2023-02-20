@@ -90,7 +90,7 @@ class ContributingModel(GlobalForecastingModel):
             future_covariates = self._modify_covariates(future_covariates)
         return past_covariates, future_covariates
 
-    def _modify_covariates(self, covariates: TimeSeries | Sequence[TimeSeries] | None) -> TimeSeries | Sequence[TimeSeries] | None:
+    def _modify_covariates(self, covariates: Optional[CovariateType]) -> Optional[CovariateType]:
         if isinstance(covariates, TimeSeries):
             covariates = covariates.drop_columns(self._columns_to_drop(covariates.columns))
         elif covariates is not None:

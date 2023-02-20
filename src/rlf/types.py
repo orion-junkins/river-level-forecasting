@@ -1,6 +1,6 @@
-from typing import Sequence
+from typing import Sequence, Union
 
 from darts import TimeSeries
 
 
-CovariateType = TimeSeries | Sequence[TimeSeries] | None
+CovariateType = Union[TimeSeries, Sequence[TimeSeries]]
