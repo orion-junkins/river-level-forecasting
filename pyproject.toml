@@ -25,7 +25,8 @@ classifiers = [
 
 [tool.pytest.ini_options]
 markers = [
-  "slow: mark test as slow to run"
+  "slow: mark test as slow to run",
+  "aws: mark test that needs aws credentials to run"
 ]
 minversion = "7.0"
 testpaths = [

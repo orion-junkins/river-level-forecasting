@@ -1,0 +1,53 @@
+# This workflow will run linters and static type checkers
+
+name: Code Check
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+permissions:
+  contents: read
+
+jobs:
+  flake8:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: Setup Conda
+      uses: conda-incubator/setup-miniconda@v2
+      with:
+        auto-update-conda: true
+        python-version: "3.10"
+        activate-environment: test
+    - name: Install flake8
+      shell: bash -el {0}
+      run: |
+        conda install flake8
+    - name: Lint with flake8
+      shell: bash -el {0}
+      run: |
+        # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
+        flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+
+  mypy:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: Setup Conda
+      uses: conda-incubator/setup-miniconda@v2
+      with:
+        auto-update-conda: true
+        python-version: "3.10"
+        activate-environment: test
+    - name: Install mypy
+      shell: bash -el {0}
+      run: |
+        conda install mypy
+    - name: Check types
+      shell: bash -el {0}
+      run: |
+        # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
+        mypy .

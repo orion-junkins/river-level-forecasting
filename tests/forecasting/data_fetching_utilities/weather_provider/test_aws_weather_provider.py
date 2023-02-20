@@ -24,6 +24,7 @@ def weather_provider(aws_dispatcher, coordinates) -> AWSWeatherProvider:
         coordinates=coordinates, aws_dispatcher=aws_dispatcher)
 
 
+@pytest.mark.aws
 @pytest.mark.slow
 def test_fetch_historical(weather_provider):
     weather_datums = weather_provider.fetch_historical()
@@ -33,6 +34,7 @@ def test_fetch_historical(weather_provider):
         assert ("temperature_2m" in list(weather_datum.hourly_parameters.columns))
 
 
+@pytest.mark.aws
 @pytest.mark.slow
 def test_fetch_current(weather_provider):
     weather_provider.set_timestamp(CURRENT_TESTING_TIMESTAMP)
