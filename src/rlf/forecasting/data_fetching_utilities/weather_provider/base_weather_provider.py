@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 from datetime import datetime
-from typing import Optional
+from typing import List, Optional
 
 
 from rlf.forecasting.data_fetching_utilities.coordinate import Coordinate
@@ -25,10 +25,10 @@ class BaseWeatherProvider(ABC):
 
     @abstractmethod
     def fetch_historical(self,
-                         columns: Optional[list[str]] = None,
+                         columns: Optional[List[str]] = None,
                          start_date: str = DEFAULT_START_DATE,
                          end_date: str = DEFAULT_END_DATE,
-                         sleep_duration: float = 0.0) -> list[WeatherDatum]:
+                         sleep_duration: float = 0.0) -> List[WeatherDatum]:
         """Fetch historical weather for all coordinates.
 
         Args:
@@ -44,8 +44,8 @@ class BaseWeatherProvider(ABC):
 
     @abstractmethod
     def fetch_current(self,
-                      columns: Optional[list[str]] = None,
-                      sleep_duration: float = 0.0) -> list[WeatherDatum]:
+                      columns: Optional[List[str]] = None,
+                      sleep_duration: float = 0.0) -> List[WeatherDatum]:
         """Fetch current weather for all coordinates.
 
         Args:

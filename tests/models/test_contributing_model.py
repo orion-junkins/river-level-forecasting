@@ -1,3 +1,5 @@
+from typing import List
+
 from darts import TimeSeries
 import numpy as np
 
@@ -5,7 +7,7 @@ from rlf.models.contributing_model import ContributingModel
 
 
 class MockModel:
-    def __init__(self, expected_columns: list[str]):
+    def __init__(self, expected_columns: List[str]):
         self.expected_columns = expected_columns
 
     def fit(self, past_covariates, future_covariates, **kwargs) -> "MockModel":

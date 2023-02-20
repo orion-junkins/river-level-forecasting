@@ -1,3 +1,5 @@
+from typing import List
+
 HOURLY_PARAMETERS = {"era5": [
     "temperature_2m",
     "relativehumidity_2m",
@@ -69,7 +71,7 @@ HOURLY_PARAMETERS = {"era5": [
     ]}
 
 
-def get_hourly_parameters(param_list="era5") -> list:
+def get_hourly_parameters(param_list="era5") -> List[str]:
     """The parameters to use in a request used by the Open Meteo API
 
     Returns:

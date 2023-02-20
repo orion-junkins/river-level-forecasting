@@ -1,4 +1,4 @@
-from typing import Optional, Sequence
+from typing import List, Optional, Set, Tuple
 
 from darts import TimeSeries
 from darts.models.forecasting.forecasting_model import GlobalForecastingModel
@@ -75,7 +75,7 @@ class ContributingModel(GlobalForecastingModel):
         self,
         past_covariates: Optional[CovariateType] = None,
         future_covariates: Optional[CovariateType] = None
-    ) -> tuple[CovariateType, CovariateType]:
+    ) -> Tuple[CovariateType, CovariateType]:
         """If a column prefix is being used then return a filtered set of columns otherwise return the covariates.
 
         Args:
@@ -90,19 +90,19 @@ class ContributingModel(GlobalForecastingModel):
             future_covariates = self._modify_covariates(future_covariates)
         return past_covariates, future_covariates
 
-    def _modify_covariates(self, covariates: TimeSeries | Sequence[TimeSeries] | None) -> TimeSeries | Sequence[TimeSeries] | None:
+    def _modify_covariates(self, covariates: Optional[CovariateType]) -> Optional[CovariateType]:
         if isinstance(covariates, TimeSeries):
             covariates = covariates.drop_columns(self._columns_to_drop(covariates.columns))
         elif covariates is not None:
             covariates = [covariate.drop_columns(self._columns_to_drop(covariate.columns)) for covariate in covariates]
         return covariates
 
-    def _columns_to_drop(self, all_columns: list[str]) -> list[str]:
+    def _columns_to_drop(self, all_columns: List[str]) -> List[str]:
         columns_to_keep = self._find_columns_to_keep(all_columns)
         return [c for c in all_columns if c not in columns_to_keep]
 
-    def _find_columns_to_keep(self, all_columns: list[str]) -> set[str]:
+    def _find_columns_to_keep(self, all_columns: List[str]) -> Set[str]:
         return {c for c in all_columns if c.startswith(self._column_prefix)}
 
-    def _model_encoder_settings(self) -> tuple[int, int, bool, bool]:
+    def _model_encoder_settings(self) -> Tuple[int, int, bool, bool]:
         return self._base_model._model_encoder_settings()

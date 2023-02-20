@@ -1,3 +1,5 @@
+from typing import List
+
 import pytest
 
 from rlf.aws_dispatcher import AWSDispatcher
@@ -14,7 +16,7 @@ def aws_dispatcher() -> AWSDispatcher:
 
 
 @pytest.fixture
-def coordinates() -> list[Coordinate]:
+def coordinates() -> List[Coordinate]:
     return [Coordinate(lon=-120.8, lat=44.2), Coordinate(lon=-121.8, lat=44.3)]
 
 

@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Optional
+from typing import List, Optional
 
 import pandas as pd
 import pytz
@@ -32,7 +32,7 @@ class AWSWeatherUploader():
     def upload_historical(self,
                           start_date: str = DEFAULT_START_DATE,
                           end_date: str = DEFAULT_END_DATE,
-                          columns: Optional[list[str]] = None,
+                          columns: Optional[List[str]] = None,
                           years_per_query: int = 2,
                           sleep_duration: int = 0) -> None:
         """Refetch historical datums and store this updated data in AWS. This will overwrite whatever data was previously stored for the current river.
@@ -80,7 +80,7 @@ class AWSWeatherUploader():
             self.aws_dispatcher.upload_datum(datum, "historical")
 
     def upload_current(self,
-                       columns: Optional[list[str]] = None,
+                       columns: Optional[List[str]] = None,
                        sleep_duration: float = 0.0,
                        dir_path: str = None) -> None:
         """Refetch current datums and store this updated data in AWS. This will overwrite whatever data was previously stored for the current river.

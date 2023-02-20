@@ -1,5 +1,5 @@
 from abc import ABC
-from typing import Optional
+from typing import List, Optional, Tuple
 
 from darts import TimeSeries
 from darts.timeseries import concatenate
@@ -16,9 +16,9 @@ class BaseDataset(ABC):
     def __init__(
         self,
         catchment_data: CatchmentData,
-        rolling_sum_columns: Optional[list[str]] = None,
-        rolling_mean_columns: Optional[list[str]] = None,
-        rolling_window_sizes: list[int] = [10*24, 30*24]
+        rolling_sum_columns: Optional[List[str]] = None,
+        rolling_mean_columns: Optional[List[str]] = None,
+        rolling_window_sizes: List[int] = [10*24, 30*24]
     ) -> None:
         """Create a new Dataset instance.
 
@@ -36,10 +36,10 @@ class BaseDataset(ABC):
 
     def _pre_process(
         self,
-        Xs: list[WeatherDatum],
+        Xs: List[WeatherDatum],
         y: DataFrame,
         allow_future_X: bool = False
-    ) -> tuple[TimeSeries, TimeSeries]:
+    ) -> Tuple[TimeSeries, TimeSeries]:
         """
         Pre process data. This includes adding engineered features and trimming datasets to ensure X, y consistency. Also merges all Xs into a single TimeSeries with prefixed column names.
 
@@ -65,7 +65,7 @@ class BaseDataset(ABC):
 
         return X_concatenated, y
 
-    def _process_datum(self, datum: WeatherDatum, first_date: Timestamp, last_date: Timestamp | None) -> TimeSeries:
+    def _process_datum(self, datum: WeatherDatum, first_date: Timestamp, last_date: Optional[Timestamp]) -> TimeSeries:
         """Process a single X datum.
 
         Processing an X datum involves cleaning the data, adding engineered features, renaming the columns, bounding the time index, and converting to a TimeSeries.
@@ -154,7 +154,7 @@ class BaseDataset(ABC):
         return df
 
     @staticmethod
-    def _find_timestamp_boundaries(Xs: list[DataFrame], y: DataFrame) -> tuple[Timestamp, Timestamp]:
+    def _find_timestamp_boundaries(Xs: List[DataFrame], y: DataFrame) -> Tuple[Timestamp, Timestamp]:
         """Find the first and last timestamp that guarantees data in all datasets.
 
         Args:

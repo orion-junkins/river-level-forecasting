@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import List, Optional, Tuple
 
 from darts import TimeSeries
 from darts.dataprocessing.transformers import Scaler
@@ -15,9 +15,9 @@ class InferenceDataset(BaseDataset):
         scaler: Scaler,
         target_scaler: Scaler,
         catchment_data: CatchmentData,
-        rolling_sum_columns: Optional[list[str]] = None,
-        rolling_mean_columns: Optional[list[str]] = None,
-        rolling_window_sizes: list[int] = [10*24, 30*24]
+        rolling_sum_columns: Optional[List[str]] = None,
+        rolling_mean_columns: Optional[List[str]] = None,
+        rolling_window_sizes: List[int] = [10*24, 30*24]
     ) -> None:
         """
         Generate an inference Dataset from a CatchmentData instance using the given test and validation sizes.
@@ -45,7 +45,7 @@ class InferenceDataset(BaseDataset):
 
         # TODO add validation call - ie all X sets are same size, match y sets.
 
-    def _get_data(self, update: bool = False) -> tuple[list[TimeSeries], TimeSeries]:
+    def _get_data(self, update: bool = False) -> Tuple[List[TimeSeries], TimeSeries]:
         """Retrieve data from catchment data instance. Update (re-fetch latest) only if specified.
 
         Args:
