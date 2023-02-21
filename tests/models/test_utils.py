@@ -31,7 +31,7 @@ def test_save_ensemble_model(tmp_path):
 
     save_ensemble_model(tmp_path, ensemble_model)
 
-    assert os.path.exists(f"{tmp_path}/ensemble")
+    assert os.path.exists(f"{tmp_path}/frcstr")
     assert os.path.exists(f"{tmp_path}/contributing_model_0")
     assert os.path.exists(f"{tmp_path}/contributing_model_0_base_model")
 

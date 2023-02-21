@@ -35,7 +35,7 @@ def test_training_forecaster_save_model(tmp_path, training_dataset):
 
     training_forecaster.save_model()
     assert os.path.exists(os.path.join(tmp_path, "test_catchment"))
-    assert os.path.exists(os.path.join(tmp_path, "test_catchment", "ensemble"))
+    assert os.path.exists(os.path.join(tmp_path, "test_catchment", "frcstr"))
     assert os.path.exists(os.path.join(tmp_path, "test_catchment", "scaler"))
 
     with open(os.path.join(tmp_path, "test_catchment", "scaler"), "rb") as f:

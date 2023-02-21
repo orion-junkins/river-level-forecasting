@@ -17,7 +17,6 @@ class TrainingForecaster(BaseForecaster):
         model: ForecastingModel,
         dataset: TrainingDataset,
         root_dir: str = DEFAULT_WORK_DIR,
-        filename: str = "frcstr",
         scaler_filename: str = "scaler",
     ) -> None:
         """Create a training forecaster. Note that many important parameters must be passed as keyword args. See BaseForecaster docs for complete list.
@@ -26,13 +25,12 @@ class TrainingForecaster(BaseForecaster):
             model (ForecastingModel): A darts ForecastingModel to train.
             dataset (TrainingDataset): TrainingDataset instance to use for training.
             root_dir (str, optional): Root dir to store trained model. Defaults to DEFAULT_WORK_DIR.
-            filename (str, optional): Filename to use for trained model. Defaults to frcstr.
             scaler_filename (str, optional): Filename to use for the scalers. Defaults to "scaler".
         """
         super().__init__(
             catchment_data=dataset.catchment_data,
             root_dir=root_dir,
-            filename=filename,
+            filename="frcstr",
             scaler_filename=scaler_filename)
 
         self.model = model

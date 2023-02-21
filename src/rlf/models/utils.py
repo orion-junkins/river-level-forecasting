@@ -36,7 +36,7 @@ def save_ensemble_model(base_dir: str, model: RegressionEnsembleModel) -> None:
     old_models = model.models
     model.models = [None] * len(model.models)
 
-    model.save(os.path.join(base_dir, "ensemble"))
+    model.save(os.path.join(base_dir, "frcstr"))
 
     model.models = old_models
 
@@ -50,7 +50,7 @@ def load_ensemble_model(base_dir: str) -> RegressionEnsembleModel:
     Returns:
         RegressionEnsembleModel: Loaded ensemble model.
     """
-    model = RegressionEnsembleModel.load(os.path.join(base_dir, "ensemble"))
+    model = RegressionEnsembleModel.load(os.path.join(base_dir, "frcstr"))
     contributing_models = [
         ContributingModel.load(os.path.join(base_dir, f"contributing_model_{i}"))
         for i in range(len(model.models))
