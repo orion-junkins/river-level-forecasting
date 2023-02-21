@@ -1,9 +1,12 @@
-from darts.models.forecasting.forecasting_model import ForecastingModel
+import json
 import os
 import pickle
 
+from darts.models.forecasting.forecasting_model import ForecastingModel
+
 from rlf.forecasting.base_forecaster import BaseForecaster, DEFAULT_WORK_DIR
 from rlf.forecasting.training_dataset import TrainingDataset
+from rlf.models.utils import save_ensemble_model
 
 
 class TrainingForecaster(BaseForecaster):
@@ -49,8 +52,21 @@ class TrainingForecaster(BaseForecaster):
 
     def save_model(self) -> None:
         """Save the model and scalers to their specific paths."""
-        self.model.save(self.model_save_path)
+        save_ensemble_model(self.work_dir, self.model)
 
         scaler_map = {"scaler": self.dataset.scaler, "target_scaler": self.dataset.target_scaler}
         with open(self.scaler_save_path, "wb") as f:
             pickle.dump(scaler_map, f)
+
+        # dump the metadata
+        metadata = {
+            "api_columns": self.catchment_data.columns,
+            "engineered_columns": ["day_of_year"],
+            "mean_columns": [],
+            "sum_columns": [],
+            "windows": []
+        }
+
+        with open(os.path.join(self.work_dir, "metadata"), "w") as f:
+            json.dump(metadata, f)
+
