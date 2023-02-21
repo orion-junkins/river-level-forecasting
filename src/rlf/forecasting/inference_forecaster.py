@@ -1,3 +1,5 @@
+import json
+import os
 import pickle
 from typing import Mapping
 
@@ -18,7 +20,6 @@ class InferenceForecaster(BaseForecaster):
     """Forecaster abstraction for inference/production. Top level class interacted with by the user."""
     def __init__(
         self,
-        dataset: InferenceDataset,
         catchment_data: CatchmentData,
         root_dir: str = DEFAULT_WORK_DIR,
         filename: str = "frcstr",
@@ -27,7 +28,6 @@ class InferenceForecaster(BaseForecaster):
         """Create a training forecaster. Note that many important parameters must be passed as keyword args. See BaseForecaster docs for complete list.
 
         Args:
-            dataset (InferenceDataset): Dataset to use for inference.
             catchment_data (CatchmentData): CatchmentData instance to use.
             root_dir (str, optional): Root directory where the model should be located. Defaults to DEFAULT_WORK_DIR.
             filename (str, optional): Name of file where the pickled model is located. Defaults to "frcstr".
@@ -36,7 +36,14 @@ class InferenceForecaster(BaseForecaster):
         super().__init__(catchment_data=catchment_data, root_dir=root_dir, filename=filename)
 
         self.model_type = model_type
-        self.dataset = dataset
+
+        self._model = self._load_ensemble()
+
+        scalers = self._load_scalers()
+        metadata = self._load_metadata()
+        catchment_data.columns = metadata["api_columns"]
+
+        self.dataset = InferenceDataset(scalers["scaler"], scalers["target_scaler"], catchment_data)
 
     @property
     def model(self) -> ForecastingModel:
@@ -59,6 +66,11 @@ class InferenceForecaster(BaseForecaster):
         with open(self.scaler_save_path, "rb") as f:
             scalers = pickle.load(f)
         return scalers
+
+    def _load_metadata(self) -> dict:
+        with open(os.path.join(self.work_dir, "metadata")) as f:
+            metadata = json.load(f)
+        return metadata
 
     def predict(self, num_timesteps: int = 24, update: bool = False) -> TimeSeries:
         """Generate a prediction.
