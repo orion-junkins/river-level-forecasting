@@ -1,4 +1,8 @@
+import pickle
+from typing import Mapping
+
 from darts import TimeSeries
+from darts.dataprocessing.transformers import Scaler
 from darts.models.forecasting.forecasting_model import ForecastingModel
 from darts.models.forecasting.regression_ensemble_model import (
     RegressionEnsembleModel
@@ -7,7 +11,7 @@ from darts.models.forecasting.regression_ensemble_model import (
 from rlf.forecasting.base_forecaster import BaseForecaster, DEFAULT_WORK_DIR
 from rlf.forecasting.catchment_data import CatchmentData
 from rlf.forecasting.inference_dataset import InferenceDataset
-from rlf.models.utils import repair_regression_ensemble_model
+from rlf.models.utils import load_ensemble_model
 
 
 class InferenceForecaster(BaseForecaster):
@@ -19,7 +23,6 @@ class InferenceForecaster(BaseForecaster):
         root_dir: str = DEFAULT_WORK_DIR,
         filename: str = "frcstr",
         model_type: ForecastingModel = RegressionEnsembleModel,
-
     ) -> None:
         """Create a training forecaster. Note that many important parameters must be passed as keyword args. See BaseForecaster docs for complete list.
 
@@ -46,14 +49,16 @@ class InferenceForecaster(BaseForecaster):
 
     def _load_ensemble(self) -> ForecastingModel:
         """Load the underlying ForecastingModel.
-
         Returns:
             ForecastingModel: Loaded ForecastingModel.
         """
-        model = self.model_type.load(self.model_save_path)
-        if isinstance(model, RegressionEnsembleModel):
-            repair_regression_ensemble_model(model)
+        model = load_ensemble_model(self.work_dir)
         return model
+
+    def _load_scalers(self) -> Mapping[str, Scaler]:
+        with open(self.scaler_save_path, "rb") as f:
+            scalers = pickle.load(f)
+        return scalers
 
     def predict(self, num_timesteps: int = 24, update: bool = False) -> TimeSeries:
         """Generate a prediction.
