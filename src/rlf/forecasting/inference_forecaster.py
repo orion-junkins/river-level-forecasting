@@ -23,7 +23,6 @@ class InferenceForecaster(BaseForecaster):
         catchment_data: CatchmentData,
         root_dir: str = DEFAULT_WORK_DIR,
         filename: str = "frcstr",
-        model_type: ForecastingModel = RegressionEnsembleModel,
     ) -> None:
         """Create a training forecaster. Note that many important parameters must be passed as keyword args. See BaseForecaster docs for complete list.
 
@@ -31,11 +30,8 @@ class InferenceForecaster(BaseForecaster):
             catchment_data (CatchmentData): CatchmentData instance to use.
             root_dir (str, optional): Root directory where the model should be located. Defaults to DEFAULT_WORK_DIR.
             filename (str, optional): Name of file where the pickled model is located. Defaults to "frcstr".
-            model_type (ForecastingModel, optional): Darts Forecasting model type to load. Defaults to RegressionEnsembleModel.
         """
         super().__init__(catchment_data=catchment_data, root_dir=root_dir, filename=filename)
-
-        self.model_type = model_type
 
         self._model = self._load_ensemble()
 
