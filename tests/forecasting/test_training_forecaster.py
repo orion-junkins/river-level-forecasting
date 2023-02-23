@@ -41,10 +41,10 @@ def test_training_forecaster_save_model(tmp_path, training_dataset):
     assert os.path.exists(os.path.join(tmp_path, "test_catchment", "metadata"))
 
 
-def test_training_forecaster_save_model_scaler_is_correct(tmp_path, catchment_data):
+def test_training_forecaster_save_model_scaler_is_correct(tmp_path, training_dataset):
     training_forecaster = TrainingForecaster(
         RegressionEnsembleModel([LinearRegressionModel(lags=1)], 10),
-        catchment_data,
+        training_dataset,
         root_dir=tmp_path
     )
 
@@ -59,10 +59,10 @@ def test_training_forecaster_save_model_scaler_is_correct(tmp_path, catchment_da
     assert isinstance(scaler["target_scaler"], Scaler)
 
 
-def test_training_forecaster_save_model_metadata_is_correct(tmp_path, catchment_data):
+def test_training_forecaster_save_model_metadata_is_correct(tmp_path, training_dataset):
     training_forecaster = TrainingForecaster(
         RegressionEnsembleModel([LinearRegressionModel(lags=1)], 10),
-        catchment_data,
+        training_dataset,
         root_dir=tmp_path
     )
 
@@ -82,10 +82,10 @@ def test_training_forecaster_save_model_metadata_is_correct(tmp_path, catchment_
     assert metadata["windows"] == [240, 720]
 
 
-def test_training_forecaster_save_model_metadata_with_rolling_columns_correct(tmp_path, catchment_data):
+def test_training_forecaster_save_model_metadata_with_rolling_columns_correct(tmp_path, training_dataset):
     training_forecaster = TrainingForecaster(
         RegressionEnsembleModel([LinearRegressionModel(lags=1)], 10),
-        catchment_data,
+        training_dataset,
         root_dir=tmp_path
     )
 
