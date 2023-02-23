@@ -16,17 +16,20 @@ from rlf.forecasting.training_forecaster import TrainingForecaster
 def catchment_data():
     return CatchmentData("test_catchment", FakeWeatherProvider(num_historical_samples=1000), FakeLevelProvider(num_historical_samples=1000))
 
+@pytest.fixture
+def training_dataset(catchment_data):
+    return TrainingDataset(catchment_data)
 
-def test_training_forecaster_init(catchment_data):
-    training_forecaster = TrainingForecaster(model=None, catchment_data=catchment_data)
+def test_training_forecaster_init(training_dataset):
+    training_forecaster = TrainingForecaster(model=None, dataset=training_dataset)
 
     assert (type(training_forecaster.dataset) is TrainingDataset)
 
 
-def test_training_forecaster_save_model(tmp_path, catchment_data):
+def test_training_forecaster_save_model(tmp_path, training_dataset):
     training_forecaster = TrainingForecaster(
         RegressionEnsembleModel([LinearRegressionModel(lags=1)], 10),
-        catchment_data,
+        training_dataset,
         root_dir=tmp_path
     )
 
