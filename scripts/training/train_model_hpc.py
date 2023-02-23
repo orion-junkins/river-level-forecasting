@@ -66,7 +66,16 @@ DEFAULT_COLUMNS = [
 
 
 def generate_base_contributing_model(num_epochs: int) -> GlobalForecastingModel:
-    # modify this function if you want to have a different model from RNN
+    """Generate a base model for an individual contributing model.
+
+    Modify this function if you want to use a different base model besides RNN.
+
+    Args:
+        num_epochs (int): Number of epochs to train for.
+
+    Returns:
+        GlobalForecastingModel: Base model.
+    """
     return RNNModel(
         96,
         n_epochs=num_epochs,
@@ -82,6 +91,15 @@ def build_model_for_dataset(
     training_dataset: TrainingDataset,
     num_epochs: int
 ) -> RegressionEnsembleModel:
+    """Build the EnsembleModel with the contributing models.
+
+    Args:
+        training_dataset (TrainingDataset): TrainingDataset instance that will be used to train the models.
+        num_epochs (int): Number of epochs to train each contributing model.
+
+    Returns:
+        RegressionEnsembleModel: Built ensemble model.
+    """
     model = RegressionEnsembleModel(
         [
             ContributingModel(generate_base_contributing_model(num_epochs), prefix)
@@ -93,6 +111,15 @@ def build_model_for_dataset(
 
 
 def get_coordinates_for_catchment(filename: str, gauge_id: str) -> Optional[List[Coordinate]]:
+    """Get the list of coordinates for a specific gauge ID from a geojson file.
+
+    Args:
+        filename (str): geojson file that contains catchment information.
+        gauge_id (str): gauge ID to retrieve coordinates for.
+
+    Returns:
+        Optional[List[Coordinate]]: List of coordinates for the given gauge or None if the gauge could not be found.
+    """
     with open(filename) as f:
         target = json.load(f)
 
@@ -104,7 +131,21 @@ def get_coordinates_for_catchment(filename: str, gauge_id: str) -> Optional[List
     return None
 
 
-def get_training_data(gauge_id: str, coordinates: List[Coordinate], columns: List[str]) -> TrainingDataset:
+def get_training_data(
+    gauge_id: str,
+    coordinates: List[Coordinate],
+    columns: List[str]
+) -> TrainingDataset:
+    """Generate the TrainingDataset for the given gauge ID, coordinates, and columns.
+
+    Args:
+        gauge_id (str): gauge ID this TrainingDataset will represent.
+        coordinates (List[Coordinate]): List of coordinates for this TrainingDataset.
+        columns (List[str]): Columns to request from the weather provider.
+
+    Returns:
+        TrainingDataset: _description_
+    """
     weather_provider = AWSWeatherProvider(
         coordinates,
         AWSDispatcher("all-weather-data", "open-meteo")
@@ -121,11 +162,29 @@ def get_training_data(gauge_id: str, coordinates: List[Coordinate], columns: Lis
 
 
 def get_columns(column_file: str) -> List[str]:
+    """Get the list of columns from a text file.
+
+    Args:
+        column_file (str): path to the text file containing the columns.
+
+    Returns:
+        List[str]: List of columns to use
+    """
     with open(column_file) as f:
         return [c.strip() for c in f.readlines()]
 
 
 def get_parameters_from_args(args: List[str]) -> dict:
+    """Parse command line arguments to get the run parameters.
+
+    It is assumed that args[0] contains the name of the script file.
+
+    Args:
+        args (List[str]): List of command line arguments. Usually gathered from sys.argv.
+
+    Returns:
+        dict: dictionary of run parameters
+    """
     if len(args) < 2:
         return None
 
