@@ -1,9 +1,12 @@
-from darts.models.forecasting.forecasting_model import ForecastingModel
+import json
 import os
 import pickle
 
+from darts.models.forecasting.forecasting_model import ForecastingModel
+
 from rlf.forecasting.base_forecaster import BaseForecaster, DEFAULT_WORK_DIR
 from rlf.forecasting.training_dataset import TrainingDataset
+from rlf.models.utils import save_ensemble_model
 
 
 class TrainingForecaster(BaseForecaster):
@@ -14,7 +17,6 @@ class TrainingForecaster(BaseForecaster):
         model: ForecastingModel,
         dataset: TrainingDataset,
         root_dir: str = DEFAULT_WORK_DIR,
-        filename: str = "frcstr",
         scaler_filename: str = "scaler",
     ) -> None:
         """Create a training forecaster. Note that many important parameters must be passed as keyword args. See BaseForecaster docs for complete list.
@@ -23,13 +25,12 @@ class TrainingForecaster(BaseForecaster):
             model (ForecastingModel): A darts ForecastingModel to train.
             dataset (TrainingDataset): TrainingDataset instance to use for training.
             root_dir (str, optional): Root dir to store trained model. Defaults to DEFAULT_WORK_DIR.
-            filename (str, optional): Filename to use for trained model. Defaults to frcstr.
             scaler_filename (str, optional): Filename to use for the scalers. Defaults to "scaler".
         """
         super().__init__(
             catchment_data=dataset.catchment_data,
             root_dir=root_dir,
-            filename=filename,
+            filename="frcstr",
             scaler_filename=scaler_filename)
 
         self.model = model
@@ -49,8 +50,21 @@ class TrainingForecaster(BaseForecaster):
 
     def save_model(self) -> None:
         """Save the model and scalers to their specific paths."""
-        self.model.save(self.model_save_path)
+        save_ensemble_model(self.work_dir, self.model)
 
         scaler_map = {"scaler": self.dataset.scaler, "target_scaler": self.dataset.target_scaler}
         with open(self.scaler_save_path, "wb") as f:
             pickle.dump(scaler_map, f)
+
+        # dump the metadata
+        metadata = {
+            "api_columns": self.dataset.base_columns,
+            "engineered_columns": ["day_of_year"],
+            "mean_columns": self.dataset.rolling_mean_columns,
+            "sum_columns": self.dataset.rolling_sum_columns,
+            "windows": self.dataset.rolling_window_sizes
+        }
+
+        with open(os.path.join(self.work_dir, "metadata"), "w") as f:
+            json.dump(metadata, f)
+

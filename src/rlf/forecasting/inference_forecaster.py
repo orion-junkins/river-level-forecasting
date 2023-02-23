@@ -1,4 +1,10 @@
+import json
+import os
+import pickle
+from typing import Mapping
+
 from darts import TimeSeries
+from darts.dataprocessing.transformers import Scaler
 from darts.models.forecasting.forecasting_model import ForecastingModel
 from darts.models.forecasting.regression_ensemble_model import (
     RegressionEnsembleModel
@@ -7,33 +13,42 @@ from darts.models.forecasting.regression_ensemble_model import (
 from rlf.forecasting.base_forecaster import BaseForecaster, DEFAULT_WORK_DIR
 from rlf.forecasting.catchment_data import CatchmentData
 from rlf.forecasting.inference_dataset import InferenceDataset
-from rlf.models.utils import repair_regression_ensemble_model
+from rlf.models.utils import load_ensemble_model
 
 
 class InferenceForecaster(BaseForecaster):
     """Forecaster abstraction for inference/production. Top level class interacted with by the user."""
     def __init__(
         self,
-        dataset: InferenceDataset,
         catchment_data: CatchmentData,
         root_dir: str = DEFAULT_WORK_DIR,
         filename: str = "frcstr",
-        model_type: ForecastingModel = RegressionEnsembleModel,
-
+        load_cpu: bool = False
     ) -> None:
         """Create a training forecaster. Note that many important parameters must be passed as keyword args. See BaseForecaster docs for complete list.
 
         Args:
-            dataset (InferenceDataset): Dataset to use for inference.
             catchment_data (CatchmentData): CatchmentData instance to use.
             root_dir (str, optional): Root directory where the model should be located. Defaults to DEFAULT_WORK_DIR.
             filename (str, optional): Name of file where the pickled model is located. Defaults to "frcstr".
-            model_type (ForecastingModel, optional): Darts Forecasting model type to load. Defaults to RegressionEnsembleModel.
+            load_cpu (bool): If True then when loading the models set them to run inference on CPU. Defaults to False.
         """
         super().__init__(catchment_data=catchment_data, root_dir=root_dir, filename=filename)
 
-        self.model_type = model_type
-        self.dataset = dataset
+        self._model = self._load_ensemble(load_cpu)
+
+        scalers = self._load_scalers()
+        metadata = self._load_metadata()
+        catchment_data.columns = metadata["api_columns"]
+
+        self.dataset = InferenceDataset(
+            scalers["scaler"],
+            scalers["target_scaler"],
+            catchment_data,
+            rolling_sum_columns=metadata["sum_columns"],
+            rolling_mean_columns=metadata["mean_columns"],
+            rolling_window_sizes=metadata["windows"]
+        )
 
     @property
     def model(self) -> ForecastingModel:
@@ -42,18 +57,29 @@ class InferenceForecaster(BaseForecaster):
         Returns:
             ForecastingModel: Loaded ForecastingModel.
         """
-        return self._load_ensemble()
+        return self._model
 
-    def _load_ensemble(self) -> ForecastingModel:
+    def _load_ensemble(self, load_cpu: bool) -> ForecastingModel:
         """Load the underlying ForecastingModel.
+
+        Args:
+            load_cpu (bool): Whether or not to load models to run inference on CPU.
 
         Returns:
             ForecastingModel: Loaded ForecastingModel.
         """
-        model = self.model_type.load(self.model_save_path)
-        if isinstance(model, RegressionEnsembleModel):
-            repair_regression_ensemble_model(model)
+        model = load_ensemble_model(self.work_dir, load_cpu)
         return model
+
+    def _load_scalers(self) -> Mapping[str, Scaler]:
+        with open(self.scaler_save_path, "rb") as f:
+            scalers = pickle.load(f)
+        return scalers
+
+    def _load_metadata(self) -> dict:
+        with open(os.path.join(self.work_dir, "metadata")) as f:
+            metadata = json.load(f)
+        return metadata
 
     def predict(self, num_timesteps: int = 24, update: bool = False) -> TimeSeries:
         """Generate a prediction.
