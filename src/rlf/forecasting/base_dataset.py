@@ -33,6 +33,7 @@ class BaseDataset(ABC):
         self.rolling_mean_columns = rolling_mean_columns if rolling_mean_columns is not None else []
         self.rolling_window_sizes = rolling_window_sizes
         self.subsets = dict()
+        self.base_columns = None
 
     def _pre_process(
         self,
@@ -51,6 +52,9 @@ class BaseDataset(ABC):
         Returns:
             tuple[TimeSeries, TimeSeries]: Tuple containing (X_concatenated, y)
         """
+        # this assumes all Xs have the same columns
+        self.base_columns = list(Xs[0].hourly_parameters.columns)
+
         # find the boundaries that are valid for all datasets
         first_date, last_date = self._find_timestamp_boundaries(Xs, y)
 
