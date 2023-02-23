@@ -1,3 +1,4 @@
+import json
 import os
 import pickle
 
@@ -37,7 +38,17 @@ def test_training_forecaster_save_model(tmp_path, training_dataset):
     assert os.path.exists(os.path.join(tmp_path, "test_catchment"))
     assert os.path.exists(os.path.join(tmp_path, "test_catchment", "frcstr"))
     assert os.path.exists(os.path.join(tmp_path, "test_catchment", "scaler"))
+    assert os.path.exists(os.path.join(tmp_path, "test_catchment", "metadata"))
 
+
+def test_training_forecaster_save_model_scaler_is_correct(tmp_path, catchment_data):
+    training_forecaster = TrainingForecaster(
+        RegressionEnsembleModel([LinearRegressionModel(lags=1)], 10),
+        catchment_data,
+        root_dir=tmp_path
+    )
+
+    training_forecaster.save_model()
     with open(os.path.join(tmp_path, "test_catchment", "scaler"), "rb") as f:
         scaler = pickle.load(f)
 
@@ -46,3 +57,44 @@ def test_training_forecaster_save_model(tmp_path, training_dataset):
     assert isinstance(scaler["scaler"], Scaler)
     assert "target_scaler" in scaler
     assert isinstance(scaler["target_scaler"], Scaler)
+
+
+def test_training_forecaster_save_model_metadata_is_correct(tmp_path, catchment_data):
+    training_forecaster = TrainingForecaster(
+        RegressionEnsembleModel([LinearRegressionModel(lags=1)], 10),
+        catchment_data,
+        root_dir=tmp_path
+    )
+
+    training_forecaster.save_model()
+    with open(os.path.join(tmp_path, "test_catchment", "metadata")) as f:
+        metadata = json.load(f)
+
+    assert "api_columns" in metadata
+    assert metadata["api_columns"] == ['weather_attr_1', 'weather_attr_2']
+    assert "engineered_columns" in metadata
+    assert metadata["engineered_columns"] == ['day_of_year']
+    assert "mean_columns" in metadata
+    assert metadata["mean_columns"] == []
+    assert "sum_columns" in metadata
+    assert metadata["sum_columns"] == []
+    assert "windows" in metadata
+    assert metadata["windows"] == [240, 720]
+
+
+def test_training_forecaster_save_model_metadata_with_rolling_columns_correct(tmp_path, catchment_data):
+    training_forecaster = TrainingForecaster(
+        RegressionEnsembleModel([LinearRegressionModel(lags=1)], 10),
+        catchment_data,
+        root_dir=tmp_path
+    )
+
+    training_forecaster.dataset.rolling_mean_columns = ["mean_col_1", "mean_col_2"]
+    training_forecaster.dataset.rolling_sum_columns = ["sum_col_1", "sum_col_2"]
+
+    training_forecaster.save_model()
+    with open(os.path.join(tmp_path, "test_catchment", "metadata")) as f:
+        metadata = json.load(f)
+
+    assert metadata["mean_columns"] == ["mean_col_1", "mean_col_2"]
+    assert metadata["sum_columns"] == ["sum_col_1", "sum_col_2"]
