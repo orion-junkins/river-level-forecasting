@@ -171,4 +171,4 @@ class BaseDataset(ABC):
         all_dfs = [X.hourly_parameters for X in Xs] + [y]
         first_timestamp = max([df.index.to_series().min() for df in all_dfs])
         last_timestamp = min([df.apply(lambda x: x.last_valid_index()).max() for df in all_dfs])
-        return first_timestamp, last_timestamp
+        return first_timestamp.replace(tzinfo=None), last_timestamp.replace(tzinfo=None)
