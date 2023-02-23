@@ -24,18 +24,20 @@ def save_ensemble_model(base_dir: str, model: RegressionEnsembleModel) -> None:
     model.models = old_models
 
 
-def load_ensemble_model(base_dir: str) -> RegressionEnsembleModel:
+def load_ensemble_model(base_dir: str, load_cpu: bool = False) -> RegressionEnsembleModel:
     """Load an ensemble model from disk.
 
     Args:
         path (str): Base directory where the ensemble model and its contributing models are located.
+        load_cpu (bool): If True then when loading the models set them to run inference on CPU. Defaults to False.
 
     Returns:
         RegressionEnsembleModel: Loaded ensemble model.
     """
     model = RegressionEnsembleModel.load(os.path.join(base_dir, "frcstr"))
+
     contributing_models = [
-        ContributingModel.load(os.path.join(base_dir, f"contributing_model_{i}"))
+        ContributingModel.load(os.path.join(base_dir, f"contributing_model_{i}"), load_cpu)
         for i in range(len(model.models))
     ]
 

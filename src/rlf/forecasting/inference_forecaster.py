@@ -23,6 +23,7 @@ class InferenceForecaster(BaseForecaster):
         catchment_data: CatchmentData,
         root_dir: str = DEFAULT_WORK_DIR,
         filename: str = "frcstr",
+        load_cpu: bool = False
     ) -> None:
         """Create a training forecaster. Note that many important parameters must be passed as keyword args. See BaseForecaster docs for complete list.
 
@@ -30,10 +31,11 @@ class InferenceForecaster(BaseForecaster):
             catchment_data (CatchmentData): CatchmentData instance to use.
             root_dir (str, optional): Root directory where the model should be located. Defaults to DEFAULT_WORK_DIR.
             filename (str, optional): Name of file where the pickled model is located. Defaults to "frcstr".
+            load_cpu (bool): If True then when loading the models set them to run inference on CPU. Defaults to False.
         """
         super().__init__(catchment_data=catchment_data, root_dir=root_dir, filename=filename)
 
-        self._model = self._load_ensemble()
+        self._model = self._load_ensemble(load_cpu)
 
         scalers = self._load_scalers()
         metadata = self._load_metadata()
@@ -55,14 +57,18 @@ class InferenceForecaster(BaseForecaster):
         Returns:
             ForecastingModel: Loaded ForecastingModel.
         """
-        return self._load_ensemble()
+        return self._model
 
-    def _load_ensemble(self) -> ForecastingModel:
+    def _load_ensemble(self, load_cpu: bool) -> ForecastingModel:
         """Load the underlying ForecastingModel.
+
+        Args:
+            load_cpu (bool): Whether or not to load models to run inference on CPU.
+
         Returns:
             ForecastingModel: Loaded ForecastingModel.
         """
-        model = load_ensemble_model(self.work_dir)
+        model = load_ensemble_model(self.work_dir, load_cpu)
         return model
 
     def _load_scalers(self) -> Mapping[str, Scaler]:

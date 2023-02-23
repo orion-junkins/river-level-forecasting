@@ -130,7 +130,7 @@ class ContributingModel(GlobalForecastingModel):
         self._base_model.save(path + "_base_model")
 
     @classmethod
-    def load(cls, path: str) -> "ContributingModel":
+    def load(cls, path: str, load_cpu: bool = False) -> "ContributingModel":
         """Load a contributing model object from disk.
 
         Loading a contributing model involves first unpickling the ContributingModel object located at path.
@@ -139,6 +139,7 @@ class ContributingModel(GlobalForecastingModel):
 
         Args:
             path (str): Path to a file containing a pickled ContributingModel.
+            load_cpu (bool): If True then when loading the base model set it to run inference on CPU. Defaults to False.
 
         Returns:
             ContributingModel: Fully loaded ContributingModel
@@ -146,6 +147,10 @@ class ContributingModel(GlobalForecastingModel):
         with open(path, "rb") as f:
             contributing_model = pickle.load(f)
 
-        contributing_model._base_model = contributing_model._base_model.load(path + "_base_model")
+        if load_cpu:
+            contributing_model._base_model = contributing_model._base_model.load(path + "_base_model", map_location="cpu")
+            contributing_model._base_model.to_cpu()
+        else:
+            contributing_model._base_model = contributing_model._base_model.load(path + "_base_model")
 
         return contributing_model
