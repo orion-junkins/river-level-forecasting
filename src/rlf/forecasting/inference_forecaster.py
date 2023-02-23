@@ -39,7 +39,14 @@ class InferenceForecaster(BaseForecaster):
         metadata = self._load_metadata()
         catchment_data.columns = metadata["api_columns"]
 
-        self.dataset = InferenceDataset(scalers["scaler"], scalers["target_scaler"], catchment_data)
+        self.dataset = InferenceDataset(
+            scalers["scaler"],
+            scalers["target_scaler"],
+            catchment_data,
+            rolling_sum_columns=metadata["sum_columns"],
+            rolling_mean_columns=metadata["mean_columns"],
+            rolling_window_sizes=metadata["windows"]
+        )
 
     @property
     def model(self) -> ForecastingModel:
