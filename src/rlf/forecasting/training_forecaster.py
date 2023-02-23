@@ -58,11 +58,11 @@ class TrainingForecaster(BaseForecaster):
 
         # dump the metadata
         metadata = {
-            "api_columns": self.catchment_data.columns,
+            "api_columns": self.dataset.base_columns,
             "engineered_columns": ["day_of_year"],
-            "mean_columns": [],
-            "sum_columns": [],
-            "windows": []
+            "mean_columns": self.dataset.rolling_mean_columns,
+            "sum_columns": self.dataset.rolling_sum_columns,
+            "windows": self.dataset.rolling_window_sizes
         }
 
         with open(os.path.join(self.work_dir, "metadata"), "w") as f:
