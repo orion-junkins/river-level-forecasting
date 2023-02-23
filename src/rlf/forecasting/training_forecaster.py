@@ -2,7 +2,6 @@ from darts.models.forecasting.forecasting_model import ForecastingModel
 import os
 import pickle
 
-from rlf.forecasting.catchment_data import CatchmentData
 from rlf.forecasting.base_forecaster import BaseForecaster, DEFAULT_WORK_DIR
 from rlf.forecasting.training_dataset import TrainingDataset
 
@@ -13,7 +12,7 @@ class TrainingForecaster(BaseForecaster):
     def __init__(
         self,
         model: ForecastingModel,
-        catchment_data: CatchmentData,
+        dataset: TrainingDataset,
         root_dir: str = DEFAULT_WORK_DIR,
         filename: str = "frcstr",
         scaler_filename: str = "scaler",
@@ -22,19 +21,19 @@ class TrainingForecaster(BaseForecaster):
 
         Args:
             model (ForecastingModel): A darts ForecastingModel to train.
-            catchment_data (CatchmentData): CatchmentData instance to use for training.
+            dataset (TrainingDataset): TrainingDataset instance to use for training.
             root_dir (str, optional): Root dir to store trained model. Defaults to DEFAULT_WORK_DIR.
             filename (str, optional): Filename to use for trained model. Defaults to frcstr.
             scaler_filename (str, optional): Filename to use for the scalers. Defaults to "scaler".
         """
         super().__init__(
-            catchment_data=catchment_data,
+            catchment_data=dataset.catchment_data,
             root_dir=root_dir,
             filename=filename,
             scaler_filename=scaler_filename)
 
         self.model = model
-        self.dataset = TrainingDataset(catchment_data=catchment_data)
+        self.dataset = dataset
 
         os.makedirs(self.work_dir, exist_ok=True)
         if (os.path.isfile(self.model_save_path)):
