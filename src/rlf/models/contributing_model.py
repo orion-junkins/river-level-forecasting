@@ -103,7 +103,8 @@ class ContributingModel(GlobalForecastingModel):
         return [c for c in all_columns if c not in columns_to_keep]
 
     def _find_columns_to_keep(self, all_columns: List[str]) -> Set[str]:
-        return {c for c in all_columns if c.startswith(self._column_prefix)}
+        # mypy is complaining that _column_prefix could be None but there is a guard to prevent that
+        return {c for c in all_columns if c.startswith(self._column_prefix)}  # type: ignore[arg-type]
 
     def _model_encoder_settings(self) -> Tuple[int, int, bool, bool]:
         return self._base_model._model_encoder_settings()

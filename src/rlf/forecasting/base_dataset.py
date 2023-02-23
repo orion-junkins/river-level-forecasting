@@ -1,5 +1,5 @@
 from abc import ABC
-from typing import List, Optional, Tuple
+from typing import Dict, List, Optional, Sequence, Tuple
 
 from darts import TimeSeries
 from darts.timeseries import concatenate
@@ -18,7 +18,7 @@ class BaseDataset(ABC):
         catchment_data: CatchmentData,
         rolling_sum_columns: Optional[List[str]] = None,
         rolling_mean_columns: Optional[List[str]] = None,
-        rolling_window_sizes: List[int] = [10*24, 30*24]
+        rolling_window_sizes: Sequence[int] = [10*24, 30*24]
     ) -> None:
         """Create a new Dataset instance.
 
@@ -32,8 +32,8 @@ class BaseDataset(ABC):
         self.rolling_sum_columns = rolling_sum_columns if rolling_sum_columns is not None else []
         self.rolling_mean_columns = rolling_mean_columns if rolling_mean_columns is not None else []
         self.rolling_window_sizes = rolling_window_sizes
-        self.subsets = dict()
-        self.base_columns = None
+        self.subsets: Dict[str, Coordinate] = {}
+        self.base_columns: Optional[List[str]] = None
 
     def _pre_process(
         self,
