@@ -27,7 +27,13 @@ class FakeInferenceForecaster(InferenceForecaster):
         return {"scaler": FakeScaler(1.0), "target_scaler": FakeScaler(1.0)}
 
     def _load_metadata(self) -> dict:
-        return {"api_columns": ["A", "B"]}
+        return {
+            "api_columns": ["weather_attr_1", "weather_attr_2"],
+            "engineered_columns": ["day_of_year"],
+            "sum_columns": ['weather_attr_1'],
+            "mean_columns": ['weather_attr_2'],
+            "windows": []
+        }
 
 
 @pytest.fixture
