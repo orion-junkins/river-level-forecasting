@@ -20,7 +20,7 @@ class FakeInferenceForecaster(InferenceForecaster):
         self._mock_model = mock_model
         super().__init__(*args, **kwargs)
 
-    def _load_ensemble(self):
+    def _load_ensemble(self, load_cpu):
         return self._mock_model
 
     def _load_scalers(self):
