@@ -42,7 +42,7 @@ usage = """
 
 
 DEFAULT_EPOCHS = 1
-DEFAULT_DATA_FILE = "catchments_high_precision_short.json"
+DEFAULT_DATA_FILE = "catchments_short.json"
 DEFAULT_COLUMNS = [
     "apparent_temperature",
     "cloudcover",
