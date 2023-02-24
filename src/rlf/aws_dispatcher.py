@@ -1,7 +1,6 @@
 import json
 from typing import List
 import os
-from typing import List
 
 from pandas import DataFrame
 import pyarrow.parquet as pq

@@ -33,7 +33,7 @@ class InferenceForecaster(BaseForecaster):
             filename (str, optional): Name of file where the pickled model is located. Defaults to "frcstr".
             load_cpu (bool): If True then when loading the models set them to run inference on CPU. Defaults to False.
         """
-        super().__init__(catchment_data=catchment_data, root_dir=root_dir, filename=filename, scaler_filename=scaler_filename)
+        super().__init__(catchment_data=catchment_data, root_dir=root_dir, filename=filename)
 
         self._model = self._load_ensemble(load_cpu)
 
