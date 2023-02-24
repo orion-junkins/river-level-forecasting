@@ -67,4 +67,3 @@ class TrainingForecaster(BaseForecaster):
 
         with open(os.path.join(self.work_dir, "metadata"), "w") as f:
             json.dump(metadata, f)
-

@@ -41,18 +41,18 @@ class InferenceDataset(BaseDataset):
         self.scaler = scaler
         self.target_scaler = target_scaler
 
-        self.Xs, self.y = self._get_data()
+        self.X, self.y = self._get_data()
 
         # TODO add validation call - ie all X sets are same size, match y sets.
 
-    def _get_data(self, update: bool = False) -> Tuple[List[TimeSeries], TimeSeries]:
+    def _get_data(self, update: bool = False) -> Tuple[TimeSeries, TimeSeries]:
         """Retrieve data from catchment data instance. Update (re-fetch latest) only if specified.
 
         Args:
             update (bool, optional): Whether or not to refetch latest data. Defaults to False.
 
         Returns:
-            tuple[list[TimeSeries], TimeSeries]: Tuple of (Xs, y) representing all current data.
+            tuple[TimeSeries, TimeSeries]: Tuple of (Xs, y) representing all current data.
         """
         # Update if specified
         if update:
@@ -62,14 +62,14 @@ class InferenceDataset(BaseDataset):
         current_weather, recent_level = self.catchment_data.all_current
 
         # Process
-        Xs_current, y_current = self._pre_process(current_weather, recent_level, allow_future_X=True)
+        X_current, y_current = self._pre_process(current_weather, recent_level, allow_future_X=True)
 
         # Scale
-        Xs_current = self.scaler.transform(Xs_current)
+        X_current = self.scaler.transform(X_current)
         y_current = self.target_scaler.transform(y_current)
 
-        return (Xs_current, y_current)
+        return (X_current, y_current)
 
     def update(self) -> None:
         """Update the underlying catchment data for inference with up to date data. This triggers new weather data queries and a rebuild of all current datasets."""
-        self.Xs_current, self.y_current = self._get_data(update=True)
+        self.X_current, self.y_current = self._get_data(update=True)
