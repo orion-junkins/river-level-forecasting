@@ -54,7 +54,7 @@ This is helpful when the model had been trained on a GPU, but the inference is n
 
 # %%
 
-forecaster = InferenceForecaster(inference_catchment_data, "/content/drive/MyDrive/trained_models", load_cpu=True)
+forecaster = InferenceForecaster(inference_catchment_data, "/path/to/trained_models", load_cpu=True)
 
 # %%
 """
