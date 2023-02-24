@@ -25,7 +25,7 @@ class InferenceForecaster(BaseForecaster):
         filename: str = "frcstr",
         load_cpu: bool = False
     ) -> None:
-        """Create a training forecaster. Note that many important parameters must be passed as keyword args. See BaseForecaster docs for complete list.
+        """Create an inference forecaster.
 
         Args:
             catchment_data (CatchmentData): CatchmentData instance to use.
@@ -89,12 +89,12 @@ class InferenceForecaster(BaseForecaster):
             update (bool, optional): Whether or not to update underlying Dataset before inference. Defaults to False.
 
         Returns:
-            TimeSeries: The forecasted timeseries.
+            TimeSeries: The forecasted timeseries rescaled to be in real units.
         """
         if update:
             self.dataset.update()
 
-        # scaled_predictions = self.model.predict(num_timesteps, series=self.dataset.y, past_covariates=self.dataset.Xs)
-        # rescaled_predictions = self.dataset.target_scaler.inverse_transform(scaled_predictions)
+        scaled_predictions = self.model.predict(num_timesteps, series=self.dataset.y, future_covariates=self.dataset.X)
+        rescaled_predictions = self.dataset.target_scaler.inverse_transform(scaled_predictions)
 
-        return self.model.predict(num_timesteps, series=self.dataset.y, future_covariates=self.dataset.X)
+        return rescaled_predictions
