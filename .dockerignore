@@ -1,0 +1,8 @@
+.git/*
+**/*.pyc
+*.vscode
+data/*
+demo/*
+lightning_logs/*
+trained_models/*
+README.md

@@ -15,7 +15,7 @@ args = [arg for arg in sys.argv[1:] if not arg.startswith("-")]
 if len(args) == 1:
     CATCHMENT_FILEPATH = args[0]
 else:
-    CATCHMENT_FILEPATH = "data/catchments_short.json"
+    CATCHMENT_FILEPATH = "data/catchments_test.json"
 
 # Tunable parameters
 SLEEP_DURATION = 0.2
