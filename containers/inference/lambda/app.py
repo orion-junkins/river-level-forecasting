@@ -18,6 +18,16 @@ from rlf.forecasting.catchment_data import CatchmentData
 s3 = s3fs.S3FileSystem(anon=False)
 s3_bucket = "s3://model-forecasts"
 
+flow_pattern = re.compile("(\d+\.?\d*)(k?cfs)")
+
+
+def parse_flow(x: str) -> float:
+  value, suffix = re.match(flow_pattern, x).groups()
+  value = float(value)
+  if suffix == "kcfs":
+    value *= 1000
+  return value
+
 
 def parse_datetime_from_noaa(x: str) -> datetime:
   basic_datetime = datetime.strptime(x, "%m/%d %H:%M")
@@ -46,8 +56,14 @@ def get_noaa_predictions(target_gauge: str) -> pd.DataFrame:
     df = pd.read_html(decoded_content[begin_index + len(begin):end_index], skiprows=2)[0]
     df.columns = ["datetime", "level", "flow"]
     df["datetime"] = df["datetime"].apply(parse_datetime_from_noaa)
-    df["level"] = df["level"].apply(lambda x: float(x[:-2]))
+    df["flow"] = df["flow"].apply(parse_flow)
     df = df.set_index("datetime")
+
+    # some NOAA predictions are every six hour
+    # expand to hourly and interpolate between so that there
+    # are not a bunch of nans when paired with the model data
+    df = df.asfreq("H")
+    df.interpolate(inplace=True)
 
     return df
 
