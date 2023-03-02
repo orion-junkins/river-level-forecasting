@@ -2,6 +2,7 @@ from datetime import datetime
 import json
 import math
 import os
+import re
 import requests
 
 from darts.timeseries import TimeSeries
@@ -9,11 +10,12 @@ import pandas as pd
 import s3fs
 
 from rlf.forecasting.data_fetching_utilities.coordinate import Coordinate
-from rlf.forecasting.data_fetching_utilities.weather_provider.api_weather_provider import APIWeatherProvider
-from rlf.forecasting.inference_forecaster import InferenceForecaster
-from rlf.forecasting.inference_dataset import InferenceDataset
 from rlf.forecasting.data_fetching_utilities.level_provider.level_provider_nwis import LevelProviderNWIS
+from rlf.forecasting.data_fetching_utilities.weather_provider.api_weather_provider import APIWeatherProvider
 from rlf.forecasting.catchment_data import CatchmentData
+from rlf.forecasting.inference_dataset import InferenceDataset
+from rlf.forecasting.inference_forecaster import InferenceForecaster
+
 
 s3 = s3fs.S3FileSystem(anon=False)
 s3_bucket = "s3://model-forecasts"
@@ -89,7 +91,7 @@ def build_data_dict(dataset: InferenceDataset, predictions: TimeSeries, target: 
 
     if "noaa_id" in target["properties"]:
        try:
-          data_df["pred_noaa"] = get_noaa_predictions(target["properties"]["noaa_id"])["level"]
+          data_df["pred_noaa"] = get_noaa_predictions(target["properties"]["noaa_id"])["flow"]
        except Exception as e:
           print("Unable to get noaa predictions:")
           print(e)
@@ -143,6 +145,10 @@ def handler(event, context):
               run_predictions_for_target(feature)
            except Exception as e:
               print(f"Unable to run predictions for {feature['properties']['gauge_id']}")
-              print(e)
+              raise
 
     return
+
+
+if __name__ == "__main__":
+    handler(None, None)
