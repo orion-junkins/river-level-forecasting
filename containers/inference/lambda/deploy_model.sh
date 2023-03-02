@@ -19,8 +19,8 @@ mkdir containers/inference/lambda/staged_models
 cp -r trained_models/$1 containers/inference/lambda/staged_models
 
 # get rid of any old images so we don't wind up with dangling ones
-docker image rm inference:$1
-docker image rm $AWS_LAMBDA_CONTAINER_REPO.dkr.ecr.$AWS_LAMBDA_REGION.amazonaws.com/model-inference:$1
+docker image rm inference:$1 -f
+docker image rm $AWS_LAMBDA_CONTAINER_REPO.dkr.ecr.$AWS_LAMBDA_REGION.amazonaws.com/model-inference:$1 -f
 
 # build the image
 docker build -t inference:$1 -f containers/inference/lambda/Dockerfile-model .
