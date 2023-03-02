@@ -90,6 +90,7 @@
             ],
             "properties": {
                 "gauge_id": "14231000",
+                "noaa_id": "RAWW1",
                 "gauge_name": "COWLITZ RIVER AT RANDLE, WA",
                 "area_sq_km": 1381.81
             },
@@ -555,50 +556,23 @@
             ],
             "properties": {
                 "gauge_id": "14377100",
+                "noaa_id": "KRBO3",
                 "gauge_name": "ILLINOIS RIVER NEAR KERBY, OR",
                 "area_sq_km": 990.985
             },
             "geometry": {
                 "type": "MultiPoint",
                 "coordinates": [
-                    [
-                        -123.9,
-                        41.8
-                    ],
-                    [
-                        -123.8,
-                        41.8
-                    ],
-                    [
-                        -123.7,
-                        41.8
-                    ],
-                    [
-                        -123.6,
-                        41.8
-                    ],
-                    [
-                        -123.5,
-                        41.8
-                    ],
-                    [
-                        -123.4,
-                        41.8
-                    ],
-                    [
-                        -123.3,
-                        41.8
-                    ],
-                    [
-                        -123.9,
-                        41.9
-                    ],
-                    [
-                        -123.8,
-                        41.9
-                    ],
-                    [
-                        -123.7,
+                    [-123.9, 41.8],
+                    [-123.8, 41.8],
+                    [-123.7, 41.8],
+                    [-123.6, 41.8],
+                    [-123.5, 41.8],
+                    [-123.4, 41.8],
+                    [-123.3, 41.8],
+                    [-123.9, 41.9],
+                    [-123.8, 41.9],
+                    [-123.7,
                         41.9
                     ],
                     [
@@ -742,6 +716,7 @@
             ],
             "properties": {
                 "gauge_id": "14046500",
+                "noaa_id": "SERO3",
                 "gauge_name": "JOHN DAY RIVER AT SERVICE CREEK, OR",
                 "area_sq_km": 13304.385
             },
@@ -2021,6 +1996,7 @@
             ],
             "properties": {
                 "gauge_id": "14182500",
+                "noaa_id": "LSMO3",
                 "gauge_name": "LITTLE NORTH SANTIAM RIVER NEAR MEHAMA, OR",
                 "area_sq_km": 292.475
             },
@@ -2467,6 +2443,7 @@
             ],
             "properties": {
                 "gauge_id": "14339000",
+                "noaa_id": "EGLO3",
                 "gauge_name": "ROGUE RIVER AT DODGE BRIDGE, NEAR EAGLE POINT, OR",
                 "area_sq_km": 3156.863
             },
@@ -2886,6 +2863,7 @@
             ],
             "properties": {
                 "gauge_id": "14361500",
+                "noaa_id": "GRAO3",
                 "gauge_name": "ROGUE RIVER AT GRANTS PASS, OR",
                 "area_sq_km": 6370.346
             },
@@ -4224,6 +4202,7 @@
             ],
             "properties": {
                 "gauge_id": "14372300",
+                "noaa_id": "AGNO3",
                 "gauge_name": "ROGUE RIVER NEAR AGNESS, OR",
                 "area_sq_km": 10194.735
             },
@@ -5475,6 +5454,7 @@
             ],
             "properties": {
                 "gauge_id": "14137000",
+                "noaa_id": "SRMO3",
                 "gauge_name": "SANDY RIVER NEAR MARMOT, OR",
                 "area_sq_km": 676.496
             },
@@ -5634,6 +5614,7 @@
             ],
             "properties": {
                 "gauge_id": "12143400",
+                "noaa_id": "GARW1",
                 "gauge_name": "SF SNOQUALMIE RIVER AB ALICE CREEK NEAR GARCIA, WA",
                 "area_sq_km": 107.831
             },
@@ -5959,6 +5940,7 @@
             ],
             "properties": {
                 "gauge_id": "14321000",
+                "noaa_id": "EKTO3",
                 "gauge_name": "UMPQUA RIVER NEAR ELKTON, OR",
                 "area_sq_km": 9443.217
             },
