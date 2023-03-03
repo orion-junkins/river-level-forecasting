@@ -39,11 +39,18 @@ class MockModel:
         return self.prediction
 
 class FakeScaler:
-    def __init__(self, scale):
-        self._scale = scale
+    def __init__(self, scaler):
+        self._scaler = scaler
 
     def transform(self, X):
-        return X * self._scale
+        if isinstance(X, list):
+            return X
+        return self._scaler.transform(X)
+
+    def inverse_transform(self, X):
+        if isinstance(X, list):
+            return X
+        return self._scaler.inverse_transform(X)
 
 class FakeInferenceForecaster(InferenceForecaster):
 
@@ -95,6 +102,7 @@ def test_inference_forecaster_init(catchment_data, scalers):
 
 
 def test_inference_forecaster_predict(inference_dataset, catchment_data, scalers):
+    scalers = [FakeScaler(scalers[0]), FakeScaler(scalers[1])]
     mock_model = MockModel(24, inference_dataset.y, inference_dataset.X, [n for n in range(24)])
     inference_forecaster = FakeInferenceForecaster(mock_model, scalers, catchment_data=catchment_data)
     actual_results = inference_forecaster.predict()
