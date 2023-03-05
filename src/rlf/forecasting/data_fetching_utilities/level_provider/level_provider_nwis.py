@@ -1,5 +1,6 @@
 from datetime import datetime, timedelta
 from typing import List
+import pytz
 
 import dataretrieval.nwis as nwis
 import pandas as pd
@@ -18,6 +19,7 @@ class LevelProviderNWIS(BaseLevelProvider):
             gauge_id (str): A string of the USGS gauge id number.
         """
         self.gauge_id = gauge_id
+        self.reference_timestamp: Optional[datetime] = None
 
     def fetch_recent_level(self, num_hours: int) -> pd.DataFrame:
         """Fetch river level data for the most recent num_hours. Dataframe is returned with a tz aware UTC Datetime index.
@@ -28,12 +30,25 @@ class LevelProviderNWIS(BaseLevelProvider):
         Returns:
             pd.DataFrame: A dataframe of recent level data with a tz aware UTC Datetime index. Guaranteed to have num_hours rows.
         """
-        start_dt = datetime.utcnow() - timedelta(hours=(num_hours + 48))
-        start_str = datetime.strftime(start_dt, '%Y-%m-%d')
-        data_all = self.fetch_level(start=start_str)
-        data_trimmed = data_all.iloc[-num_hours:, :]
+        if self.reference_timestamp is None:
+            start_dt = datetime.utcnow() - timedelta(hours=(num_hours + 48))
+            end_dt = None
+        else:
+            start_dt = self.reference_timestamp - timedelta(hours=(num_hours + 48))
+            end_dt = self.reference_timestamp
 
-        return data_trimmed
+        start_str = datetime.strftime(start_dt, '%Y-%m-%d')
+        end_str = datetime.strftime(end_dt, '%Y-%m-%d') if end_dt else None
+
+        data = self.fetch_level(start=start_str, end=end_str)
+
+        # Ensure no timesteps exist beyond reference timestamp if one has been provided
+        if self.reference_timestamp:
+            data = data[data.index <= self.reference_timestamp]
+
+        data = data.iloc[-num_hours:, :]
+
+        return data
 
     def fetch_historical_level(self) -> pd.DataFrame:
         """Fetch all historical level data from the beginning of collection to the most recent available data. Dataframe is returned with a tz aware UTC Datetime index.
@@ -57,7 +72,8 @@ class LevelProviderNWIS(BaseLevelProvider):
             df (Pandas dataframe): Formatted dataframe of fetched data
         """
         # Fetch level data
-        df = nwis.get_record(sites=self.gauge_id, service='iv', start=start, end=end, parameterCd=parameterCd)
+        df = nwis.get_record(sites=self.gauge_id, service='iv',
+                             start=start, end=end, parameterCd=parameterCd)
 
         # Filter out any columns that are present in the drop_cols list
         drop_cols = list(filter(lambda x: x in df.columns, drop_cols))
@@ -70,3 +86,13 @@ class LevelProviderNWIS(BaseLevelProvider):
         df = self.format_level_data(df)
 
         return df
+
+    def set_timestamp(self, new_timestamp: str) -> None:
+        """Set the reference timestamp for the level provider. Fetched "current" levels will be relative to this point in time with no data beyond this point. This is useful for testing
+
+        Args:
+            new_timestamp (str): Timestamp in the format "YY-mm-DD_HH-MM" in UTC.
+        """
+        reference_timestamp = datetime.strptime(
+            new_timestamp, '%y-%m-%d_%H-%M')
+        self.reference_timestamp = reference_timestamp.replace(tzinfo=pytz.utc)
