@@ -1,0 +1,5 @@
+FROM inference:base
+
+ARG APP_DIR="/app"
+
+COPY containers/inference/lambda/staged_models ${APP_DIR}/trained_models
