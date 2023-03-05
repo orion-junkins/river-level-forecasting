@@ -3,9 +3,8 @@ import json
 import pandas as pd
 from typing import List, Optional
 
-from rlf.aws_dispatcher import AWSDispatcher
-
 try:
+    from rlf.aws_dispatcher import AWSDispatcher
     from rlf.forecasting.catchment_data import CatchmentData
     from rlf.forecasting.data_fetching_utilities.coordinate import Coordinate
     from rlf.forecasting.data_fetching_utilities.level_provider.level_provider_nwis import LevelProviderNWIS
@@ -109,17 +108,18 @@ def main(args: List[str]) -> int:
     # Concatenate the predictions into a single DataFrame and save to CSV
     merged = pd.concat(predictions, axis=1)
     merged.to_csv(args.out_file)
+    return 0
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser() 
+    parser = argparse.ArgumentParser()
     parser.add_argument("gauge_id")
     parser.add_argument('-d', '--data_file', nargs=1, type=str, default='data/catchments_short.json', help='input file with catchment definitions, in JSON format')
     parser.add_argument('-o', '--out_file', nargs=1, type=str, default='out.csv', help='output file for generated forecasts, in CSV format')
     parser.add_argument('-c', '--columns_file', nargs=1, type=str, default='data/columns.txt', help='input text file with list of columns to use, one per line')
     parser.add_argument('-m', '--trained_model_dir', nargs=1, type=str, default='trained_models', help='directory containing trained_models')
-    parser.add_argument('-s', '--num_inferences', nargs=1, type=int, default=5, help='=the number of cached sampled to run inference for')
-    parser.add_argument('-w', '--forecast_window', nargs=1, type=int, default=96, help='the nummber of timesteps to predict at each inference')
+    parser.add_argument('-s', '--num_inferences', nargs=1, type=int, default=5, help='the number of cached samples to run inference for')
+    parser.add_argument('-w', '--forecast_window', nargs=1, type=int, default=96, help='the number of timesteps to predict at each inference')
 
     args = parser.parse_args()
     exit(main(args))

@@ -32,11 +32,15 @@ class LevelProviderNWIS(BaseLevelProvider):
         """
         if self.reference_timestamp is None:
             start_dt = datetime.utcnow() - timedelta(hours=(num_hours + 48))
+            end_dt = None
         else:
             start_dt = self.reference_timestamp - timedelta(hours=(num_hours + 48))
+            end_dt = self.reference_timestamp
 
         start_str = datetime.strftime(start_dt, '%Y-%m-%d')
-        data = self.fetch_level(start=start_str)
+        end_str = datetime.strftime(end_dt, '%Y-%m-%d') if end_dt else None
+
+        data = self.fetch_level(start=start_str, end=end_str)
 
         # Ensure no timesteps exist beyond reference timestamp if one has been provided
         if self.reference_timestamp:
