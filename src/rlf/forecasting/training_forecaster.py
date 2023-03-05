@@ -67,3 +67,30 @@ class TrainingForecaster(BaseForecaster):
 
         with open(os.path.join(self.work_dir, "metadata"), "w") as f:
             json.dump(metadata, f)
+
+    def backtest(self,
+                 retrain: bool = False,
+                 start: float = 0.95,
+                 forecast_horizon: int = 24,
+                 stride: int = 24,
+                 last_points_only: bool = False) -> float:
+        """Backtest the model on the training data. This is useful for debugging and hyperparameter tuning. See darts docs for more details:
+        https://unit8co.github.io/darts/generated_api/darts.models.forecasting.regression_ensemble_model.html#darts.models.forecasting.regression_ensemble_model.RegressionEnsembleModel.backtest
+
+        Args:
+            retrain (bool, optional): Whether to retrain the model on the entire training dataset. Defaults to False.
+            start (float, optional): The proportion of the training dataset to use for backtesting. Defaults to 0.95.
+            forecast_horizon (int, optional): The forecast horizon to use. Defaults to 24.
+            stride (int, optional): The stride to use. Defaults to 24.
+            last_points_only (bool, optional): Whether to only use the last point in the training dataset. Defaults to False.
+
+        Returns:
+            float: The backtest score. See darts docs for more details.
+        """
+        return self.model.backtest(self.dataset.y_train,
+                                   future_covariates=self.dataset.X_train,
+                                   retrain=retrain,
+                                   start=start,
+                                   forecast_horizon=forecast_horizon,
+                                   stride=stride,
+                                   last_points_only=last_points_only)
