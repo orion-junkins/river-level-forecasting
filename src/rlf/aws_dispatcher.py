@@ -142,8 +142,19 @@ class AWSDispatcher():
             if columns is not None:
                 hourly_units = dict((key, hourly_units[key]) for key in columns)
             hourly_parameters = self.download_df_from_parquet(folder_name, "data", columns=columns)
-        except FileNotFoundError as e:
-            print("Error occured while fetching saved datum from AWS for coordinate: " + str(coordinate))
-            raise e
+        except FileNotFoundError:
+            raise FileNotFoundError("Error occured while fetching saved datum from AWS for coordinate: " + str(coordinate) + ". Expected datum folder was " + folder_name)
         datum = WeatherDatum(hourly_units=hourly_units, hourly_parameters=hourly_parameters, **meta_data)
         return datum
+
+    def list_files(self, folder_name: str) -> List[str]:
+        """List all files in a given folder.
+
+        Args:
+            folder_name (str): Folder to list.
+
+        Returns:
+            List[str]: List of file names.
+        """
+        path = f'{self.working_dir}/{folder_name}'
+        return self.s3.ls(path)
