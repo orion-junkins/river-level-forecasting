@@ -1,4 +1,5 @@
 import argparse
+from datetime import datetime
 import json
 import pandas as pd
 from typing import List, Optional
@@ -63,7 +64,34 @@ def get_recent_available_timestamps(aws_dispatcher: AWSDispatcher, num_timestamp
     files = aws_dispatcher.list_files("current")
     timestamps = list(map(lambda x: x.split("/")[-1], files))
     timestamps = timestamps[-num_timestamps:]
+
     return timestamps
+
+
+def get_level_true(starting_timestamps: List[str], inference_level_provider: LevelProviderNWIS, window_size: int) -> pd.DataFrame:
+    """Get the true level for the specified gauge ID.
+
+    Args:
+        starting_timestamps (List[str]): List of starting timestamps
+        inference_level_provider (LevelProviderNWIS): LevelProvider to use to fetch level data.
+        window_size (int): Number of timesteps to fetch beyond the last starting timestamp.
+
+    Returns:
+        pd.DataFrame: DataFrame containing the level data. Data is datetime naive and in UTC.
+    """
+    # Find bounding timestamps
+    dt_timestamps = [datetime.strptime(timestamp, "%y-%m-%d_%H-%M") for timestamp in starting_timestamps]
+    start = min(dt_timestamps)
+    end = max(dt_timestamps) + (window_size * pd.Timedelta("1 hour"))
+
+    # Note that the level provider uses the date in the format "yyyy-mm-dd"
+    start = datetime.strftime(start, "%Y-%m-%d")
+    end = datetime.strftime(end, "%Y-%m-%d")
+    level = inference_level_provider.fetch_level(start=start, end=end)
+    level.rename(columns={"level": "level_true"}, inplace=True)
+    level.index = level.index.tz_convert(None)
+
+    return level
 
 
 def main(args: List[str]) -> int:
@@ -84,8 +112,12 @@ def main(args: List[str]) -> int:
     inference_weather_provider = AWSWeatherProvider(coordinates, aws_dispatcher=aws_dispatcher)
     inference_level_provider = LevelProviderNWIS(args.gauge_id)
 
-    # Run inference for each timestamp, storing the predictions in a List[DataFrame]
-    predictions = []
+    level_true = get_level_true(timestamps, inference_level_provider, args.forecast_window)
+    all_level_data = []
+    all_level_data.append(level_true)
+    skipped_timestamps = []
+
+    # Run inference for each timestamp, storing the all_level_data in a List[DataFrame]
     for timestamp in timestamps:
         try:
             # Set the weather and level providers to the correct timestamps
@@ -94,32 +126,38 @@ def main(args: List[str]) -> int:
 
             # Run inference -> DataFrame
             inference_catchment_data = CatchmentData(args.gauge_id, inference_weather_provider, inference_level_provider, columns=columns)
-            forecaster = InferenceForecaster(inference_catchment_data, args.trained_model_dir, load_cpu=True)
+            forecaster = InferenceForecaster(inference_catchment_data, args.trained_model_dir, load_cpu=False)
             forecast = forecaster.predict(args.forecast_window).pd_dataframe()
             forecast.rename(columns={"level": timestamp}, inplace=True)
-            predictions.append(forecast)
+            all_level_data.append(forecast)
 
         except FileNotFoundError:
             # If data is not available for the current timestamp in AWS, skip it
             # This occurs if data was not fully fetched properly
-            print(f"Data not available for timestamp {timestamp}. Skipping.")
+            skipped_timestamps.append(timestamp)
             continue
 
-    # Concatenate the predictions into a single DataFrame and save to CSV
-    merged = pd.concat(predictions, axis=1)
+    # Concatenate all_level_data into a single DataFrame and save to CSV
+    merged = pd.concat(all_level_data, axis=1)
     merged.to_csv(args.out_file)
+
+    # Print skipped timestamps
+    if len(skipped_timestamps) > 0:
+        for timestamp in skipped_timestamps:
+            print(f"Skipped timestamp {timestamp} due to missing data.")
+
     return 0
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("gauge_id")
-    parser.add_argument('-d', '--data_file', nargs=1, type=str, default='data/catchments_short.json', help='input file with catchment definitions, in JSON format')
-    parser.add_argument('-o', '--out_file', nargs=1, type=str, default='out.csv', help='output file for generated forecasts, in CSV format')
-    parser.add_argument('-c', '--columns_file', nargs=1, type=str, default='data/columns.txt', help='input text file with list of columns to use, one per line')
-    parser.add_argument('-m', '--trained_model_dir', nargs=1, type=str, default='trained_models', help='directory containing trained_models')
-    parser.add_argument('-s', '--num_inferences', nargs=1, type=int, default=5, help='the number of cached samples to run inference for')
-    parser.add_argument('-w', '--forecast_window', nargs=1, type=int, default=96, help='the number of timesteps to predict at each inference')
+    parser.add_argument('-d', '--data_file', type=str, default='data/catchments_short.json', help='input file with catchment definitions, in JSON format')
+    parser.add_argument('-o', '--out_file', type=str, default='out.csv', help='output file for generated forecasts, in CSV format')
+    parser.add_argument('-c', '--columns_file', type=str, default='data/columns.txt', help='input text file with list of columns to use, one per line')
+    parser.add_argument('-m', '--trained_model_dir', type=str, default='trained_models', help='directory containing trained_models')
+    parser.add_argument('-i', '--num_inferences', type=int, default=5, help='the number of cached samples to run inference for')
+    parser.add_argument('-w', '--forecast_window', type=int, default=96, help='the number of timesteps to predict at each inference')
 
     args = parser.parse_args()
     exit(main(args))
