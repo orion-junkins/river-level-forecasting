@@ -92,4 +92,4 @@ class TrainingDataset(BaseDataset):
         X_test = self.scaler.transform(X_test)
         y_test = self.target_scaler.transform(y_test)
 
-        return X_train, X_validation, X_test, y_train, y_validation, y_test,
+        return X_train, X_validation, X_test, y_train, y_validation, y_test
