@@ -6,9 +6,6 @@ from typing import Mapping
 from darts import TimeSeries
 from darts.dataprocessing.transformers import Scaler
 from darts.models.forecasting.forecasting_model import ForecastingModel
-from darts.models.forecasting.regression_ensemble_model import (
-    RegressionEnsembleModel
-)
 
 from rlf.forecasting.base_forecaster import BaseForecaster, DEFAULT_WORK_DIR
 from rlf.forecasting.catchment_data import CatchmentData
@@ -18,6 +15,7 @@ from rlf.models.utils import load_ensemble_model
 
 class InferenceForecaster(BaseForecaster):
     """Forecaster abstraction for inference/production. Top level class interacted with by the user."""
+
     def __init__(
         self,
         catchment_data: CatchmentData,

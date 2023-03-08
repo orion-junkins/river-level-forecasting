@@ -1,4 +1,4 @@
-#%%
+# %%
 """
 # Inference Forecaster Demo
 
@@ -12,7 +12,10 @@ Building that requires a couple separate objects, but most importantly you will 
 Note: the coordinates must be the same that were trained on.
 """
 
-#%%
+# %%
+from rlf.forecasting.catchment_data import CatchmentData
+from rlf.forecasting.data_fetching_utilities.coordinate import Coordinate
+from rlf.forecasting.data_fetching_utilities.level_provider.level_provider_nwis import LevelProviderNWIS
 from rlf.forecasting.data_fetching_utilities.weather_provider.api_weather_provider import APIWeatherProvider
 from rlf.forecasting.inference_forecaster import InferenceForecaster
 
