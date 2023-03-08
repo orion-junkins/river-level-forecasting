@@ -20,7 +20,7 @@ def catchment_data():
 
 @pytest.fixture
 def training_dataset(catchment_data):
-    return TrainingDataset(catchment_data, test_size=10, validation_size=10)
+    return TrainingDataset(catchment_data, validation_size=10, test_size=10)
 
 
 def test_training_forecaster_init(training_dataset):

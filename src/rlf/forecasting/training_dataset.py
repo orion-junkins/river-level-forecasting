@@ -14,8 +14,8 @@ class TrainingDataset(BaseDataset):
     def __init__(
         self,
         catchment_data: CatchmentData,
-        test_size: int = 24 * 365 * 3,
         validation_size: int = 24 * 365 * 3,
+        test_size: int = 24 * 365 * 3,
         rolling_sum_columns: Optional[List[str]] = None,
         rolling_mean_columns: Optional[List[str]] = None,
         rolling_window_sizes: Sequence[int] = (10 * 24, 30 * 24)
@@ -26,8 +26,8 @@ class TrainingDataset(BaseDataset):
 
         Args:
             catchment_data (CatchmentData): CatchmentData instance to use for training.
-            test_size (int, optional): Size of test set in hours. Defaults to 3 years (365 days * 24 hours/day * 3 years).
             validation_size (int, optional): Size of validation set in hours. Defaults to 3 years (365 days * 24 hours/day * 3 years).
+            test_size (int, optional): Size of test set in hours. Defaults to 3 years (365 days * 24 hours/day * 3 years).
             rolling_sum_columns (list[str], optional): List of columns to compute rolling sums for. Defaults to None.
             rolling_mean_columns (list[str], optional): List of columns to compute rolling means for. Defaults to None.
             rolling_window_sizes (list[int], optional): Window sizes to use for rolling computations. Defaults to 10 days (10 days * 24 hrs/day) and 30 days (30 days * 24 hrs/day).
@@ -44,7 +44,7 @@ class TrainingDataset(BaseDataset):
         if len(self.X) <= test_size + validation_size:
             raise ValueError(f"The sum of test size ({test_size}) and validation size ({validation_size}) must be less than the total number of samples ({len(self.X)}).")
 
-        self.X_train, self.X_test, self.X_validation, self.y_train, self.y_test, self.y_validation = self._partition(test_size, validation_size)
+        self.X_train, self.X_validation, self.X_test, self.y_train, self.y_validation, self.y_test = self._partition(validation_size=validation_size, test_size=test_size)
 
     def _load_data(self) -> Tuple[TimeSeries, TimeSeries]:
         """Load and process data.
@@ -58,34 +58,38 @@ class TrainingDataset(BaseDataset):
 
     def _partition(
         self,
-        test_size: int,
-        validation_size: int
+        validation_size: int,
+        test_size: int
     ) -> Tuple[List[TimeSeries], List[TimeSeries], List[TimeSeries], TimeSeries, TimeSeries, TimeSeries]:
         """
-        Partition data using the specified test size.
+        Partition data using the specified test size. Splits into train, validation and test sets.
 
         Args:
-            test_size (int): Size of test set in hours.
             validation_size (int): Size of validation set in hours.
+            test_size (int): Size of test set in hours.
 
         Returns:
             tuple[List[TimeSeries], List[TimeSeries], List[TimeSeries], TimeSeries, TimeSeries, TimeSeries]: (X_train, X_test, X_validation, y_train, y_test, y_validation)
         """
-        X_train = self.X[:-(test_size + validation_size)]
-        X_test = self.X[-(test_size + validation_size):-validation_size]
-        X_validation = self.X[-validation_size:]
+        train_valididation_dividing_index = len(self.X) - (validation_size + test_size)
+        valididation_test_dividing_index = len(self.X) - (test_size)
 
-        y_train = self.y[:-(test_size + validation_size)]
-        y_test = self.y[-(test_size + validation_size):-validation_size]
-        y_validation = self.y[-validation_size:]
+        X_train = self.X[:train_valididation_dividing_index]
+        y_train = self.y[:train_valididation_dividing_index]
+
+        X_validation = self.X[train_valididation_dividing_index: valididation_test_dividing_index]
+        y_validation = self.y[train_valididation_dividing_index: valididation_test_dividing_index]
+
+        X_test = self.X[valididation_test_dividing_index:]
+        y_test = self.y[valididation_test_dividing_index:]
 
         X_train = self.scaler.fit_transform(X_train)
         y_train = self.target_scaler.fit_transform(y_train)
 
-        X_test = self.scaler.transform(X_test)
-        y_test = self.target_scaler.transform(y_test)
-
         X_validation = self.scaler.transform(X_validation)
         y_validation = self.target_scaler.transform(y_validation)
 
-        return X_train, X_test, X_validation, y_train, y_test, y_validation
+        X_test = self.scaler.transform(X_test)
+        y_test = self.target_scaler.transform(y_test)
+
+        return X_train, X_validation, X_test, y_train, y_validation, y_test,
