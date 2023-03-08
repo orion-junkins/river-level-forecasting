@@ -1,6 +1,7 @@
 from datetime import datetime
 import pandas as pd
 from statistics import mean
+from typing import Dict, List
 
 
 class Evaluator:
@@ -65,12 +66,12 @@ class Evaluator:
         return pd.DataFrame.from_dict(self.mae_by_window, orient='index').sort_index()
 
     @property
-    def mape_by_window(self) -> dict[pd.Timedelta, float]:
+    def mape_by_window(self) -> Dict[pd.Timedelta, float]:
         """
         Calculates the mean absolute percentage error for each window size.
 
         Returns:
-            dict[pd.Timedelta, float]: A dictionary with the mean absolute percentage error for each window size.
+            Dict[pd.Timedelta, float]: A dictionary with the mean absolute percentage error for each window size.
         """
         mape = {}
         for window_size in self.percent_errors_by_window.keys():
@@ -78,12 +79,12 @@ class Evaluator:
         return mape
 
     @property
-    def mae_by_window(self) -> dict[pd.Timedelta, float]:
+    def mae_by_window(self) -> Dict[pd.Timedelta, float]:
         """
         Calculates the mean absolute error for each window size.
 
         Returns:
-            dict[pd.Timedelta, float]: A dictionary with the mean absolute error for each window size.
+            Dict[pd.Timedelta, float]: A dictionary with the mean absolute error for each window size.
         """
         mae = {}
         for window_size in self.absolute_errors_by_window.keys():
@@ -91,26 +92,26 @@ class Evaluator:
         return mae
 
     @property
-    def absolute_errors_by_window(self) -> dict[pd.Timedelta, list[float]]:
+    def absolute_errors_by_window(self) -> Dict[pd.Timedelta, List[float]]:
         """
         Calculates the absolute errors between the y_true and y_pred values for each window size.
 
         Returns:
-            dict[pd.Timedelta, list[float]]: A dictionary with the errors between the y_true and y_pred values for each window size.
+            Dict[pd.Timedelta, List[float]]: A dictionary with the errors between the y_true and y_pred values for each window size.
         """
         return self.errors_grouped_by_window(absolute=True)
 
     @property
-    def percent_errors_by_window(self) -> dict[pd.Timedelta, list[float]]:
+    def percent_errors_by_window(self) -> Dict[pd.Timedelta, List[float]]:
         """
         Calculates the percentage errors between the y_true and y_pred values for each window size.
 
         Returns:
-            dict[pd.Timedelta, list[float]]: A dictionary with the errors between the y_true and y_pred values for each window size.
+            Dict[pd.Timedelta, List[float]]: A dictionary with the errors between the y_true and y_pred values for each window size.
         """
         return self.errors_grouped_by_window(absolute=False)
 
-    def errors_grouped_by_window(self, absolute: bool = True) -> dict[pd.Timedelta, list[float]]:
+    def errors_grouped_by_window(self, absolute: bool = True) -> Dict[pd.Timedelta, List[float]]:
         """
         Calculates the errors between the y_true and y_pred values for each window size.
 
@@ -118,7 +119,7 @@ class Evaluator:
             absolute (bool): Whether to calculate the absolute errors or the percentage errors.
 
         Returns:
-            dict[pd.Timedelta, list[float]]: A dictionary with the errors between the y_true and y_pred values for each window size.
+            Dict[pd.Timedelta, List[float]]: A dictionary with the errors between the y_true and y_pred values for each window size.
         """
         errors = {}
         for issue_time in self.raw_errors.columns:
