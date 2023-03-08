@@ -69,7 +69,7 @@ class TrainingDataset(BaseDataset):
             test_size (int): Size of test set in hours.
 
         Returns:
-            tuple[List[TimeSeries], List[TimeSeries], List[TimeSeries], TimeSeries, TimeSeries, TimeSeries]: (X_train, X_test, X_validation, y_train, y_test, y_validation)
+            tuple[List[TimeSeries], List[TimeSeries], List[TimeSeries], TimeSeries, TimeSeries, TimeSeries]: (X_train, X_validation, X_test, y_train, y_validation, y_test)
         """
         train_valididation_dividing_index = len(self.X) - (validation_size + test_size)
         valididation_test_dividing_index = len(self.X) - (test_size)
