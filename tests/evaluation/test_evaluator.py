@@ -56,8 +56,7 @@ def test_y_pred(evaluator):
     assert y_pred.shape == (4, 3)
     assert (y_pred.columns == ["23-01-01_02-00", "23-01-01_03-00", "23-01-01_04-00"]).all()
 
-    # Check if the values are equal or both NaN
-    assert ((y_pred["23-01-01_02-00"].values == np.array([20., 30., 40., np.nan])) | (np.isnan(y_pred["23-01-01_02-00"].values) & np.isnan(np.array([20., 30., 40., np.nan])))).all()
+    np.testing.assert_equal(y_pred["23-01-01_02-00"].values, np.array([20., 30., 40., np.nan]))
 
 
 @pytest.fixture
