@@ -60,7 +60,7 @@ class TrainingDataset(BaseDataset):
         self,
         validation_size: int,
         test_size: int
-    ) -> Tuple[List[TimeSeries], List[TimeSeries], List[TimeSeries], TimeSeries, TimeSeries, TimeSeries]:
+    ) -> Tuple[TimeSeries, TimeSeries, TimeSeries, TimeSeries, TimeSeries, TimeSeries]:
         """
         Partition data using the specified test size. Splits into train, validation and test sets.
 
@@ -69,19 +69,19 @@ class TrainingDataset(BaseDataset):
             test_size (int): Size of test set in hours.
 
         Returns:
-            tuple[List[TimeSeries], List[TimeSeries], List[TimeSeries], TimeSeries, TimeSeries, TimeSeries]: (X_train, X_validation, X_test, y_train, y_validation, y_test)
+            tuple[TimeSeries, TimeSeries, TimeSeries, TimeSeries, TimeSeries, TimeSeries]: (X_train, X_validation, X_test, y_train, y_validation, y_test)
         """
-        train_valididation_dividing_index = len(self.X) - (validation_size + test_size)
-        valididation_test_dividing_index = len(self.X) - (test_size)
+        train_validation_dividing_index = len(self.X) - (validation_size + test_size)
+        validation_test_dividing_index = len(self.X) - (test_size)
 
-        X_train = self.X[:train_valididation_dividing_index]
-        y_train = self.y[:train_valididation_dividing_index]
+        X_train = self.X[:train_validation_dividing_index]
+        y_train = self.y[:train_validation_dividing_index]
 
-        X_validation = self.X[train_valididation_dividing_index: valididation_test_dividing_index]
-        y_validation = self.y[train_valididation_dividing_index: valididation_test_dividing_index]
+        X_validation = self.X[train_validation_dividing_index: validation_test_dividing_index]
+        y_validation = self.y[train_validation_dividing_index: validation_test_dividing_index]
 
-        X_test = self.X[valididation_test_dividing_index:]
-        y_test = self.y[valididation_test_dividing_index:]
+        X_test = self.X[validation_test_dividing_index:]
+        y_test = self.y[validation_test_dividing_index:]
 
         X_train = self.scaler.fit_transform(X_train)
         y_train = self.target_scaler.fit_transform(y_train)
