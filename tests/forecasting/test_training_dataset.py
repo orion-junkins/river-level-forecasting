@@ -16,11 +16,13 @@ def test_partition_size():
     level_provider = FakeLevelProvider(num_historical_samples)
     catchment_data = CatchmentData("test_catchment", weather_provider, level_provider)
 
-    test_size = 0.1
-    train_ds = TrainingDataset(catchment_data=catchment_data, test_size=test_size)
-    expected_num_test_elements = num_historical_samples * test_size
+    test_size = 1
+    validation_size = 2
+    train_ds = TrainingDataset(catchment_data=catchment_data, validation_size=validation_size, test_size=test_size)
 
-    assert (len(train_ds.y_test) == expected_num_test_elements)
+    assert (len(train_ds.y_train) == num_historical_samples - test_size - validation_size)
+    assert (len(train_ds.y_validation) == validation_size)
+    assert (len(train_ds.y_test) == test_size)
 
 
 def test_excess_level_data_dropped():
@@ -31,7 +33,7 @@ def test_excess_level_data_dropped():
     level_provider = FakeLevelProvider(num_historical_samples=num_level_samples)
 
     catchment_data = CatchmentData("test_catchment", weather_provider, level_provider)
-    train_ds = TrainingDataset(catchment_data=catchment_data)
+    train_ds = TrainingDataset(catchment_data=catchment_data, validation_size=2, test_size=1)
     print(train_ds.y)
     print(train_ds.X)
     assert (len(train_ds.y) == min(num_weather_samples, num_level_samples))
@@ -46,7 +48,7 @@ def test_excess_weather_data_dropped():
     level_provider = FakeLevelProvider(num_historical_samples=num_level_samples)
 
     catchment_data = CatchmentData("test_catchment", weather_provider, level_provider)
-    train_ds = TrainingDataset(catchment_data=catchment_data)
+    train_ds = TrainingDataset(catchment_data=catchment_data, validation_size=2, test_size=1)
     print(train_ds.y)
     print(train_ds.X)
     assert (len(train_ds.y) == min(num_weather_samples, num_level_samples))
@@ -54,22 +56,28 @@ def test_excess_weather_data_dropped():
 
 
 def test_data_scaled_0_1(catchment_data):
-    train_ds = TrainingDataset(catchment_data=catchment_data)
+    train_ds = TrainingDataset(catchment_data=catchment_data, validation_size=2, test_size=1)
 
     assert (pytest.approx(train_ds.y_train.values().min()) == 0.0)
     assert (pytest.approx(train_ds.y_train.values().max()) == 1.0)
     assert (train_ds.y_test.values().min() >= -0.1)
-    assert (train_ds.y_test.values().max() <= 1.1)
+    assert (train_ds.y_test.values().max() <= 1.2)
+    assert (train_ds.y_validation.values().min() >= -0.1)
+    assert (train_ds.y_validation.values().max() <= 1.2)
 
     assert (pytest.approx(train_ds.X_train.values().min()) == 0.0)
     assert (pytest.approx(train_ds.X_train.values().max()) == 1.0)
     assert (train_ds.X_test.values().min() >= -0.1)
-    assert (train_ds.X_test.values().max() <= 1.1)
+    assert (train_ds.X_test.values().max() <= 1.2)
+    assert (train_ds.X_validation.values().min() >= -0.1)
+    assert (train_ds.X_validation.values().max() <= 1.2)
 
 
 def test_feature_engineering(catchment_data):
     train_ds = TrainingDataset(
         catchment_data=catchment_data,
+        validation_size=2,
+        test_size=1,
         rolling_sum_columns=["weather_attr_1"],
         rolling_mean_columns=["weather_attr_1"],
         rolling_window_sizes=[3]
@@ -82,12 +90,26 @@ def test_feature_engineering(catchment_data):
 
 
 def test_correct_precision(catchment_data):
-    train_ds = TrainingDataset(catchment_data=catchment_data)
+    train_ds = TrainingDataset(catchment_data=catchment_data, validation_size=2, test_size=1)
 
     assert train_ds.X.dtype == "float32"
     assert train_ds.y.dtype == "float32"
 
     assert train_ds.X_train.dtype == "float32"
     assert train_ds.X_test.dtype == "float32"
+    assert train_ds.X_validation.dtype == "float32"
     assert train_ds.y_train.dtype == "float32"
     assert train_ds.y_test.dtype == "float32"
+    assert train_ds.y_validation.dtype == "float32"
+
+
+def test_invalid_dataset_size_raises_error():
+    num_historical_samples = 10
+    weather_provider = FakeWeatherProvider(num_historical_samples)
+    level_provider = FakeLevelProvider(num_historical_samples)
+    catchment_data = CatchmentData("test_catchment", weather_provider, level_provider)
+
+    test_size = 6
+    validation_size = 6
+    with pytest.raises(ValueError):
+        TrainingDataset(catchment_data=catchment_data, validation_size=validation_size, test_size=test_size)

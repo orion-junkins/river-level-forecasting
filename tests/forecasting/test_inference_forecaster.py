@@ -38,6 +38,7 @@ class MockModel:
         assert future_covariates == self.expected_future_covariates
         return self.prediction
 
+
 class FakeScaler:
     def __init__(self, scaler):
         self._scaler = scaler
@@ -51,6 +52,7 @@ class FakeScaler:
         if isinstance(X, list):
             return X
         return self._scaler.inverse_transform(X)
+
 
 class FakeInferenceForecaster(InferenceForecaster):
 
@@ -82,7 +84,7 @@ def catchment_data():
 
 @pytest.fixture
 def training_dataset(catchment_data):
-    return TrainingDataset(catchment_data=catchment_data)
+    return TrainingDataset(catchment_data=catchment_data, validation_size=10, test_size=10)
 
 
 @pytest.fixture

@@ -13,7 +13,7 @@ def catchment_data():
 
 @pytest.fixture
 def training_dataset(catchment_data):
-    return TrainingDataset(catchment_data=catchment_data)
+    return TrainingDataset(catchment_data=catchment_data, validation_size=10, test_size=10)
 
 
 @pytest.fixture
