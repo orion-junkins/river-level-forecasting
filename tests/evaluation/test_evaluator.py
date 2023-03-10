@@ -57,6 +57,8 @@ def test_y_pred(evaluator):
     assert (y_pred.columns == ["23-01-01_02-00", "23-01-01_03-00", "23-01-01_04-00"]).all()
 
     np.testing.assert_equal(y_pred["23-01-01_02-00"].values, np.array([20., 30., 40., np.nan]))
+    np.testing.assert_equal(y_pred["23-01-01_03-00"].values, np.array([np.nan, 33., 42., 52.]))
+    np.testing.assert_equal(y_pred["23-01-01_04-00"].values, np.array([np.nan, np.nan, 39., 51.]))
 
 
 @pytest.fixture
