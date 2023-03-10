@@ -1,7 +1,6 @@
 import os
 
 from darts.models.forecasting.regression_ensemble_model import RegressionEnsembleModel
-from pytorch_lightning import Trainer
 
 from rlf.models.contributing_model import ContributingModel
 
