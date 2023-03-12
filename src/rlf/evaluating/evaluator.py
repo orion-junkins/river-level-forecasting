@@ -22,7 +22,7 @@ class Evaluator:
 
     def process_data(self, data: pd.DataFrame) -> pd.DataFrame:
         """
-        Processes the data to remove any rows that are missing values.
+        Processes the data to remove any rows that are missing values. The output dataframe is guaranteed to have no missing values in the level_true column and at least one forecasted value in each row.
 
         Args:
             data (pd.DataFrame): A dataframe with a single level_true column and multiple level_pred columns where each level_pred column is the result of a forecast issued at a different time.
@@ -30,8 +30,8 @@ class Evaluator:
         Returns:
             pd.DataFrame: A dataframe with no missing values in the level_true column and at least one forecasted value in each row.
         """
-        data = data.dropna(thresh=2)
         data = data.dropna(subset=["level_true"])
+        data = data.dropna(thresh=2)  # Given that there is a non NaN value in the level_true column, drop rows that do not have at least one other non NaN value (2 total non NaN values)
         return data
 
     @property
