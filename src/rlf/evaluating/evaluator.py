@@ -2,6 +2,7 @@ from datetime import datetime
 import pandas as pd
 from statistics import mean
 from typing import Dict, List
+from functools import cached_property
 
 
 class Evaluator:
@@ -34,7 +35,7 @@ class Evaluator:
         data = data.dropna(thresh=2)  # Given that there is a non NaN value in the level_true column, drop rows that do not have at least one other non NaN value (2 total non NaN values)
         return data
 
-    @property
+    @cached_property
     def df_mape(self) -> pd.DataFrame:
         """
         Calculates the mean absolute percentage error for each window size.
@@ -44,7 +45,7 @@ class Evaluator:
         """
         return pd.DataFrame.from_dict(self.mape_by_window, orient='index').sort_index()
 
-    @property
+    @cached_property
     def df_mae(self) -> pd.DataFrame:
         """
         Calculates the mean absolute error for each window size.
@@ -54,7 +55,7 @@ class Evaluator:
         """
         return pd.DataFrame.from_dict(self.mae_by_window, orient='index').sort_index()
 
-    @property
+    @cached_property
     def mape_by_window(self) -> Dict[pd.Timedelta, float]:
         """
         Calculates the mean absolute percentage error for each window size.
@@ -67,7 +68,7 @@ class Evaluator:
             mape[window_size] = mean(self.percent_errors_by_window[window_size])
         return mape
 
-    @property
+    @cached_property
     def mae_by_window(self) -> Dict[pd.Timedelta, float]:
         """
         Calculates the mean absolute error for each window size.
@@ -80,7 +81,7 @@ class Evaluator:
             mae[window_size] = mean(self.absolute_errors_by_window[window_size])
         return mae
 
-    @property
+    @cached_property
     def absolute_errors_by_window(self) -> Dict[pd.Timedelta, List[float]]:
         """
         Calculates the absolute errors between the level_true and level_pred values for each window size.
@@ -90,7 +91,7 @@ class Evaluator:
         """
         return self.errors_grouped_by_window(absolute=True)
 
-    @property
+    @cached_property
     def percent_errors_by_window(self) -> Dict[pd.Timedelta, List[float]]:
         """
         Calculates the percentage errors between the level_true and level_pred values for each window size.
