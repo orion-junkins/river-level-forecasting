@@ -45,20 +45,20 @@ def evaluator(df):
     return eval
 
 
-def test_y_true(evaluator):
-    y_true = evaluator.y_true
-    assert y_true.shape == (4,)
-    assert (y_true == [20, 30, 40, 50]).all()
+def test_level_true(evaluator):
+    level_true = evaluator.level_true
+    assert level_true.shape == (4,)
+    assert (level_true == [20, 30, 40, 50]).all()
 
 
-def test_y_pred(evaluator):
-    y_pred = evaluator.y_pred
-    assert y_pred.shape == (4, 3)
-    assert (y_pred.columns == ["23-01-01_02-00", "23-01-01_03-00", "23-01-01_04-00"]).all()
+def test_level_pred(evaluator):
+    level_pred = evaluator.level_pred
+    assert level_pred.shape == (4, 3)
+    assert (level_pred.columns == ["23-01-01_02-00", "23-01-01_03-00", "23-01-01_04-00"]).all()
 
-    np.testing.assert_equal(y_pred["23-01-01_02-00"].values, np.array([20., 30., 40., np.nan]))
-    np.testing.assert_equal(y_pred["23-01-01_03-00"].values, np.array([np.nan, 33., 42., 52.]))
-    np.testing.assert_equal(y_pred["23-01-01_04-00"].values, np.array([np.nan, np.nan, 39., 51.]))
+    np.testing.assert_equal(level_pred["23-01-01_02-00"].values, np.array([20., 30., 40., np.nan]))
+    np.testing.assert_equal(level_pred["23-01-01_03-00"].values, np.array([np.nan, 33., 42., 52.]))
+    np.testing.assert_equal(level_pred["23-01-01_04-00"].values, np.array([np.nan, np.nan, 39., 51.]))
 
 
 @pytest.fixture
