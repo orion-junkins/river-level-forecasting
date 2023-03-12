@@ -115,3 +115,27 @@ def test_df_mape(evaluator, expected_mape_by_window):
     expected = pd.DataFrame.from_dict(expected_mape_by_window, orient='index').sort_index()
 
     assert (evaluator.df_mape.equals(expected))
+
+
+@pytest.fixture
+def df_with_zeros():
+    return (
+        pd.DataFrame(
+            {'level_true': {Timestamp('2023-01-01 01:00:00'): 0,
+                            Timestamp('2023-01-01 02:00:00'): 20,
+                            Timestamp('2023-01-01 03:00:00'): 0,
+                            Timestamp('2023-01-01 04:00:00'): 40,
+                            Timestamp('2023-01-01 05:00:00'): 50,
+                            Timestamp('2023-01-01 06:00:00'): None},
+             '23-01-01_02-00': {Timestamp('2023-01-01 01:00:00'): None,
+                                Timestamp('2023-01-01 02:00:00'): 20,
+                                Timestamp('2023-01-01 03:00:00'): 30,
+                                Timestamp('2023-01-01 04:00:00'): 40,
+                                Timestamp('2023-01-01 05:00:00'): None,
+                                Timestamp('2023-01-01 06:00:00'): None}}))
+
+
+def test_mape_with_zeros(df_with_zeros):
+    eval = Evaluator(df_with_zeros)
+    with pytest.raises(ZeroDivisionError):
+        eval.errors_grouped_by_window(absolute=False)

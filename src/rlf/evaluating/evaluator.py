@@ -110,6 +110,9 @@ class Evaluator:
 
         Returns:
             Dict[pd.Timedelta, List[float]]: A dictionary with the errors between the level_true and level_pred values for each window size.
+
+        Raises:
+            ZeroDivisionError: If the level_true value is 0 and absolute is False. This is because the percentage error cannot be calculated when the level_true value is 0.
         """
         errors = {}
         for issue_time in self.all_level_preds.columns:
@@ -122,6 +125,8 @@ class Evaluator:
 
                 error = abs(level_true - level_pred)
                 if not absolute:
+                    if level_true == 0:
+                        raise (ZeroDivisionError("Cannot calculate percentage error when level_true is 0"))
                     error = error / level_true
 
                 window_size = pred_time - datetime.strptime(issue_time, "%y-%m-%d_%H-%M")
