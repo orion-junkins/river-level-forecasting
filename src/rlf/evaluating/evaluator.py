@@ -6,7 +6,7 @@ from typing import Dict, List
 
 class Evaluator:
     """
-    Evaluates the performance of a proudction model over time. Operates on a dataset with a single y_true column and multiple y_pred columns where each y_pred column is the result of a forecast issued at a different time.
+    Evaluates the performance of a production model over time. Operates on a dataset with a single level_true column and multiple level_pred columns where each level_pred column is the result of a forecast issued at a different time.
     """
 
     def __init__(self, data: pd.DataFrame) -> None:
@@ -14,18 +14,18 @@ class Evaluator:
         Creates a new Evaluator instance.
 
         Args:
-            data (pd.DataFrame): A dataframe with a single y_true column and multiple y_pred columns where each y_pred column is the result of a forecast issued at a different time.
+            data (pd.DataFrame): A dataframe with a single level_true column and multiple level_pred columns where each level_pred column is the result of a forecast issued at a different time.
         """
         self.data = self.process_data(data)
-        self.y_true = self.data["level_true"]
-        self.y_pred = self.data.drop(columns="level_true")
+        self.level_true = self.data["level_true"]
+        self.level_pred = self.data.drop(columns="level_true")
 
     def process_data(self, data: pd.DataFrame) -> pd.DataFrame:
         """
         Processes the data to remove any rows that are missing values.
 
         Args:
-            data (pd.DataFrame): A dataframe with a single y_true column and multiple y_pred columns where each y_pred column is the result of a forecast issued at a different time.
+            data (pd.DataFrame): A dataframe with a single level_true column and multiple level_pred columns where each level_pred column is the result of a forecast issued at a different time.
 
         Returns:
             pd.DataFrame: A dataframe with no missing values in the level_true column and at least one forecasted value in each row.
@@ -37,12 +37,12 @@ class Evaluator:
     @property
     def raw_errors(self) -> pd.DataFrame:
         """
-        Calculates the raw errors between the y_true and y_pred values.
+        Calculates the raw errors between the level_true and level_pred values.
 
         Returns:
-            pd.DataFrame: A 2D dataframe with the raw errors between the y_true and y_pred values.
+            pd.DataFrame: A 2D dataframe with the raw errors between the level_true and level_pred values.
         """
-        errors = self.y_pred.sub(self.y_true, axis="index").abs()
+        errors = self.level_pred.sub(self.level_true, axis="index").abs()
         return errors
 
     @property
@@ -94,45 +94,45 @@ class Evaluator:
     @property
     def absolute_errors_by_window(self) -> Dict[pd.Timedelta, List[float]]:
         """
-        Calculates the absolute errors between the y_true and y_pred values for each window size.
+        Calculates the absolute errors between the level_true and level_pred values for each window size.
 
         Returns:
-            Dict[pd.Timedelta, List[float]]: A dictionary with the errors between the y_true and y_pred values for each window size.
+            Dict[pd.Timedelta, List[float]]: A dictionary with the errors between the level_true and level_pred values for each window size.
         """
         return self.errors_grouped_by_window(absolute=True)
 
     @property
     def percent_errors_by_window(self) -> Dict[pd.Timedelta, List[float]]:
         """
-        Calculates the percentage errors between the y_true and y_pred values for each window size.
+        Calculates the percentage errors between the level_true and level_pred values for each window size.
 
         Returns:
-            Dict[pd.Timedelta, List[float]]: A dictionary with the errors between the y_true and y_pred values for each window size.
+            Dict[pd.Timedelta, List[float]]: A dictionary with the errors between the level_true and level_pred values for each window size.
         """
         return self.errors_grouped_by_window(absolute=False)
 
     def errors_grouped_by_window(self, absolute: bool = True) -> Dict[pd.Timedelta, List[float]]:
         """
-        Calculates the errors between the y_true and y_pred values for each window size.
+        Calculates the errors between the level_true and level_pred values for each window size.
 
         Args:
             absolute (bool): Whether to calculate the absolute errors or the percentage errors.
 
         Returns:
-            Dict[pd.Timedelta, List[float]]: A dictionary with the errors between the y_true and y_pred values for each window size.
+            Dict[pd.Timedelta, List[float]]: A dictionary with the errors between the level_true and level_pred values for each window size.
         """
         errors = {}
         for issue_time in self.raw_errors.columns:
             for pred_time in self.raw_errors.index:
-                y_true = self.y_true[pred_time]
-                y_hat = self.y_pred[issue_time][pred_time]
+                level_true = self.level_true[pred_time]
+                y_hat = self.level_pred[issue_time][pred_time]
 
-                if (pd.isna(y_true) or pd.isna(y_hat)):
+                if (pd.isna(level_true) or pd.isna(y_hat)):
                     continue
 
-                error = abs(y_true - y_hat)
+                error = abs(level_true - y_hat)
                 if not absolute:
-                    error = error / y_true
+                    error = error / level_true
 
                 window_size = pred_time - datetime.strptime(issue_time, "%y-%m-%d_%H-%M")
                 if window_size not in errors:
@@ -146,7 +146,7 @@ def build_evaluator_from_csv(path: str = "data/inference_eval_example.csv") -> E
     """
     Factory method to ensure that a csv is read as expected. Use this factory or pass the same kwargs shown below when building elsewhere.
 
-    Builds an Evaluator instance from a csv file. Expects a datetime index, a single y_true column and multiple y_pred columns where each y_pred column is the result of a forecast issued at a different time.
+    Builds an Evaluator instance from a csv file. Expects a datetime index, a single level_true column and multiple level_pred columns where each level_pred column is the result of a forecast issued at a different time.
 
     Args:
         path (str): The path to the csv file.
