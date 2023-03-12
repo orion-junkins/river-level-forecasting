@@ -51,14 +51,14 @@ def test_level_true(evaluator):
     assert (level_true == [20, 30, 40, 50]).all()
 
 
-def test_level_pred(evaluator):
-    level_pred = evaluator.level_pred
-    assert level_pred.shape == (4, 3)
-    assert (level_pred.columns == ["23-01-01_02-00", "23-01-01_03-00", "23-01-01_04-00"]).all()
+def test_all_level_preds(evaluator):
+    all_level_preds = evaluator.all_level_preds
+    assert all_level_preds.shape == (4, 3)
+    assert (all_level_preds.columns == ["23-01-01_02-00", "23-01-01_03-00", "23-01-01_04-00"]).all()
 
-    np.testing.assert_equal(level_pred["23-01-01_02-00"].values, np.array([20., 30., 40., np.nan]))
-    np.testing.assert_equal(level_pred["23-01-01_03-00"].values, np.array([np.nan, 33., 42., 52.]))
-    np.testing.assert_equal(level_pred["23-01-01_04-00"].values, np.array([np.nan, np.nan, 39., 51.]))
+    np.testing.assert_equal(all_level_preds["23-01-01_02-00"].values, np.array([20., 30., 40., np.nan]))
+    np.testing.assert_equal(all_level_preds["23-01-01_03-00"].values, np.array([np.nan, 33., 42., 52.]))
+    np.testing.assert_equal(all_level_preds["23-01-01_04-00"].values, np.array([np.nan, np.nan, 39., 51.]))
 
 
 @pytest.fixture

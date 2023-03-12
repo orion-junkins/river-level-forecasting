@@ -18,7 +18,7 @@ class Evaluator:
         """
         self.data = self.process_data(data)
         self.level_true = self.data["level_true"]
-        self.level_pred = self.data.drop(columns="level_true")
+        self.all_level_preds = self.data.drop(columns="level_true")
 
     def process_data(self, data: pd.DataFrame) -> pd.DataFrame:
         """
@@ -33,17 +33,6 @@ class Evaluator:
         data = data.dropna(subset=["level_true"])
         data = data.dropna(thresh=2)  # Given that there is a non NaN value in the level_true column, drop rows that do not have at least one other non NaN value (2 total non NaN values)
         return data
-
-    @property
-    def raw_errors(self) -> pd.DataFrame:
-        """
-        Calculates the raw errors between the level_true and level_pred values.
-
-        Returns:
-            pd.DataFrame: A 2D dataframe with the raw errors between the level_true and level_pred values.
-        """
-        errors = self.level_pred.sub(self.level_true, axis="index").abs()
-        return errors
 
     @property
     def df_mape(self) -> pd.DataFrame:
@@ -122,15 +111,15 @@ class Evaluator:
             Dict[pd.Timedelta, List[float]]: A dictionary with the errors between the level_true and level_pred values for each window size.
         """
         errors = {}
-        for issue_time in self.raw_errors.columns:
-            for pred_time in self.raw_errors.index:
+        for issue_time in self.all_level_preds.columns:
+            for pred_time in self.all_level_preds.index:
                 level_true = self.level_true[pred_time]
-                y_hat = self.level_pred[issue_time][pred_time]
+                level_pred = self.all_level_preds[issue_time][pred_time]
 
-                if (pd.isna(level_true) or pd.isna(y_hat)):
+                if (pd.isna(level_true) or pd.isna(level_pred)):
                     continue
 
-                error = abs(level_true - y_hat)
+                error = abs(level_true - level_pred)
                 if not absolute:
                     error = error / level_true
 
