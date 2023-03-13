@@ -84,7 +84,7 @@ class OpenMeteoAdapter(BaseAPIAdapter):
 
         response = invoker.get(path=self.archive_path, parameters=parameters)
 
-        self._remap_response_columns(response.data, HISTORICAL_PARAMETER_MAPS_FROM_API)
+        self._remap_response_parameters(response.data, HISTORICAL_PARAMETER_MAPS_FROM_API)
 
         return response
 
@@ -125,7 +125,7 @@ class OpenMeteoAdapter(BaseAPIAdapter):
 
         response = invoker.get(path=self.forecast_path, parameters=parameters)
 
-        self._remap_response_columns(response.data, CURRENT_PARAMETER_MAPS_FROM_API)
+        self._remap_response_parameters(response.data, CURRENT_PARAMETER_MAPS_FROM_API)
 
         return response
 
