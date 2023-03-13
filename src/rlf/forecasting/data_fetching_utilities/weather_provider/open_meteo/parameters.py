@@ -70,6 +70,32 @@ HOURLY_PARAMETERS = {"era5": [
     "soil_moisture_100_to_200cm"
     ]}
 
+CURRENT_PARAMETER_MAPS_FROM_API = {
+    "soil_temperature_0_to_10cm": "soil_temperature_level_1",
+    "soil_temperature_10_to_40cm": "soil_temperature_level_2",
+    "soil_temperature_40_to_100cm": "soil_temperature_level_3",
+    "soil_temperature_100_to_200cm": "soil_temperature_level_4",
+    "soil_moisture_0_to_10cm": "soil_moisture_level_1",
+    "soil_moisture_10_to_40cm": "soil_moisture_level_2",
+    "soil_moisture_40_to_100cm": "soil_moisture_level_3",
+    "soil_moisture_100_to_200cm": "soil_moisture_level_4",
+}
+
+CURRENT_PARAMETER_MAPS_TO_API = {value: key for key, value in CURRENT_PARAMETER_MAPS_FROM_API.items()}
+
+HISTORICAL_PARAMETER_MAPS_FROM_API = {
+    "soil_temperature_0_to_7cm": "soil_temperature_level_1",
+    "soil_temperature_7_to_28cm": "soil_temperature_level_2",
+    "soil_temperature_28_to_100cm": "soil_temperature_level_3",
+    "soil_temperature_100_to_255cm": "soil_temperature_level_4",
+    "soil_moisture_0_to_7cm": "soil_moisture_level_1",
+    "soil_moisture_7_to_28cm": "soil_moisture_level_2",
+    "soil_moisture_28_to_100cm": "soil_moisture_level_3",
+    "soil_moisture_100_to_255cm": "soil_moisture_level_4"
+}
+
+HISTORICAL_PARAMETER_MAPS_TO_API = {value: key for key, value in HISTORICAL_PARAMETER_MAPS_FROM_API.items()}
+
 
 def get_hourly_parameters(param_list="era5") -> List[str]:
     """The parameters to use in a request used by the Open Meteo API

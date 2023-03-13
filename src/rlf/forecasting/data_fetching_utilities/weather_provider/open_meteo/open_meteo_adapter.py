@@ -1,10 +1,16 @@
-from typing import List, Optional
+from typing import Any, Dict, List, Optional
 
 from rlf.forecasting.data_fetching_utilities.coordinate import Coordinate
 from rlf.forecasting.data_fetching_utilities.weather_provider.api.base_api_adapter import BaseAPIAdapter
 from rlf.forecasting.data_fetching_utilities.weather_provider.api.models import Response
 from rlf.forecasting.data_fetching_utilities.weather_provider.api.rest_invoker import RestInvoker
-from rlf.forecasting.data_fetching_utilities.weather_provider.open_meteo.parameters import get_hourly_parameters
+from rlf.forecasting.data_fetching_utilities.weather_provider.open_meteo.parameters import (
+    CURRENT_PARAMETER_MAPS_FROM_API,
+    CURRENT_PARAMETER_MAPS_TO_API,
+    get_hourly_parameters,
+    HISTORICAL_PARAMETER_MAPS_FROM_API,
+    HISTORICAL_PARAMETER_MAPS_TO_API,
+)
 
 
 class OpenMeteoAdapter(BaseAPIAdapter):
@@ -60,7 +66,11 @@ class OpenMeteoAdapter(BaseAPIAdapter):
         invoker = RestInvoker(protocol=self.protocol,
                               hostname=self.archive_hostname, version=self.version)
 
-        hourly_params = columns if columns is not None else self.archive_hourly_parameters
+        hourly_params = (columns if columns is not None else self.archive_hourly_parameters).copy()
+        hourly_params = [
+            HISTORICAL_PARAMETER_MAPS_TO_API[param] if param in HISTORICAL_PARAMETER_MAPS_TO_API else param
+            for param in hourly_params
+        ]
 
         parameters = {
             "longitude": coordinate.lon,
@@ -72,7 +82,11 @@ class OpenMeteoAdapter(BaseAPIAdapter):
             "cell_selection": "nearest",
         }
 
-        return invoker.get(path=self.archive_path, parameters=parameters)
+        response = invoker.get(path=self.archive_path, parameters=parameters)
+
+        self._remap_response_columns(response.data, HISTORICAL_PARAMETER_MAPS_FROM_API)
+
+        return response
 
     def get_current(self,
                     coordinate: Coordinate,
@@ -93,7 +107,12 @@ class OpenMeteoAdapter(BaseAPIAdapter):
         invoker = RestInvoker(protocol=self.protocol,
                               hostname=self.forecast_hostname, version=self.version)
 
-        hourly_params = columns if columns is not None else self.forecast_hourly_parameters
+        hourly_params = (columns if columns is not None else self.forecast_hourly_parameters).copy()
+        hourly_params = [
+            CURRENT_PARAMETER_MAPS_TO_API[param] if param in CURRENT_PARAMETER_MAPS_TO_API else param
+            for param in hourly_params
+        ]
+
         parameters = {
             "longitude": coordinate.lon,
             "latitude": coordinate.lat,
@@ -104,7 +123,11 @@ class OpenMeteoAdapter(BaseAPIAdapter):
             "cell_selection": "nearest",
         }
 
-        return invoker.get(path=self.forecast_path, parameters=parameters)
+        response = invoker.get(path=self.forecast_path, parameters=parameters)
+
+        self._remap_response_columns(response.data, CURRENT_PARAMETER_MAPS_FROM_API)
+
+        return response
 
     def get_index_parameter(self) -> str:
         """Temporal index parameter for OpenMeteo hourly data is "time".
@@ -113,3 +136,21 @@ class OpenMeteoAdapter(BaseAPIAdapter):
             str: "time"
         """
         return "time"
+
+    def _remap_response_parameters(self, response_data: Dict[str, Any], parameter_map: Dict[str, str]) -> None:
+        """Remap response parameters using the provided parameter map.
+
+        Any parameter found in response_data["hourly"] that is found in parameter_map
+        will be renamed based on the mapping found in parameter_map.
+
+        Args:
+            response_data (Dict[str, Any]): Response.data dictionary to remap.
+            parameter_map (Dict[str, str]): Parameter name mappings to apply to response_data.
+        """
+        if "hourly" in response_data and response_data["hourly"] is not None:
+            response_params = list(response_data["hourly"].keys())
+            for response_param in response_params:
+                if response_param in parameter_map:
+                    remapped_column = parameter_map[response_param]
+                    response_data["hourly"][remapped_column] = response_data["hourly"][response_param]
+                    del response_data["hourly"][response_param]
