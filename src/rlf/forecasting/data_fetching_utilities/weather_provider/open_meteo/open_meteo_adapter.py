@@ -66,11 +66,8 @@ class OpenMeteoAdapter(BaseAPIAdapter):
         invoker = RestInvoker(protocol=self.protocol,
                               hostname=self.archive_hostname, version=self.version)
 
-        hourly_params = (columns if columns is not None else self.archive_hourly_parameters).copy()
-        hourly_params = [
-            HISTORICAL_PARAMETER_MAPS_TO_API[param] if param in HISTORICAL_PARAMETER_MAPS_TO_API else param
-            for param in hourly_params
-        ]
+        hourly_params = columns if columns is not None else self.archive_hourly_parameters
+        hourly_params = [HISTORICAL_PARAMETER_MAPS_TO_API.get(param, param) for param in hourly_params]
 
         parameters = {
             "longitude": coordinate.lon,
@@ -107,11 +104,8 @@ class OpenMeteoAdapter(BaseAPIAdapter):
         invoker = RestInvoker(protocol=self.protocol,
                               hostname=self.forecast_hostname, version=self.version)
 
-        hourly_params = (columns if columns is not None else self.forecast_hourly_parameters).copy()
-        hourly_params = [
-            CURRENT_PARAMETER_MAPS_TO_API[param] if param in CURRENT_PARAMETER_MAPS_TO_API else param
-            for param in hourly_params
-        ]
+        hourly_params = columns if columns is not None else self.forecast_hourly_parameters
+        hourly_params = [CURRENT_PARAMETER_MAPS_TO_API.get(param, param) for param in hourly_params]
 
         parameters = {
             "longitude": coordinate.lon,
