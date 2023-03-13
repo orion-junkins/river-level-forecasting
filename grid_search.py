@@ -1,3 +1,4 @@
+#%%
 import json
 import sys
 from typing import List, Optional
@@ -25,71 +26,40 @@ except ImportError as e:
     print(e)
     exit(1)
 
+ModelBuilder = RNNModel
 
-usage = """
-    usage: train_model_hpc.py <gauge id> [-d <path/to/data/file.json>] [-e <epoch count>] [-c <path/to/column/file>]
-        gauge id: The numeric gauge ID to train for. This will be used as the catchment name as well.
-        -d <path/to/data/file.json>: The path to a geojson data file to use for catchment data.
-                                     If not given then catchments_high_precision_short.json will be used.
-        -e <epoch count>: The number of epochs to train the model for.
-                          Must be an integer greater than 0.
-                          If not given then a default number of 1 will be used.
-        -c <path/to/column/file>: A path to a file that contains a list of columns to be used.
-                                  The file must be plain text with a single column on each line.
-                                  If not provided then a default list of 18 columns will be used.
-                                  Check the python code itself for the default list.
-"""
-
-
-DEFAULT_EPOCHS = 1
-DEFAULT_DATA_FILE = "data/catchments_short.json"
-DEFAULT_COLUMNS = [
-    "apparent_temperature",
-    "cloudcover",
-    "cloudcover_high",
-    "cloudcover_low",
-    "cloudcover_mid",
-    "dewpoint_2m",
-    "et0_fao_evapotranspiration",
-    "precipitation",
-    "pressure_msl",
-    "rain",
-    "relativehumidity_2m",
-    "snowfall",
-    "surface_pressure",
-    "temperature_2m",
-    "vapor_pressure_deficit",
-    "winddirection_10m",
-    "windgusts_10m",
-    "windspeed_10m"
-]
+RUN_PARAMETERS = {
+    "data_file": "data/catchments_test.json",
+    "epochs": 1,
+    "columns": ["precipitation",
+                "temperature_2m"],
+    "gauge_id": "14219000",
+    "contributing_model": "rnn",
+    "contributing_model_kwargs": {
+    "input_chunk_length": 96,
+        "training_length": 120,
+        "model": 'GRU',
+        "hidden_dim": 50,
+        "n_rnn_layers": 5,
+        "dropout": 0.05,
+        "n_epochs": 1,
+        "force_reset": True,
+        "pl_trainer_kwargs": {
+            "accelerator": "gpu",
+            "enable_progress_bar": False  # this stops the output file from being HUGE
+        }
+    },
+    "regression_train_n_points": 24 * 365 * 3,
+}
 
 
-def generate_base_contributing_model(num_epochs: int) -> GlobalForecastingModel:
+def generate_base_contributing_model() -> GlobalForecastingModel:
     """Generate a base model for an individual contributing model.
-
-    Modify this function if you want to use a different base model besides RNN.
-
-    Args:
-        num_epochs (int): Number of epochs to train for.
 
     Returns:
         GlobalForecastingModel: Base model.
     """
-    return RNNModel(
-        input_chunk_length=96,
-        training_length=120,
-        model='GRU',
-        hidden_dim=50,
-        n_rnn_layers=5,
-        dropout=0.05,
-        n_epochs=num_epochs,
-        force_reset=True,
-        pl_trainer_kwargs={
-            "accelerator": "gpu",
-            "enable_progress_bar": False  # this stops the output file from being HUGE
-        }
-    )
+    return ModelBuilder(**RUN_PARAMETERS["contributing_model_kwargs"])
 
 
 def build_model_for_dataset(
@@ -107,10 +77,10 @@ def build_model_for_dataset(
     """
     model = RegressionEnsembleModel(
         [
-            ContributingModel(generate_base_contributing_model(num_epochs), prefix)
+            ContributingModel(generate_base_contributing_model(), prefix)
             for prefix in training_dataset.subsets
         ],
-        24*365
+        RUN_PARAMETERS["regression_train_n_points"]
     )
     return model
 
@@ -179,77 +149,18 @@ def get_columns(column_file: str) -> List[str]:
         return [c.strip() for c in f.readlines()]
 
 
-def get_parameters_from_args(args: List[str]) -> Optional[dict]:
-    """Parse command line arguments to get the run parameters.
+def main() -> int:
+    # parser = argparse.ArgumentParser()
+    # parser.add_argument("gauge_id")
+    # parser.add_argument('-d', '--data_file', type=str, default='data/catchments_short.json', help='input file with catchment definitions, in JSON format')
+    # parser.add_argument('-o', '--out_file', type=str, default='out.csv', help='output file for generated forecasts, in CSV format')
+    # parser.add_argument('-c', '--columns_file', type=str, default='data/columns.txt', help='input text file with list of columns to use, one per line')
+    # parser.add_argument('-m', '--trained_model_dir', type=str, default='trained_models', help='directory containing trained_models')
+    # parser.add_argument('-i', '--num_inferences', type=int, default=5, help='the number of cached samples to run inference for')
+    # parser.add_argument('-w', '--forecast_window', type=int, default=96, help='the number of timesteps to predict at each inference')
 
-    It is assumed that args[0] contains the name of the script file.
-
-    Args:
-        args (List[str]): List of command line arguments. Usually gathered from sys.argv.
-
-    Returns:
-        Optional[dict]: dictionary of run parameters or None if an issue was found with parsing parameters
-    """
-    if len(args) < 2:
-        return None
-
-    run_parameters = {
-        "data_file": "data/catchments_short.json",
-        "epochs": 1,
-        "columns": None,
-        "gauge_id": None,
-    }
-
-    i = 1
-
-    while (i < len(args)):
-        arg = args[i]
-        if arg == "-d":
-            i += 1
-            if len(args) == i or args[i].startswith("-"):
-                return None
-            else:
-                run_parameters["data_file"] = args[i]
-        elif arg == "-e":
-            i += 1
-            if len(args) == i or args[i].startswith("-"):
-                return None
-            else:
-                try:
-                    run_parameters["epochs"] = int(args[i])
-                except ValueError:
-                    # couldn't parse the integer
-                    return None
-        elif arg == "-c":
-            i += 1
-            if len(args) == i or args[i].startswith("-"):
-                return None
-            else:
-                run_parameters["columns"] = args[i]
-        else:
-            if run_parameters["gauge_id"]:
-                return None
-            run_parameters["gauge_id"] = arg
-        i += 1
-
-    if run_parameters["columns"] is not None:
-        columns_file: str = str(run_parameters["columns"])
-        run_parameters["columns"] = get_columns(columns_file)
-    else:
-        run_parameters["columns"] = DEFAULT_COLUMNS.copy()
-
-    if run_parameters["gauge_id"] is None:
-        return None
-
-    return run_parameters
-
-
-def main(args: List[str]) -> int:
-    parameters = get_parameters_from_args(args)
-
-    if parameters is None:
-        print(usage)
-        return 1
+    # args = parser.parse_args()
+    parameters = RUN_PARAMETERS
 
     coordinates = get_coordinates_for_catchment(parameters["data_file"], parameters["gauge_id"])
 
@@ -277,4 +188,6 @@ def main(args: List[str]) -> int:
 
 
 if __name__ == "__main__":
-    exit(main(sys.argv))
+    exit(main())
+
+# %%

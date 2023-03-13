@@ -72,10 +72,10 @@ class TrainingForecaster(BaseForecaster):
                  run_on_validation: bool = False,
                  future_covariates: bool = True,
                  retrain: bool = False,
-                 start: float = 0.95,
+                 start: float = 0.05,
                  forecast_horizon: int = 24,
                  stride: int = 24,
-                 last_points_only: bool = False) -> float:
+                 last_points_only: bool = True) -> float:
         """Backtest the model on the training data. This is useful for debugging and hyperparameter tuning. See darts docs for more details:
         https://unit8co.github.io/darts/generated_api/darts.models.forecasting.regression_ensemble_model.html#darts.models.forecasting.regression_ensemble_model.RegressionEnsembleModel.backtest
 

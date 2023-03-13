@@ -1,0 +1,25 @@
+{
+    "data_file": "data/catchments_test.json",
+    "epochs": 1,
+    "columns": [
+        "precipitation",
+        "temperature_2m"
+    ],
+    "gauge_id": "14219000",
+    "contributing_model": "rnn",
+    "contributing_model_kwargs": {
+        "input_chunk_length": 96,
+        "training_length": 120,
+        "model": "GRU",
+        "hidden_dim": 50,
+        "n_rnn_layers": 5,
+        "dropout": 0.05,
+        "n_epochs": 1,
+        "force_reset": true,
+        "pl_trainer_kwargs": {
+            "accelerator": "gpu",
+            "enable_progress_bar": false
+        }
+    },
+    "regression_train_n_points": 26280
+}
