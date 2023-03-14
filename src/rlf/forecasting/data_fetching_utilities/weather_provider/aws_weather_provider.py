@@ -75,6 +75,9 @@ class AWSWeatherProvider(BaseWeatherProvider):
         if sleep_duration != 0.0:
             raise ValueError("sleep_duration is not supported (and generally not needed) for aws_weather_provider")
 
+        if columns:
+            columns = self._remap_historical_parameters_to_adapter(columns)
+
         datums = self.download_datums_from_aws(dir_path="historical", columns=columns)
 
         if start_date is not None:
@@ -90,6 +93,7 @@ class AWSWeatherProvider(BaseWeatherProvider):
         for datum in datums:
             # mypy doesn't like the datetime objects as slices
             datum.hourly_parameters = datum.hourly_parameters[start_dt:end_dt]  # type:ignore[misc]
+            datum.hourly_parameters.columns = self._remap_historical_parameters_from_adapter(datum.hourly_parameters.columns)
 
         return datums
 
@@ -109,8 +113,14 @@ class AWSWeatherProvider(BaseWeatherProvider):
         if self.current_timestamp is None:
             raise ValueError("Cannot fetch current data without a timestamp.")
 
+        if columns:
+            columns = self._remap_current_parameters_to_adapter(columns)
+
         dir_path = f'current/{self.current_timestamp}'
         datums = self.download_datums_from_aws(dir_path=dir_path, columns=columns)
+
+        for datum in datums:
+            datum.hourly_parameters.columns = self._remap_current_parameters_from_adapter(datum.hourly_parameters.columns)
 
         return datums
 
