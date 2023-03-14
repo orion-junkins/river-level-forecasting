@@ -1,4 +1,4 @@
-from typing import Dict, Union, List, Optional
+from typing import Dict, List, Optional, Union
 
 import pytest
 
