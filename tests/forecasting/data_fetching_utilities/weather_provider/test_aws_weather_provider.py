@@ -179,4 +179,3 @@ def test_fetch_historical_with_consistent_columns(weather_provider):
 
     for weather_datum in weather_datums:
         assert expected_columns == sorted(list(weather_datum.hourly_parameters.columns))
-

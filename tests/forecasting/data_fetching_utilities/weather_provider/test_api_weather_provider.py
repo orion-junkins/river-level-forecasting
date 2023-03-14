@@ -1,3 +1,5 @@
+from typing import List, Optional
+
 import pytest
 
 from rlf.forecasting.data_fetching_utilities.coordinate import Coordinate
@@ -6,7 +8,7 @@ from rlf.forecasting.data_fetching_utilities.weather_provider.api.models import 
 from rlf.forecasting.data_fetching_utilities.weather_provider.api_weather_provider import APIWeatherProvider
 
 
-def fake_response(coordinate, columns = ["temperature_2m"]):
+def fake_response(coordinate, columns: List[str]):
     full_columns = {"time": ['2000-01-01T00:00', '2000-01-01T01:00', '2000-01-01T02:00']}
     full_columns.update({col: [1.0, 2.0, 3.0] for col in columns})
 
@@ -28,7 +30,7 @@ def fake_response(coordinate, columns = ["temperature_2m"]):
 
 class FakeWeatherAPIAdapter(BaseAPIAdapter):
 
-    def __init__(self, columns = ["temperature_2m"], expected_request_columns = None) -> None:
+    def __init__(self, columns: List[str] = ["temperature_2m"], expected_request_columns: Optional[List[str]] = None) -> None:
         self._response_columns = columns
         self._expected_request_columns = expected_request_columns
 
