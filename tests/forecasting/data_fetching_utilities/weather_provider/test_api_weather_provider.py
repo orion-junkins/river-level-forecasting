@@ -1,4 +1,4 @@
-from typing import List, Optional
+from typing import Dict, Union, List, Optional
 
 import pytest
 
@@ -9,7 +9,7 @@ from rlf.forecasting.data_fetching_utilities.weather_provider.api_weather_provid
 
 
 def fake_response(coordinate, columns: List[str]):
-    full_columns = {"time": ['2000-01-01T00:00', '2000-01-01T01:00', '2000-01-01T02:00']}
+    full_columns: Dict[str, Union[List[str], List[float]]] = {"time": ['2000-01-01T00:00', '2000-01-01T01:00', '2000-01-01T02:00']}
     full_columns.update({col: [1.0, 2.0, 3.0] for col in columns})
 
     response = Response(status_code=0,
@@ -37,6 +37,8 @@ class FakeWeatherAPIAdapter(BaseAPIAdapter):
     # mypy wants this signature to match BaseAPIAdapter, but that will couple the test too hard
     def get_current(self, coordinate: Coordinate, **kwargs) -> Response:  # type: ignore[override]
         if self._expected_request_columns:
+            assert "columns" in kwargs
+            assert kwargs["columns"] is not None
             assert sorted(self._expected_request_columns) == sorted(kwargs["columns"])
         response = fake_response(coordinate=coordinate, columns=self._response_columns)
         return response
@@ -44,6 +46,8 @@ class FakeWeatherAPIAdapter(BaseAPIAdapter):
     # mypy wants this signature to match BaseAPIAdapter, but that will couple the test too hard
     def get_historical(self, coordinate: Coordinate, **kwargs) -> Response:  # type: ignore[override]
         if self._expected_request_columns:
+            assert "columns" in kwargs
+            assert kwargs["columns"] is not None
             assert sorted(self._expected_request_columns) == sorted(kwargs["columns"])
         response = fake_response(coordinate=coordinate, columns=self._response_columns)
         return response
