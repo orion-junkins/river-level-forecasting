@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, Optional
+from typing import List, Optional
 
 from rlf.forecasting.data_fetching_utilities.coordinate import Coordinate
 from rlf.forecasting.data_fetching_utilities.weather_provider.api.base_api_adapter import BaseAPIAdapter
@@ -94,7 +94,6 @@ class OpenMeteoAdapter(BaseAPIAdapter):
                               hostname=self.forecast_hostname, version=self.version)
 
         hourly_params = columns if columns is not None else self.forecast_hourly_parameters
-
         parameters = {
             "longitude": coordinate.lon,
             "latitude": coordinate.lat,

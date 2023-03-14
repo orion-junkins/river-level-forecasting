@@ -67,7 +67,6 @@ def test_fetch_historical(weather_provider):
     assert len(weather_datums) == len(weather_provider.coordinates)
     for weather_datum in weather_datums:
         assert weather_datum.hourly_parameters.index.dtype == "datetime64[ns, UTC]"
-        print(sorted(list(weather_datum.hourly_parameters.columns)))
         assert expected_columns == sorted(list(weather_datum.hourly_parameters.columns))
 
 
