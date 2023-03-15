@@ -28,7 +28,7 @@ class MockContributingModel:
 
         self._expected_historical_forecasts_arguments = expected_historical_forecasts_arguments
 
-    def fit(self, series, future_covariates):
+    def fit(self, series, future_covariates, **kwargs):
         assert all((self._expected_fit_arguments[self.fit_calls]["series"] == series.values()).flatten())
         assert all((self._expected_fit_arguments[self.fit_calls]["future_covariates"] == future_covariates.values()).flatten())
         self.fit_calls += 1
@@ -41,7 +41,8 @@ class MockContributingModel:
             last_points_only,
             retrain,
             forecast_horizon,
-            stride):
+            stride,
+            **kwargs):
         assert last_points_only is True
         assert retrain is False
 
@@ -104,6 +105,6 @@ def test_ensemble_fit_future_covariates():
         target_horizon=1,
         combiner_train_stride=2)
 
-    ensemble.fit(y, future_covariates=X)
+    ensemble.fit(y, future_covariates=X, retrain_contributing_models=True)
 
     assert contributing_models[0].fit_calls == 2
