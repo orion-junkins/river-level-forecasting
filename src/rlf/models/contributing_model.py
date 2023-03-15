@@ -1,8 +1,9 @@
 import pickle
-from typing import List, Optional, Set, Tuple
+from typing import Callable, List, Optional, Set, Tuple, Union
 
 from darts import TimeSeries
 from darts.models.forecasting.forecasting_model import GlobalForecastingModel
+import pandas as pd
 
 from rlf.types import CovariateType
 
@@ -67,6 +68,41 @@ class ContributingModel(GlobalForecastingModel):
         """
         past_covariates, future_covariates = self._preprocess_input_data(past_covariates, future_covariates)
         return self._base_model.predict(n=n, series=series, past_covariates=past_covariates, future_covariates=future_covariates, **kwargs)
+
+    def historical_forecasts(
+        self,
+        series: CovariateType,
+        past_covariates: Optional[CovariateType] = None,
+        future_covariates: Optional[CovariateType] = None,
+        num_samples: int = 1,
+        train_length: Optional[int] = None,
+        start: Optional[Union[pd.Timestamp, float, int]] = None,
+        forecast_horizon: int = 1,
+        stride: int = 1,
+        retrain: Union[bool, int, Callable[..., bool]] = True,
+        overlap_end: bool = False,
+        last_points_only: bool = True,
+        verbose: bool = False
+    ) -> Union[TimeSeries, List[TimeSeries], CovariateType]:
+        past_covariates, future_covariates = self._preprocess_input_data(past_covariates, future_covariates)
+        return self._base_model.historical_forecasts(
+            series=series,
+            past_covariates=past_covariates,
+            future_covariates=future_covariates,
+            num_samples=num_samples,
+            train_length=train_length,
+            start=start,
+            forecast_horizon=forecast_horizon,
+            stride=stride,
+            retrain=retrain,
+            overlap_end=overlap_end,
+            last_points_only=last_points_only,
+            verbose=verbose
+        )
+
+    @property
+    def input_chunk_length(self) -> int:
+        return self._base_model.input_chunk_length
 
     @property
     def _fit_called(self) -> bool:
