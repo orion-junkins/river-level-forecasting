@@ -33,7 +33,7 @@ class CatchmentData:
         self.columns = columns
 
         self._all_current: Optional[Tuple[List[DataFrame], DataFrame]] = None  # (weather_data, level_data)
-        self._all_historical = (None, None)  # (weather_data, level_data)
+        self._all_historical: Optional[Tuple[List[DataFrame], DataFrame]] = None  # (weather_data, level_data)
 
     @property
     def num_weather_datasets(self) -> int:
@@ -81,9 +81,9 @@ class CatchmentData:
         Returns:
             tuple[list[DataFrame], DataFrame]: All historical data for the Catchment.
         """
-        if self._all_historical == (None, None):
+        if self._all_historical is None:
             self._fetch_all_historical()
-
+        assert self._all_historical is not None
         return self._all_historical
 
     def _fetch_all_historical(self) -> None:
