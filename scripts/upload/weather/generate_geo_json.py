@@ -8,6 +8,7 @@ import sys
 from rlf.forecasting.data_fetching_utilities.coordinate import Coordinate
 from rlf.forecasting.data_fetching_utilities.location_generator import \
     LocationGenerator
+from rlf.types import GeoJSONFeatureCollection
 
 # Parse command line args
 opts = [opt for opt in sys.argv[1:] if opt.startswith("-")]
@@ -116,7 +117,7 @@ def process_kml(path, gauge_id, gauge_name):
 
 
 # Create a basic dictionary for geoJSON features
-output_data = {"type": "FeatureCollection", "features": []}
+output_data: GeoJSONFeatureCollection = {"type": "FeatureCollection", "features": []}
 
 # For every kml file in the provided directory,
 for filename in os.listdir(KML_DIR_PATH):
@@ -131,7 +132,7 @@ for filename in os.listdir(KML_DIR_PATH):
         if result is None:
             print("\tUnable to parse filename for gauge details. Skipping.")
             continue
-        
+
         gauge_name = result.group(1)
         gauge_id = result.group(2)
 
