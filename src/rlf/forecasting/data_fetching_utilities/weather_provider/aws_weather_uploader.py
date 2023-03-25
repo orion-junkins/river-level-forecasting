@@ -44,25 +44,25 @@ class AWSWeatherUploader():
             years_per_query (int, optional): How many years to fetch in a single query. Defaults to 2.
             sleep_duration (int, optional): How long to sleep after each query. Helps prevent throttling. Defaults to 0.
         """
-        start_date = datetime.strptime(start_date, "%Y-%m-%d").replace(tzinfo=pytz.UTC)
-        end_date = datetime.strptime(end_date, "%Y-%m-%d").replace(tzinfo=pytz.UTC)
+        start_datetime = datetime.strptime(start_date, "%Y-%m-%d").replace(tzinfo=pytz.UTC)
+        end_datetime = datetime.strptime(end_date, "%Y-%m-%d").replace(tzinfo=pytz.UTC)
 
         partition_end_date = min(
-            [start_date.replace(start_date.year + years_per_query), end_date])
+            [start_datetime.replace(start_datetime.year + years_per_query), end_datetime])
 
         datums = self.weather_provider.fetch_historical(
-            start_date=datetime.strftime(start_date, "%Y-%m-%d"),
+            start_date=datetime.strftime(start_datetime, "%Y-%m-%d"),
             end_date=datetime.strftime(partition_end_date, "%Y-%m-%d"),
             columns=columns,
             sleep_duration=sleep_duration)
 
-        start_date = start_date.replace(start_date.year + years_per_query)
+        start_datetime = start_datetime.replace(start_datetime.year + years_per_query)
         partition_end_date = partition_end_date.replace(
             partition_end_date.year + years_per_query)
 
-        while partition_end_date < end_date:
+        while partition_end_date < end_datetime:
             partial_datums = self.weather_provider.fetch_historical(
-                start_date=datetime.strftime(start_date, "%Y-%m-%d"),
+                start_date=datetime.strftime(start_datetime, "%Y-%m-%d"),
                 end_date=datetime.strftime(partition_end_date, "%Y-%m-%d"),
                 columns=columns,
                 sleep_duration=sleep_duration)
@@ -72,7 +72,7 @@ class AWSWeatherUploader():
                 datum.hourly_parameters = pd.concat([datum.hourly_parameters,
                                                     partial_hourly_parameters])
 
-            start_date = start_date.replace(start_date.year + years_per_query)
+            start_datetime = start_datetime.replace(start_datetime.year + years_per_query)
             partition_end_date = partition_end_date.replace(
                 partition_end_date.year + years_per_query)
 
