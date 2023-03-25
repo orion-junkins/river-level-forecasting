@@ -81,12 +81,12 @@ def get_level_true(starting_timestamps: List[str], inference_level_provider: Lev
     """
     # Find bounding timestamps
     dt_timestamps = [datetime.strptime(timestamp, "%y-%m-%d_%H-%M") for timestamp in starting_timestamps]
-    start = min(dt_timestamps)
-    end = max(dt_timestamps) + (window_size * pd.Timedelta("1 hour"))
+    start_date = min(dt_timestamps)
+    end_date = max(dt_timestamps) + (window_size * pd.Timedelta("1 hour"))
 
     # Note that the level provider uses the date in the format "yyyy-mm-dd"
-    start = datetime.strftime(start, "%Y-%m-%d")
-    end = datetime.strftime(end, "%Y-%m-%d")
+    start = datetime.strftime(start_date, "%Y-%m-%d")
+    end = datetime.strftime(end_date, "%Y-%m-%d")
     level = inference_level_provider.fetch_level(start=start, end=end)
     level.rename(columns={"level": "level_true"}, inplace=True)
     level.index = level.index.tz_convert(None)
@@ -94,7 +94,7 @@ def get_level_true(starting_timestamps: List[str], inference_level_provider: Lev
     return level
 
 
-def main(args: List[str]) -> int:
+def main(args: argparse.Namespace) -> int:
     # Fetch columns list from specified data file
     columns = get_columns(args.columns_file)
 
