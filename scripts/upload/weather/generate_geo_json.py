@@ -127,6 +127,11 @@ for filename in os.listdir(KML_DIR_PATH):
         # Parse the gauge name and gauge id from the filename
         gauge_description = filename[:-4]
         result = re.search(r'(.*) - #([0-9]{5,15})', gauge_description)
+
+        if result is None:
+            print("\tUnable to parse filename for gauge details. Skipping.")
+            continue
+        
         gauge_name = result.group(1)
         gauge_id = result.group(2)
 
