@@ -56,7 +56,11 @@ class RestInvoker():
                 timeout=5,
                 headers={"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.0.0 Safari/537.36 Edg/107.0.1418.52"})
             if response.status_code == 200:
-                return Response(status_code=response.status_code, url=response.url, message=response.reason, headers=response.headers, data=response.json())
+                return Response(status_code=response.status_code,
+                                url=response.url,
+                                message=response.reason,
+                                headers=response.headers,
+                                data=response.json())
             else:
                 raise RestInvokerException(
                     f"Error calling the API: {response.reason} ({response.status_code}) \n {response.json()}")
