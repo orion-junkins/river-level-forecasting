@@ -62,6 +62,7 @@ class APIWeatherProvider(BaseWeatherProvider):
         Returns:
             WeatherDatum: The constructed WeatherDatum instance.
         """
+        assert response.data is not None
 
         requested_lon = coordinate.lon
         requested_lat = coordinate.lat
