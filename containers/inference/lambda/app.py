@@ -143,7 +143,7 @@ def handler(event, context):
         if os.path.exists(f"trained_models/{feature['properties']['gauge_id']}"):
             try:
                 run_predictions_for_target(feature)
-            except Exception as e:
+            except Exception:
                 print(f"Unable to run predictions for {feature['properties']['gauge_id']}")
                 raise
 
