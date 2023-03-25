@@ -228,7 +228,8 @@ def get_parameters_from_args(args: List[str]) -> Optional[dict]:
         i += 1
 
     if run_parameters["columns"] is not None:
-        run_parameters["columns"] = get_columns(run_parameters["columns"])
+        columns_file: str = str(run_parameters["columns"])
+        run_parameters["columns"] = get_columns(columns_file)
     else:
         run_parameters["columns"] = DEFAULT_COLUMNS.copy()
 
