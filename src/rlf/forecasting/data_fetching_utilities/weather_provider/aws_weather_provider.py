@@ -88,7 +88,8 @@ class AWSWeatherProvider(BaseWeatherProvider):
         else:
             end_dt = None
         for datum in datums:
-            datum.hourly_parameters = datum.hourly_parameters[start_dt:end_dt]
+            # mypy doesn't like the datetime objects as slices
+            datum.hourly_parameters = datum.hourly_parameters[start_dt:end_dt]  # type:ignore[misc]
 
         return datums
 
