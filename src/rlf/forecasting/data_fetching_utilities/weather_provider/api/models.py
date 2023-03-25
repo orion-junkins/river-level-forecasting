@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Optional
+from typing import CaseInsensitiveDict, Optional, Union
 
 
 @dataclass
@@ -16,5 +16,5 @@ class Response():
     status_code: int
     url: str
     message: str
-    headers: dict
+    headers: Union[CaseInsensitiveDict, dict]
     data: Optional[dict] = None
