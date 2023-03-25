@@ -22,7 +22,7 @@ class AWSWeatherProvider(BaseWeatherProvider):
     """Provides a historical of forecasted weather for a given location and time period. Backed by AWS. This makes queries to a provided AWS dispatcher for all data."""
 
     def __init__(self,
-                 coordinates: Coordinate,
+                 coordinates: List[Coordinate],
                  aws_dispatcher: AWSDispatcher,
                  current_timestamp: Optional[str] = None) -> None:
         """Create an APIWeatherProvider for the given list of coordinates.

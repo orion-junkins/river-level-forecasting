@@ -33,7 +33,7 @@ class APIWeatherProvider(BaseWeatherProvider):
     """Provides a historical of forecasted weather for a given location and time period."""
 
     def __init__(self,
-                 coordinates: Coordinate,
+                 coordinates: List[Coordinate],
                  api_adapter: BaseAPIAdapter = OpenMeteoAdapter()) -> None:
         """Create an APIWeatherProvider for the given list of coordinates.
 
