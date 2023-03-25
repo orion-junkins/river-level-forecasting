@@ -1,5 +1,5 @@
 from functools import reduce
-from typing import List
+from typing import List, Optional
 
 from darts.timeseries import TimeSeries
 from darts.models.forecasting.forecasting_model import GlobalForecastingModel
@@ -30,7 +30,12 @@ class Ensemble:
         self._target_horizon = target_horizon
         self._combiner_train_stride = combiner_train_stride
 
-    def fit(self, series: TimeSeries, *, past_covariates: TimeSeries = None, future_covariates: TimeSeries = None, retrain_contributing_models: bool = False) -> "Ensemble":
+    def fit(self,
+            series: TimeSeries,
+            *,
+            past_covariates: TimeSeries = None,
+            future_covariates: TimeSeries = None,
+            retrain_contributing_models: bool = False) -> "Ensemble":
         contributing_model_y = series[:-self._combiner_holdout_size]
 
         combiner_start = len(series) - self._combiner_holdout_size + self.contributing_models[0].input_chunk_length
@@ -65,13 +70,16 @@ class Ensemble:
 
         return self
 
-    def predict(self, n: int, *, series: TimeSeries, past_covariates: TimeSeries = None, future_covariates: TimeSeries = None) -> TimeSeries:
-        predictions = [
-            contributing_model.predict(n, series=series, past_covariates=past_covariates, future_covariates=future_covariates)
-            for contributing_model in self.contributing_models
-        ]
-
-        predictions = reduce(self._stack_op, predictions)
+    def predict(self,
+                n: int,
+                *,
+                series: TimeSeries,
+                past_covariates: TimeSeries = None,
+                future_covariates: TimeSeries = None) -> TimeSeries:
+        predictions = self._compute_and_stack_contributing_predictions(n,
+                                                                       series,
+                                                                       past_covariates=past_covariates,
+                                                                       future_covariates=future_covariates)
 
         return self.combiner.predict(n, series=series, future_covariates=predictions)
 
@@ -85,11 +93,19 @@ class Ensemble:
             for contributing_model in self.contributing_models
         ]
 
-        predictions = reduce(self._stack_op, predictions)
-
-        kwargs["future_covariates"] = predictions
-
-        return self.combiner.historical_forecasts(*args, **kwargs)
+        # assume that if the first element is a list, then they all are and are the same length
+        if isinstance(predictions[0], list):
+            results = []
+            for i in range(len(predictions[0])):
+                sub_predictions = [predictions[ii][i] for ii in range(len(predictions))]
+                sub_predictions = reduce(self._stack_op, sub_predictions)
+                kwargs["future_covariates"] = sub_predictions
+                results.append(self.combiner.historical_forecasts(*args, **kwargs))
+            return results
+        else:
+            predictions = reduce(self._stack_op, predictions)
+            kwargs["future_covariates"] = predictions
+            return self.combiner.historical_forecasts(*args, **kwargs)
 
     def backtest(self, *args, **kwargs) -> float:
         """See GlobalForecastingModel.backtest for documentation on parameters.
@@ -97,7 +113,22 @@ class Ensemble:
         Returns:
             float: Error score for the model.
         """
+        # TODO: pass a generator in for 'historical_forecasts', have the generator yield a different slice for each one needed
         return GlobalForecastingModel.backtest(self, *args, **kwargs)
+
+    def _compute_and_stack_contributing_predictions(self,
+                                                    n: int,
+                                                    series: TimeSeries,
+                                                    past_covariates: Optional[TimeSeries] = None,
+                                                    future_covariates: Optional[TimeSeries] = None) -> TimeSeries:
+        predictions = [
+            contributing_model.predict(n, series=series, past_covariates=past_covariates, future_covariates=future_covariates)
+            for contributing_model in self.contributing_models
+        ]
+
+        predictions = reduce(self._stack_op, predictions)
+
+        return predictions
 
     @staticmethod
     def _stack_op(a: TimeSeries, b: TimeSeries) -> TimeSeries:
