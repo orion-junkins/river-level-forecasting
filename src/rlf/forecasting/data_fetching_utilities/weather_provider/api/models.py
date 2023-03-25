@@ -1,5 +1,7 @@
 from dataclasses import dataclass
-from typing import CaseInsensitiveDict, Optional, Union
+from typing import Optional, Union
+
+from requests.structures import CaseInsensitiveDict
 
 
 @dataclass
