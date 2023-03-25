@@ -174,7 +174,7 @@ def get_columns(column_file: str) -> List[str]:
         return [c.strip() for c in f.readlines()]
 
 
-def get_parameters_from_args(args: List[str]) -> dict:
+def get_parameters_from_args(args: List[str]) -> Optional[dict]:
     """Parse command line arguments to get the run parameters.
 
     It is assumed that args[0] contains the name of the script file.
@@ -183,7 +183,7 @@ def get_parameters_from_args(args: List[str]) -> dict:
         args (List[str]): List of command line arguments. Usually gathered from sys.argv.
 
     Returns:
-        dict: dictionary of run parameters
+        Optional[dict]: dictionary of run parameters or None if an issue was found with parsing parameters
     """
     if len(args) < 2:
         return None
