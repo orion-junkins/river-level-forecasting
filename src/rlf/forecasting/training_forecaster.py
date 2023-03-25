@@ -99,15 +99,15 @@ class TrainingForecaster(BaseForecaster):
             y = self.dataset.y_test
 
         if (future_covariates):
-            past_covariates = None
-            future_covariates = x
+            past_covariates_data = None
+            future_covariates_data = x
         else:
-            past_covariates = x
-            future_covariates = None
+            past_covariates_data = x
+            future_covariates_data = None
 
         return self.model.backtest(y,
-                                   past_covariates=past_covariates,
-                                   future_covariates=future_covariates,
+                                   past_covariates=past_covariates_data,
+                                   future_covariates=future_covariates_data,
                                    retrain=retrain,
                                    start=start,
                                    forecast_horizon=forecast_horizon,
