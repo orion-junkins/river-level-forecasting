@@ -20,8 +20,7 @@ from rlf.forecasting.inference_forecaster import InferenceForecaster
 s3 = s3fs.S3FileSystem(anon=False)
 s3_bucket = "s3://model-forecasts"
 
-flow_pattern = re.compile("(\d+\.?\d*)(k?cfs)")
-
+flow_pattern = re.compile(r"(\d+\.?\d*)(k?cfs)")
 
 def parse_flow(x: str) -> float:
   value, suffix = re.match(flow_pattern, x).groups()
