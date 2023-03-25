@@ -82,7 +82,7 @@ class AWSWeatherUploader():
     def upload_current(self,
                        columns: Optional[List[str]] = None,
                        sleep_duration: float = 0.0,
-                       dir_path: str = None) -> None:
+                       dir_path: Optional[str] = None) -> None:
         """Refetch current datums and store this updated data in AWS. This will overwrite whatever data was previously stored for the current river.
 
         Args:
