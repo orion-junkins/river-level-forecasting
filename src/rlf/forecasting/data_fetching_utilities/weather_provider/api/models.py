@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from typing import Optional
 
 
 @dataclass
@@ -16,4 +17,4 @@ class Response():
     url: str
     message: str
     headers: dict
-    data: dict = None
+    data: Optional[dict] = None
