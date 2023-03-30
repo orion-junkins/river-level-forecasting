@@ -10,6 +10,7 @@ class GeoJSONFeatureCollection(TypedDict):
     type: str
     features: List[dict]
 
+
 class GeoJSONFeature(TypedDict):
     type: str
     bbox: List[float]
