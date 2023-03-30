@@ -48,5 +48,4 @@ jobs:
     - name: Check types
       shell: bash -el {0}
       run: |
-        # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
         mypy .
