@@ -48,4 +48,4 @@ jobs:
     - name: Check types
       shell: bash -el {0}
       run: |
-        mypy --install-types .
+        mypy --install-types --non-interactive .
