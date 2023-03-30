@@ -28,11 +28,13 @@ def fake_response(coordinate):
 
 class FakeWeatherAPIAdapter(BaseAPIAdapter):
 
-    def get_current(self, coordinate: Coordinate, **kwargs) -> Response:
+    # mypy wants this signature to match BaseAPIAdapter, but that will couple the test too hard
+    def get_current(self, coordinate: Coordinate, **kwargs) -> Response:  # type: ignore[override]
         response = fake_response(coordinate=coordinate)
         return response
 
-    def get_historical(self, coordinate: Coordinate, **kwargs) -> Response:
+    # mypy wants this signature to match BaseAPIAdapter, but that will couple the test too hard
+    def get_historical(self, coordinate: Coordinate, **kwargs) -> Response:  # type: ignore[override]
         response = fake_response(coordinate=coordinate)
         return response
 
