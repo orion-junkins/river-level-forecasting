@@ -19,7 +19,10 @@ from rlf.forecasting.data_fetching_utilities.level_provider.level_provider_nwis 
 from rlf.forecasting.data_fetching_utilities.weather_provider.api_weather_provider import APIWeatherProvider
 from rlf.forecasting.inference_forecaster import InferenceForecaster
 
-target = {
+from rlf.types import GeoJSONFeature
+
+
+target: GeoJSONFeature = {
     "type": "Feature",
     "bbox": [-122.35518187, 45.8404293, -122.06136614, 45.96773756],
     "properties": {
