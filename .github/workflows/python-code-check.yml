@@ -45,8 +45,7 @@ jobs:
       shell: bash -el {0}
       run: |
         conda install mypy
-        mypy --install-types
     - name: Check types
       shell: bash -el {0}
       run: |
-        mypy .
+        mypy --install-types .
