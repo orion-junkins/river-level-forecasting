@@ -18,7 +18,6 @@ from rlf.forecasting.data_fetching_utilities.coordinate import Coordinate
 from rlf.forecasting.data_fetching_utilities.level_provider.level_provider_nwis import LevelProviderNWIS
 from rlf.forecasting.data_fetching_utilities.weather_provider.api_weather_provider import APIWeatherProvider
 from rlf.forecasting.inference_forecaster import InferenceForecaster
-
 from rlf.types import GeoJSONFeature
 
 
