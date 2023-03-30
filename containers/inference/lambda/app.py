@@ -24,7 +24,11 @@ flow_pattern = re.compile(r"(\d+\.?\d*)(k?cfs)")
 
 
 def parse_flow(x: str) -> float:
-    value, suffix = re.match(flow_pattern, x).groups()
+    parsed_flow = re.match(flow_pattern, x)
+
+    assert parsed_flow is not None
+
+    value, suffix = parsed_flow.groups()
     value = float(value)
     if suffix == "kcfs":
         value *= 1000
