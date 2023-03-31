@@ -3,6 +3,7 @@ from typing import List, Optional
 
 from darts.timeseries import TimeSeries
 from darts.models.forecasting.forecasting_model import GlobalForecastingModel
+
 from rlf.models.contributing_model import ContributingModel
 
 
@@ -75,7 +76,9 @@ class Ensemble(GlobalForecastingModel):
                 *,
                 series: TimeSeries,
                 past_covariates: TimeSeries = None,
-                future_covariates: TimeSeries = None) -> TimeSeries:
+                future_covariates: TimeSeries = None,
+                num_samples: int = 1,
+                verbose: bool = False) -> TimeSeries:
         predictions = self._compute_and_stack_contributing_predictions(n,
                                                                        series,
                                                                        past_covariates=past_covariates,
