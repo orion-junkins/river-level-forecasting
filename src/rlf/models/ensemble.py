@@ -6,7 +6,7 @@ from darts.models.forecasting.forecasting_model import GlobalForecastingModel
 from rlf.models.contributing_model import ContributingModel
 
 
-class Ensemble:
+class Ensemble(GlobalForecastingModel):
 
     def __init__(
             self,
@@ -82,39 +82,6 @@ class Ensemble:
                                                                        future_covariates=future_covariates)
 
         return self.combiner.predict(n, series=series, future_covariates=predictions)
-
-    def historical_forecasts(
-            self,
-            *args,
-            **kwargs) -> TimeSeries:
-        # these arguments are a bit lazy but it gets the job done
-        predictions: List[TimeSeries] = [
-            contributing_model.historical_forecasts(*args, **kwargs)
-            for contributing_model in self.contributing_models
-        ]
-
-        # assume that if the first element is a list, then they all are and are the same length
-        if isinstance(predictions[0], list):
-            results = []
-            for i in range(len(predictions[0])):
-                sub_predictions = [predictions[ii][i] for ii in range(len(predictions))]
-                sub_predictions = reduce(self._stack_op, sub_predictions)
-                kwargs["future_covariates"] = sub_predictions
-                results.append(self.combiner.historical_forecasts(*args, **kwargs))
-            return results
-        else:
-            predictions = reduce(self._stack_op, predictions)
-            kwargs["future_covariates"] = predictions
-            return self.combiner.historical_forecasts(*args, **kwargs)
-
-    def backtest(self, *args, **kwargs) -> float:
-        """See GlobalForecastingModel.backtest for documentation on parameters.
-
-        Returns:
-            float: Error score for the model.
-        """
-        # TODO: pass a generator in for 'historical_forecasts', have the generator yield a different slice for each one needed
-        return GlobalForecastingModel.backtest(self, *args, **kwargs)
 
     def _compute_and_stack_contributing_predictions(self,
                                                     n: int,
