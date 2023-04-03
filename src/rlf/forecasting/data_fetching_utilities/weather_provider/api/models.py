@@ -1,4 +1,7 @@
 from dataclasses import dataclass
+from typing import Optional, Union
+
+from requests.structures import CaseInsensitiveDict
 
 
 @dataclass
@@ -15,5 +18,5 @@ class Response():
     status_code: int
     url: str
     message: str
-    headers: dict
-    data: dict = None
+    headers: Union[CaseInsensitiveDict, dict]
+    data: Optional[dict] = None

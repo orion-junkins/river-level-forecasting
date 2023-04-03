@@ -33,7 +33,7 @@ class APIWeatherProvider(BaseWeatherProvider):
     """Provides a historical of forecasted weather for a given location and time period."""
 
     def __init__(self,
-                 coordinates: Coordinate,
+                 coordinates: List[Coordinate],
                  api_adapter: BaseAPIAdapter = OpenMeteoAdapter()) -> None:
         """Create an APIWeatherProvider for the given list of coordinates.
 
@@ -62,6 +62,7 @@ class APIWeatherProvider(BaseWeatherProvider):
         Returns:
             WeatherDatum: The constructed WeatherDatum instance.
         """
+        assert response.data is not None
 
         requested_lon = coordinate.lon
         requested_lat = coordinate.lat
@@ -84,7 +85,7 @@ class APIWeatherProvider(BaseWeatherProvider):
                 "To change the rounding precision, change the precision argument in the build_datum_from_response method.")
 
         elif abs(difference_rounded_lon) <= RESPONSE_TOLERANCE or abs(difference_rounded_lat) <= RESPONSE_TOLERANCE:
-            logging.warn(
+            logging.warning(
                 "The API responded with a location within the requested location tolerance, but not equal. "
                 f"The requested location is ({requested_lon}, {requested_lat}) vs. the response location ({response_lon}, {response_lat}). "
                 f"The difference in longitude is {difference_rounded_lon} and the difference in latitude is {difference_rounded_lat}. "

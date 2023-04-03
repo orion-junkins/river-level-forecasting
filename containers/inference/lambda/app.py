@@ -20,28 +20,32 @@ from rlf.forecasting.inference_forecaster import InferenceForecaster
 s3 = s3fs.S3FileSystem(anon=False)
 s3_bucket = "s3://model-forecasts"
 
-flow_pattern = re.compile("(\d+\.?\d*)(k?cfs)")
+flow_pattern = re.compile(r"(\d+\.?\d*)(k?cfs)")
 
 
 def parse_flow(x: str) -> float:
-  value, suffix = re.match(flow_pattern, x).groups()
-  value = float(value)
-  if suffix == "kcfs":
-    value *= 1000
-  return value
+    parsed_flow = re.match(flow_pattern, x)
+
+    assert parsed_flow is not None
+
+    value, suffix = parsed_flow.groups()
+    value = float(value)
+    if suffix == "kcfs":
+        value *= 1000
+    return value
 
 
 def parse_datetime_from_noaa(x: str) -> datetime:
-  basic_datetime = datetime.strptime(x, "%m/%d %H:%M")
+    basic_datetime = datetime.strptime(x, "%m/%d %H:%M")
 
-  now = datetime.now()
+    now = datetime.now()
 
-  # since noaa predictions only go a few days out, assume any months greater than
-  # the current month + 1 is actually last year
-  if basic_datetime.month > now.month + 1:
-    return basic_datetime.replace(year=now.year + 1)
-  else:
-    return basic_datetime.replace(year=now.year)
+    # since noaa predictions only go a few days out, assume any months greater than
+    # the current month + 1 is actually last year
+    if basic_datetime.month > now.month + 1:
+        return basic_datetime.replace(year=now.year + 1)
+    else:
+        return basic_datetime.replace(year=now.year)
 
 
 def get_noaa_predictions(target_gauge: str) -> pd.DataFrame:
@@ -90,11 +94,11 @@ def build_data_dict(dataset: InferenceDataset, predictions: TimeSeries, target: 
     data_df["pred_model_1"] = predictions.pd_dataframe()["level"]
 
     if "noaa_id" in target["properties"]:
-       try:
-          data_df["pred_noaa"] = get_noaa_predictions(target["properties"]["noaa_id"])["flow"]
-       except Exception as e:
-          print("Unable to get noaa predictions:")
-          print(e)
+        try:
+            data_df["pred_noaa"] = get_noaa_predictions(target["properties"]["noaa_id"])["flow"]
+        except Exception as e:
+            print("Unable to get noaa predictions:")
+            print(e)
 
     data_dict = {}
     data_dict["timestamps"] = list(map(lambda x: x.strftime("%Y-%m-%d %H:%M:%S"), data_df.index))
@@ -141,11 +145,11 @@ def handler(event, context):
 
     for feature in catchments["features"]:
         if os.path.exists(f"trained_models/{feature['properties']['gauge_id']}"):
-           try:
-              run_predictions_for_target(feature)
-           except Exception as e:
-              print(f"Unable to run predictions for {feature['properties']['gauge_id']}")
-              raise
+            try:
+                run_predictions_for_target(feature)
+            except Exception:
+                print(f"Unable to run predictions for {feature['properties']['gauge_id']}")
+                raise
 
     return
 

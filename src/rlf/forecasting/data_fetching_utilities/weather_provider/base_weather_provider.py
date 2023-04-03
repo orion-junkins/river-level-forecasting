@@ -15,7 +15,7 @@ DEFAULT_END_DATE = datetime.now().strftime("%Y-%m-%d")
 class BaseWeatherProvider(ABC):
     """Provides historical and forecasted weather for a given set of locations. WeatherProviders exist at a single moment in time. Relative to that moment, they provide access to current (recent + forecasted) weather data as well as historical (beginning of collection to some point in the past) weather data."""
 
-    def __init__(self, coordinates: Coordinate) -> None:
+    def __init__(self, coordinates: List[Coordinate]) -> None:
         """Create a WeatherProvider for the given list of coordinates.
 
         Args:
