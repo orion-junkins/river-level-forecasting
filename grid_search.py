@@ -1,7 +1,8 @@
-#%%
+import argparse
 import json
-import sys
-from typing import List, Optional
+import os
+from multiprocessing import Pool
+from typing import Any, List, Optional
 
 try:
     from darts.models.forecasting.forecasting_model import GlobalForecastingModel
@@ -26,61 +27,54 @@ except ImportError as e:
     print(e)
     exit(1)
 
-ModelBuilder = RNNModel
+# Universal job parameters expected regardless of model variation. All other parameters will be passed as kwargs to the contributing model.
+STANDARD_JOB_PARAMETERS = ["data_file", "columns_file", "gauge_id", "regression_train_n_points"]
 
-RUN_PARAMETERS = {
-    "data_file": "data/catchments_test.json",
-    "epochs": 1,
-    "columns": ["precipitation",
-                "temperature_2m"],
-    "gauge_id": "14219000",
-    "contributing_model": "rnn",
-    "contributing_model_kwargs": {
-    "input_chunk_length": 96,
-        "training_length": 120,
-        "model": 'GRU',
-        "hidden_dim": 50,
-        "n_rnn_layers": 5,
-        "dropout": 0.05,
-        "n_epochs": 1,
-        "force_reset": True,
-        "pl_trainer_kwargs": {
-            "accelerator": "gpu",
-            "enable_progress_bar": False  # this stops the output file from being HUGE
-        }
-    },
-    "regression_train_n_points": 24 * 365 * 3,
+# Mapping of model variation names to their corresponding Darts classes.
+MODEL_VARIATIONS = {
+    "RNN": RNNModel
 }
 
 
-def generate_base_contributing_model() -> GlobalForecastingModel:
+def generate_base_contributing_model(model_variation: str, contributing_model_kwargs: dict[str, Any]) -> GlobalForecastingModel:
     """Generate a base model for an individual contributing model.
+
+    Args:
+        model_variation (str): Name of the model variation to use.
+        contributing_model_kwargs (dict[str, Any]): Keyword arguments to pass to the model constructor.
 
     Returns:
         GlobalForecastingModel: Base model.
     """
-    return ModelBuilder(**RUN_PARAMETERS["contributing_model_kwargs"])
+    if model_variation not in MODEL_VARIATIONS:
+        raise ValueError(f"Model variation {model_variation} not found.")
+
+    return MODEL_VARIATIONS[model_variation](**contributing_model_kwargs)
 
 
 def build_model_for_dataset(
     training_dataset: TrainingDataset,
-    num_epochs: int
+    train_n_points: int,
+    contributing_model_variation: str,
+    contributing_model_kwargs: dict
 ) -> RegressionEnsembleModel:
     """Build the EnsembleModel with the contributing models.
 
     Args:
         training_dataset (TrainingDataset): TrainingDataset instance that will be used to train the models.
-        num_epochs (int): Number of epochs to train each contributing model.
+        train_n_points (int): Number of points to train regression model on.
+        contributing_model_variation (str): Name of the model variation to use.
+        contributing_model_kwargs (dict): Keyword arguments to pass to the model constructor.
 
     Returns:
         RegressionEnsembleModel: Built ensemble model.
     """
     model = RegressionEnsembleModel(
         [
-            ContributingModel(generate_base_contributing_model(), prefix)
+            ContributingModel(generate_base_contributing_model(contributing_model_variation, contributing_model_kwargs), prefix)
             for prefix in training_dataset.subsets
         ],
-        RUN_PARAMETERS["regression_train_n_points"]
+        train_n_points
     )
     return model
 
@@ -149,45 +143,119 @@ def get_columns(column_file: str) -> List[str]:
         return [c.strip() for c in f.readlines()]
 
 
-def main() -> int:
-    # parser = argparse.ArgumentParser()
-    # parser.add_argument("gauge_id")
-    # parser.add_argument('-d', '--data_file', type=str, default='data/catchments_short.json', help='input file with catchment definitions, in JSON format')
-    # parser.add_argument('-o', '--out_file', type=str, default='out.csv', help='output file for generated forecasts, in CSV format')
-    # parser.add_argument('-c', '--columns_file', type=str, default='data/columns.txt', help='input text file with list of columns to use, one per line')
-    # parser.add_argument('-m', '--trained_model_dir', type=str, default='trained_models', help='directory containing trained_models')
-    # parser.add_argument('-i', '--num_inferences', type=int, default=5, help='the number of cached samples to run inference for')
-    # parser.add_argument('-w', '--forecast_window', type=int, default=96, help='the number of timesteps to predict at each inference')
+def run_grid_search_job(model_variation: str, parameters: dict[str, Any], job_id: int):
+    """Run a grid search job with the given parameters.
 
-    # args = parser.parse_args()
-    parameters = RUN_PARAMETERS
+    Args:
+        model_variation (str): Name of the model variation to use.
+        parameters (dict[str, Any]): Parameters to use for the grid search.
+        job_id (int): ID of the job. Used to save the model.
 
+    Returns:
+        Tuple[float, float]: Score and validation score of the best model.
+    """
+    model_kwargs = {k: v for k, v in parameters.items() if k not in STANDARD_JOB_PARAMETERS}
     coordinates = get_coordinates_for_catchment(parameters["data_file"], parameters["gauge_id"])
 
     if coordinates is None:
         print(f"Unable to locate {parameters['gauge_id']} in catchment data file.")
         return 1
-
-    dataset = get_training_data(parameters["gauge_id"], coordinates, parameters["columns"])
-
-    model = build_model_for_dataset(dataset, parameters["epochs"])
-
-    print(f"Training Run Parameters: {parameters}")
-
-    forecaster = TrainingForecaster(model, dataset)
+    columns = get_columns(parameters["columns_file"])
+    dataset = get_training_data(parameters["gauge_id"], coordinates, columns)
+    model = build_model_for_dataset(dataset, parameters["regression_train_n_points"], model_variation, model_kwargs)
+    forecaster = TrainingForecaster(model, dataset, root_dir=f'trained_models/{str(job_id)}')
     forecaster.fit()
     score = forecaster.backtest()
     val_score = forecaster.backtest(run_on_validation=True)
-    print(score)
-    f = open("model_scores.txt", "a")
-    f.write("Score: " + str(score) + "\n")
-    f.write("Validation Score: " + str(val_score) + "\n")
-    f.write
-    f.close()
+
+    return (score, val_score)
+
+
+def dispatch_job(job_data: tuple[dict[str, Any], int, str, str]):
+    """
+    Dispatch a single grid search job with the given set of data.
+
+    Args:
+        job_data (tuple[dict[str, Any], int, str, str]): All data needed for the job. Expected to be a tuple of parameters, job ID, model variation, and output directory.
+
+    Raises:
+        ValueError: Raised if any of the parameters have more than one value.
+
+    Returns:
+        _type_: _description_
+    """
+    (raw_job_parameters, id, model_variation, out_dir) = job_data
+    print("Spawning job " + str(id) + " with parameters: " + str(raw_job_parameters))
+
+    job_parameters = {}
+    for key, value in raw_job_parameters.items():
+        if len(value) > 1:
+            raise ValueError("Search space must be a single element list for all values.")
+        job_parameters[key] = value[0]
+    output_dict = {"parameters": job_parameters}
+
+    out_dir = os.path.join(out_dir, job_parameters["gauge_id"])
+    os.makedirs(out_dir, exist_ok=True)
+    output_path = os.path.join(out_dir, f"{id}.json")
+
+    (score, val_score) = run_grid_search_job(model_variation, job_parameters, id)
+    output_dict["score"] = score
+    output_dict["val_score"] = val_score
+
+    with open(output_path, "w") as f:
+        json.dump(output_dict, f, indent=4)
+
     return 0
 
 
-if __name__ == "__main__":
-    exit(main())
+def recursive_job_builder(search_space: dict[str, Any]) -> list[dict[str, List[Any]]]:
+    """
+    Recursively build a list of jobs from a search space. All values in the search space must be lists. If any value is a list with more than one element, the first element is removed and a job is dispatched for each remaining element. This is repeated until all values are single element lists.
 
-# %%
+    Args:
+        search_space (dict[str, Any]): The search space to explore.
+
+    Returns:
+        list[dict[str, List[Any]]]: List of jobs to dispatch.
+    """
+    all_jobs = []
+
+    # Check base case (all single element lists)
+    multi_element_lists_remain = True in (len(value) > 1 for value in search_space.values())
+    if not multi_element_lists_remain:
+        all_jobs = [search_space]
+    else:
+        # Otherwise, split the first multi-element list and dispatch jobs for each
+        for key, value in search_space.items():
+            if len(value) > 1:
+                new_search_space_first_elem = search_space.copy()
+                new_search_space_first_elem[key] = value[1:]
+                all_jobs.extend(recursive_job_builder(new_search_space_first_elem))
+
+                new_search_space_other_elems = search_space.copy()
+                new_search_space_other_elems[key] = value[:1]
+                all_jobs.extend(recursive_job_builder(new_search_space_other_elems))
+    return all_jobs
+
+
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser()
+    parser.add_argument("model_variation")
+    parser.add_argument('-j', '--num_jobs', type=int, default=3, help='the number of gridsearch jobs to run in parallel')
+    parser.add_argument('-s', '--search_space', type=str, default='data/grid_search_space.json', help='JSON file containing all grid search spaces')
+    args = parser.parse_args()
+
+    MODEL_VARIATION = args.model_variation
+    SEARCH_SPACE_FILEPATH = args.search_space
+    OUT_DIR = os.path.join("GS_OUTPUTS", "experimental", MODEL_VARIATION)
+    NUM_JOBS = args.num_jobs
+
+    with open(SEARCH_SPACE_FILEPATH) as json_file:
+        all_search_spaces = json.load(json_file)
+    cur_search_space = all_search_spaces[MODEL_VARIATION]
+
+    jobs = recursive_job_builder(cur_search_space)
+    print("Dispatching " + str(len(jobs)) + " jobs. Running up to " + str(NUM_JOBS) + " in parallel.")
+
+    with Pool(NUM_JOBS) as p:
+        result = p.map(dispatch_job, [(job, id, MODEL_VARIATION, OUT_DIR) for id, job in enumerate(jobs)])

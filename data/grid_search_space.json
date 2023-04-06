@@ -1,0 +1,52 @@
+{
+    "TEST": {
+        "one": [1, 2],
+        "two": [2, 4, 6],
+        "three": [3]
+    },
+    "RNN": {
+        "data_file": [
+            "data/catchments.json"
+        ],
+        "columns_file": [
+            "data/columns.txt"
+        ],
+        "gauge_id": [
+            "14219000"
+        ],
+        "input_chunk_length": [
+            96
+        ],
+        "training_length": [
+            120
+        ],
+        "model": [
+            "LSTM",
+            "GRU"
+        ],
+        "hidden_dim": [
+            10, 15
+        ],
+        "n_rnn_layers": [
+            25, 50
+        ],
+        "dropout": [
+            0.01, 0.05
+        ],
+        "n_epochs": [
+            20
+        ],
+        "force_reset": [
+            true
+        ],
+        "pl_trainer_kwargs": [
+            {
+                "accelerator":"gpu",
+                "enable_progress_bar": false
+            }
+        ],
+        "regression_train_n_points": [
+            480
+        ]
+    }
+}
