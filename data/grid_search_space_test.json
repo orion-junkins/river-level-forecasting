@@ -1,0 +1,46 @@
+{
+    "RNN": {
+        "data_file": [
+            "data/catchments_test.json"
+        ],
+        "columns_file": [
+            "data/columns.txt"
+        ],
+        "gauge_id": [
+            "14219000"
+        ],
+        "input_chunk_length": [
+            96
+        ],
+        "training_length": [
+            120
+        ],
+        "model": [
+            "LSTM"
+        ],
+        "hidden_dim": [
+            10, 15
+        ],
+        "n_rnn_layers": [
+            25
+        ],
+        "dropout": [
+            0.01, 0.05
+        ],
+        "n_epochs": [
+            1
+        ],
+        "force_reset": [
+            true
+        ],
+        "pl_trainer_kwargs": [
+            {
+                "accelerator":"gpu",
+                "enable_progress_bar": false
+            }
+        ],
+        "regression_train_n_points": [
+            480
+        ]
+    }
+}
