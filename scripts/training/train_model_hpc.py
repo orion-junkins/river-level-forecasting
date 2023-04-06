@@ -42,7 +42,7 @@ usage = """
 
 
 DEFAULT_EPOCHS = 1
-DEFAULT_DATA_FILE = "data/catchments_short.json"
+DEFAULT_DATA_FILE = "catchments_short.json"
 DEFAULT_COLUMNS = [
     "apparent_temperature",
     "cloudcover",
@@ -77,12 +77,7 @@ def generate_base_contributing_model(num_epochs: int) -> GlobalForecastingModel:
         GlobalForecastingModel: Base model.
     """
     return RNNModel(
-        input_chunk_length=96,
-        training_length=120,
-        model='GRU',
-        hidden_dim=50,
-        n_rnn_layers=5,
-        dropout=0.05,
+        96,
         n_epochs=num_epochs,
         force_reset=True,
         pl_trainer_kwargs={
@@ -110,7 +105,7 @@ def build_model_for_dataset(
             ContributingModel(generate_base_contributing_model(num_epochs), prefix)
             for prefix in training_dataset.subsets
         ],
-        24*365
+        24*365*3
     )
     return model
 
@@ -194,7 +189,7 @@ def get_parameters_from_args(args: List[str]) -> Optional[dict]:
         return None
 
     run_parameters = {
-        "data_file": "data/catchments_short.json",
+        "data_file": "catchments_high_precision_short.json",
         "epochs": 1,
         "columns": None,
         "gauge_id": None,
@@ -265,14 +260,6 @@ def main(args: List[str]) -> int:
 
     forecaster = TrainingForecaster(model, dataset)
     forecaster.fit()
-    score = forecaster.backtest()
-    val_score = forecaster.backtest(run_on_validation=True)
-    print(score)
-    f = open("model_scores.txt", "a")
-    f.write("Score: " + str(score) + "\n")
-    f.write("Validation Score: " + str(val_score) + "\n")
-    f.write
-    f.close()
     return 0
 
 
