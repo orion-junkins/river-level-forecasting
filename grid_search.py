@@ -2,6 +2,7 @@ import argparse
 import json
 import os
 from multiprocessing import Pool
+import time
 from typing import Any, List, Optional
 
 try:
@@ -163,7 +164,7 @@ def run_grid_search_job(model_variation: str, parameters: dict[str, Any], job_id
     columns = get_columns(parameters["columns_file"])
     dataset = get_training_data(parameters["gauge_id"], coordinates, columns)
     model = build_model_for_dataset(dataset, parameters["regression_train_n_points"], model_variation, model_kwargs)
-    forecaster = TrainingForecaster(model, dataset, root_dir=f'trained_models/{str(job_id)}')
+    forecaster = TrainingForecaster(model, dataset, root_dir=f'trained_models/grid_search_models/{model_variation}/{str(job_id)}')
     forecaster.fit()
     score = forecaster.backtest()
     val_score = forecaster.backtest(run_on_validation=True)
@@ -242,12 +243,13 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument("model_variation")
     parser.add_argument('-j', '--num_jobs', type=int, default=3, help='the number of gridsearch jobs to run in parallel')
-    parser.add_argument('-s', '--search_space', type=str, default='data/grid_search_space.json', help='JSON file containing all grid search spaces')
+    parser.add_argument('-s', '--search_space', type=str, default='data/grid_search_space_test.json', help='JSON file containing all grid search spaces')
     args = parser.parse_args()
 
     MODEL_VARIATION = args.model_variation
     SEARCH_SPACE_FILEPATH = args.search_space
-    OUT_DIR = os.path.join("GS_OUTPUTS", "experimental", MODEL_VARIATION)
+    current_timestamp = str(time.time())
+    OUT_DIR = os.path.join("GS_OUTPUTS", current_timestamp, MODEL_VARIATION)
     NUM_JOBS = args.num_jobs
 
     with open(SEARCH_SPACE_FILEPATH) as json_file:
