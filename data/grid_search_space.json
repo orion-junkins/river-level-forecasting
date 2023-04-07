@@ -6,7 +6,7 @@
     },
     "RNN": {
         "data_file": [
-            "data/catchments.json"
+            "data/catchments_short.json"
         ],
         "columns_file": [
             "data/columns.txt"
