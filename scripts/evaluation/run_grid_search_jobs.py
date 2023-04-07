@@ -176,7 +176,7 @@ def run_grid_search_job(parameters: dict[str, Any], working_dir: str, job_id: in
     return (score, val_score)
 
 
-def append_scores_to_json(path, score, val_score):
+def append_scores_to_json(path: str, score: float, val_score: float) -> None:
     """Append the scores to a JSON file.
 
     Args:
@@ -192,6 +192,7 @@ def append_scores_to_json(path, score, val_score):
 
     with open(path, 'w') as f:
         json.dump(data, f, indent=4)
+
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
