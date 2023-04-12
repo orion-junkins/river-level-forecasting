@@ -6,7 +6,6 @@ from typing import List, Optional
 from pandas import DataFrame
 import pytz
 
-
 from rlf.forecasting.data_fetching_utilities.coordinate import Coordinate
 from rlf.forecasting.data_fetching_utilities.weather_provider.api.base_api_adapter import (
     BaseAPIAdapter
@@ -133,6 +132,8 @@ class APIWeatherProvider(BaseWeatherProvider):
 
         datum = self.build_datum_from_response(response, coordinate)
 
+        datum.hourly_parameters.columns = self._remap_historical_parameters_from_adapter(datum.hourly_parameters.columns)
+
         return datum
 
     def fetch_historical(self,
@@ -152,6 +153,10 @@ class APIWeatherProvider(BaseWeatherProvider):
             list[WeatherDatum]: A list of WeatherDatum objects containing the weather data and metadata about the locations.
         """
         datums = {}
+
+        if columns:
+            columns = self._remap_historical_parameters_to_adapter(columns)
+
         for coordinate in self.coordinates:
             datum = self.fetch_historical_datum(coordinate=coordinate, start_date=start_date, end_date=end_date, columns=columns)
             coord = Coordinate(datum.longitude, datum.latitude)
@@ -174,6 +179,8 @@ class APIWeatherProvider(BaseWeatherProvider):
 
         datum = self.build_datum_from_response(response, coordinate)
 
+        datum.hourly_parameters.columns = self._remap_current_parameters_from_adapter(datum.hourly_parameters.columns)
+
         return datum
 
     def fetch_current(self, columns: Optional[List[str]] = None, sleep_duration: float = 0.0) -> List[WeatherDatum]:
@@ -187,6 +194,10 @@ class APIWeatherProvider(BaseWeatherProvider):
             list[WeatherDatum]: A list of WeatherDatums containing the weather data about the location.
         """
         datums = []
+
+        if columns:
+            columns = self._remap_current_parameters_to_adapter(columns)
+
         for coordinate in self.coordinates:
             datum = self.fetch_current_datum(coordinate=coordinate, columns=columns)
             datums.append(datum)
