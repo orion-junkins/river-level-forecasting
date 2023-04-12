@@ -12,10 +12,10 @@ def save_ensemble_model(base_dir: str, model: RegressionEnsembleModel) -> None:
         base_dir (str): Base directory to save the ensemble model and its contributing models to.
         model (RegressionEnsembleModel): Ensemble model to save.
     """
-    for i, contributing_model in enumerate(model.models):
+    for i, contributing_model in enumerate(model.contributing_models):
         contributing_model.save(os.path.join(base_dir, f"contributing_model_{i}"))
 
-    old_models = model.models
+    old_models = model.contributing_models
     model.models = [None] * len(model.models)
 
     model.save(os.path.join(base_dir, "frcstr"))

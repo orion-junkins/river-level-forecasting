@@ -4,6 +4,7 @@ from typing import List, Optional
 
 try:
     from darts.models.forecasting.forecasting_model import GlobalForecastingModel
+    from darts.models.forecasting.linear_regression_model import LinearRegressionModel
     from darts.models.forecasting.regression_ensemble_model import RegressionEnsembleModel
     from darts.models.forecasting.rnn_model import RNNModel
 except ImportError as e:
@@ -20,6 +21,7 @@ try:
     from rlf.forecasting.training_dataset import TrainingDataset
     from rlf.forecasting.training_forecaster import TrainingForecaster
     from rlf.models.contributing_model import ContributingModel
+    from rlf.models.ensemble import Ensemble
 except ImportError as e:
     print("Import error on rlf packages. Ensure rlf and its dependencies have been installed into the local environment.")
     print(e)
@@ -44,24 +46,29 @@ usage = """
 DEFAULT_EPOCHS = 1
 DEFAULT_DATA_FILE = "catchments_short.json"
 DEFAULT_COLUMNS = [
+    "temperature_2m",
+    "relativehumidity_2m",
+    "dewpoint_2m",
     "apparent_temperature",
+    "pressure_msl",
+    "surface_pressure",
+    "precipitation",
+    "snowfall",
     "cloudcover",
-    "cloudcover_high",
     "cloudcover_low",
     "cloudcover_mid",
-    "dewpoint_2m",
+    "cloudcover_high",
+    "windspeed_10m",
     "et0_fao_evapotranspiration",
-    "precipitation",
-    "pressure_msl",
-    "rain",
-    "relativehumidity_2m",
-    "snowfall",
-    "surface_pressure",
-    "temperature_2m",
     "vapor_pressure_deficit",
-    "winddirection_10m",
-    "windgusts_10m",
-    "windspeed_10m"
+    # "soil_temperature_level_1",
+    # "soil_temperature_level_2",
+    # "soil_temperature_level_3",
+    # "soil_temperature_level_4",
+    # "soil_moisture_level_1",
+    # "soil_moisture_level_2",
+    # "soil_moisture_level_3",
+    # "soil_moisture_level_4"
 ]
 
 
@@ -100,13 +107,15 @@ def build_model_for_dataset(
     Returns:
         RegressionEnsembleModel: Built ensemble model.
     """
-    model = RegressionEnsembleModel(
-        [
-            ContributingModel(generate_base_contributing_model(num_epochs), prefix)
-            for prefix in training_dataset.subsets
-        ],
-        24*365*3
-    )
+    contributing_models = [
+        ContributingModel(RNNModel(120, n_epochs=num_epochs, random_state=42, model="GRU", hidden_dim=50, n_rnn_layers=5, dropout=0.01, training_length=139, force_reset=True, pl_trainer_kwargs={"accelerator": "gpu"}), prefix)
+        for prefix in training_dataset.subsets
+    ]
+
+    regression_model = LinearRegressionModel(lags=None, lags_future_covariates=[0], fit_intercept=False)
+
+    model = Ensemble(regression_model, contributing_models, 365*24*3)
+
     return model
 
 
