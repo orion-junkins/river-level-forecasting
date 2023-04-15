@@ -91,7 +91,7 @@ class BaseDataset(ABC):
 
         X = self._strip_trailing_nans(X)
 
-        X.interpolate(inplace=True)
+        X.interpolate(limit_direction="both", inplace=True)
 
         X = self._add_engineered_features(X)
 
