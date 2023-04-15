@@ -41,7 +41,7 @@ def test_base_dataset_add_engineered_features_drop_na():
 def test_base_dataset_process_datum_with_leading_nans():
     dataset = BaseDataset(FakeCatchmentData)
     data = {
-        "c": [float("nan"), float("nan"), 1.0, 1.0, 1.0]
+        "c": [float("nan"), float("nan"), 1.0, 2.0, 3.0]
     }
 
     df = pd.DataFrame(data, index=[datetime(2022, 1, 1, h) for h in range(1,6)])
@@ -49,4 +49,4 @@ def test_base_dataset_process_datum_with_leading_nans():
 
     result_df = dataset._process_datum(datum, pd.Timestamp(datetime(2022, 1, 1, 2)), None).pd_dataframe()
 
-    assert list(result_df["1.00_2.00_c"]) == [1.0, 1.0, 1.0, 1.0]
+    assert list(result_df["1.00_2.00_c"]) == [1.0, 1.0, 2.0, 3.0]
