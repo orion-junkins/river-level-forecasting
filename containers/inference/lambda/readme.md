@@ -16,7 +16,7 @@ This base image should speed up, and reduce the memory usage of, the actual infe
 
 To build the base image, run the following from the repo's root directory:
 ```
-docker build -t model:base -f containers/inference/lambda/Dockerfile-base .
+docker build -t inference:base -f containers/inference/lambda/Dockerfile-base .
 ```
 
 ## Deploying an Inference Model
