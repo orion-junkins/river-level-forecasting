@@ -113,3 +113,53 @@ class TrainingForecaster(BaseForecaster):
                                    forecast_horizon=forecast_horizon,
                                    stride=stride,
                                    last_points_only=last_points_only)
+
+    def backtest_contributing_models(self,
+                                     run_on_validation: bool = False,
+                                     future_covariates: bool = True,
+                                     retrain: bool = False,
+                                     start: float = 0.05,  # Data must extend slightly before start. Increase value or use a larger dataset if "" error occurs.
+                                     forecast_horizon: int = 24,
+                                     stride: int = 24,
+                                     last_points_only: bool = False) -> float:
+        """Backtest the underlying contributing models on the training data. Return the average of all error individual model scores. This is useful for debugging and hyperparameter tuning. See darts docs for more details:
+        https://unit8co.github.io/darts/generated_api/darts.models.forecasting.regression_ensemble_model.html#darts.models.forecasting.regression_ensemble_model.RegressionEnsembleModel.backtest
+
+        Args:
+            run_on_validation (bool, optional): Whether to run on the validation dataset. Runs on Test set if False. Defaults to False.
+            future_covariates (bool, optional): Whether to pass X as future covariates. X will be passed as past_covariates if False. Defaults to True.
+            retrain (bool, optional): Whether to retrain the model on the entire training dataset. Defaults to False.
+            start (float, optional): The proportion of the training dataset to use for backtesting. Defaults to 0.95.
+            forecast_horizon (int, optional): The forecast horizon to use. Defaults to 24.
+            stride (int, optional): The stride to use. Defaults to 24.
+            last_points_only (bool, optional): Whether to only use the last point in the training dataset. Defaults to False.
+
+        Returns:
+            float: The backtest score. See darts docs for more details.
+        """
+        if (run_on_validation):
+            x = self.dataset.X_validation
+            y = self.dataset.y_validation
+        else:
+            x = self.dataset.X_test
+            y = self.dataset.y_test
+
+        if (future_covariates):
+            past_covariates_data = None
+            future_covariates_data = x
+        else:
+            past_covariates_data = x
+            future_covariates_data = None
+
+        model_errors = []
+        for model in self.model.models:
+            model_errors.append(model.backtest(y,
+                                               past_covariates=past_covariates_data,
+                                               future_covariates=future_covariates_data,
+                                               retrain=retrain,
+                                               start=start,
+                                               forecast_horizon=forecast_horizon,
+                                               stride=stride,
+                                               last_points_only=last_points_only))
+        average_error = sum(model_errors) / len(model_errors)
+        return average_error

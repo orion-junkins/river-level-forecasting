@@ -170,8 +170,8 @@ def run_grid_search_job(parameters: dict[str, Any], working_dir: str, job_id: in
     forecaster = TrainingForecaster(model, dataset, root_dir=f'{working_dir}/trained_models/{str(job_id)}')
 
     forecaster.fit()
-    score = forecaster.backtest()
-    val_score = forecaster.backtest(run_on_validation=True)
+    score = forecaster.backtest_contributing_models()
+    val_score = forecaster.backtest_contributing_models(run_on_validation=True)
 
     return (score, val_score)
 
