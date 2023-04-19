@@ -68,11 +68,13 @@ def build_model_for_dataset(
     Returns:
         RegressionEnsembleModel: Built ensemble model.
     """
+    models = []
+    for prefix in training_dataset.subsets:
+        model = ContributingModel(generate_base_contributing_model(contributing_model_variation, contributing_model_kwargs), prefix)
+        models.append(model)
+
     model = RegressionEnsembleModel(
-        [
-            ContributingModel(generate_base_contributing_model(contributing_model_variation, contributing_model_kwargs), prefix)
-            for prefix in training_dataset.subsets
-        ],
+        models,
         train_n_points
     )
     return model
