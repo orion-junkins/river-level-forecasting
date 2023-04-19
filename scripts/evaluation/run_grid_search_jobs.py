@@ -151,7 +151,7 @@ def run_grid_search_job(parameters: dict[str, Any], working_dir: str, job_id: in
         job_id (int): ID of the job. Used to save the model.
 
     Returns:
-        Tuple[float, float]: Score and validation score of the best model.
+        Tuple[list, list, float, float]: Score and validation score of the best model.
     """
     model_variation = parameters["model_variation"]
     model_kwargs = {k: v for k, v in parameters.items() if k not in STANDARD_JOB_PARAMETERS}
@@ -170,13 +170,16 @@ def run_grid_search_job(parameters: dict[str, Any], working_dir: str, job_id: in
     forecaster = TrainingForecaster(model, dataset, root_dir=f'{working_dir}/trained_models/{str(job_id)}')
 
     forecaster.fit()
-    score = forecaster.backtest_contributing_models()
-    val_score = forecaster.backtest_contributing_models(run_on_validation=True)
+    errors = forecaster.backtest_contributing_models()
+    val_errors = forecaster.backtest_contributing_models(run_on_validation=True)
 
-    return (score, val_score)
+    average_error = sum(errors) / len(errors)
+    val_error = sum(val_errors) / len(val_errors)
+
+    return (errors, val_errors, average_error, val_error)
 
 
-def append_scores_to_json(path: str, score: float, val_score: float) -> None:
+def append_scores_to_json(path: str, errors: list, val_errors: list, average_error: float, val_error: float) -> None:
     """Append the scores to a JSON file.
 
     Args:
@@ -187,8 +190,11 @@ def append_scores_to_json(path: str, score: float, val_score: float) -> None:
     with open(path, 'r') as f:
         data = json.load(f)
 
-    data["score"] = score
-    data["val_score"] = val_score
+    data["errors"] = errors
+    data["validation_errors"] = val_errors
+    data["average_error"] = average_error
+    data["average_validation_error"] = val_error
+    
 
     with open(path, 'w') as f:
         json.dump(data, f, indent=4)
@@ -215,11 +221,11 @@ if __name__ == '__main__':
 
             print("Running job: ", job_id)
             print("Using parameters: ", job_data)
-            (score, val_score) = run_grid_search_job(job_data, working_dir, job_id)
-            append_scores_to_json(job_filepath, score, val_score)
+            (errors, val_errors, average_error, val_error) = run_grid_search_job(job_data, working_dir, job_id)
+            append_scores_to_json(job_filepath, errors, val_errors, average_error, val_error)
     else:
         job_filepath = os.path.join(working_dir, str(job_id) + '.json')
         with (open(job_filepath)) as f:
             job_data = json.load(f)
-        (score, val_score) = run_grid_search_job(job_data, working_dir, job_id)
-        append_scores_to_json(job_filepath, score, val_score)
+        (errors, val_errors, average_error, val_error) = run_grid_search_job(job_data, working_dir, job_id)
+        append_scores_to_json(job_filepath, errors, val_errors, average_error, val_error)

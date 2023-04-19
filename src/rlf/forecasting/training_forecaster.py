@@ -121,7 +121,7 @@ class TrainingForecaster(BaseForecaster):
                                      start: float = 0.05,  # Data must extend slightly before start. Increase value or use a larger dataset if "" error occurs.
                                      forecast_horizon: int = 24,
                                      stride: int = 24,
-                                     last_points_only: bool = False) -> float:
+                                     last_points_only: bool = False) -> list:
         """Backtest the underlying contributing models on the training data. Return the average of all error individual model scores. This is useful for debugging and hyperparameter tuning. See darts docs for more details:
         https://unit8co.github.io/darts/generated_api/darts.models.forecasting.regression_ensemble_model.html#darts.models.forecasting.regression_ensemble_model.RegressionEnsembleModel.backtest
 
@@ -161,5 +161,5 @@ class TrainingForecaster(BaseForecaster):
                                                forecast_horizon=forecast_horizon,
                                                stride=stride,
                                                last_points_only=last_points_only))
-        average_error = sum(model_errors) / len(model_errors)
-        return average_error
+
+        return model_errors
