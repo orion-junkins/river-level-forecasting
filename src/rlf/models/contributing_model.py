@@ -155,3 +155,11 @@ class ContributingModel(GlobalForecastingModel):
             contributing_model._base_model = contributing_model._base_model.load(path + "_base_model")
 
         return contributing_model
+
+    def untrained_model(self):
+        """Return an untrained model of the same type as this model.
+
+        Returns:
+            ContributingModel: Untrained model of the same type as this model.
+        """
+        return ContributingModel(self._base_model.untrained_model(), self._column_prefix)
