@@ -27,7 +27,7 @@ except ImportError as e:
     exit(1)
 
 # Universal job parameters expected regardless of model variation. All other parameters will be passed as kwargs to the contributing model.
-STANDARD_JOB_PARAMETERS = ["data_file", "columns_file", "gauge_id", "model_variation", "regression_train_n_points"]
+STANDARD_JOB_PARAMETERS = ["data_file", "columns_file", "gauge_id", "contributing_model_type", "regression_train_n_points"]
 
 # Mapping of model variation names to their corresponding Darts classes.
 MODEL_VARIATIONS = {
@@ -54,7 +54,7 @@ def generate_base_contributing_model(model_variation: str, contributing_model_kw
 def build_model_for_dataset(
     training_dataset: TrainingDataset,
     train_n_points: int,
-    contributing_model_variation: str,
+    contributing_model_type: str,
     contributing_model_kwargs: dict
 ) -> RegressionEnsembleModel:
     """Build the EnsembleModel with the contributing models.
@@ -62,7 +62,7 @@ def build_model_for_dataset(
     Args:
         training_dataset (TrainingDataset): TrainingDataset instance that will be used to train the models.
         train_n_points (int): Number of points to train regression model on.
-        contributing_model_variation (str): Name of the model variation to use.
+        contributing_model_type (str): Name of the model type to use.
         contributing_model_kwargs (dict): Keyword arguments to pass to the model constructor.
 
     Returns:
@@ -70,7 +70,7 @@ def build_model_for_dataset(
     """
     models = []
     for prefix in training_dataset.subsets:
-        model = ContributingModel(generate_base_contributing_model(contributing_model_variation, contributing_model_kwargs), prefix)
+        model = ContributingModel(generate_base_contributing_model(contributing_model_type, contributing_model_kwargs), prefix)
         models.append(model)
 
     model = RegressionEnsembleModel(
@@ -155,8 +155,8 @@ def run_grid_search_job(parameters: dict[str, Any], working_dir: str, job_id: in
     Returns:
         Tuple[list, list, float, float]: Score and validation score of the best model.
     """
-    model_variation = parameters["model_variation"]
-    model_kwargs = {k: v for k, v in parameters.items() if k not in STANDARD_JOB_PARAMETERS}
+    contributing_model_type = parameters["contributing_model_type"]
+    contributing_model_kwargs = {k: v for k, v in parameters.items() if k not in STANDARD_JOB_PARAMETERS}
     coordinates = get_coordinates_for_catchment(parameters["data_file"], parameters["gauge_id"])
 
     if coordinates is None:
@@ -167,7 +167,7 @@ def run_grid_search_job(parameters: dict[str, Any], working_dir: str, job_id: in
 
     dataset = get_training_data(parameters["gauge_id"], coordinates, columns)
 
-    model = build_model_for_dataset(dataset, parameters["regression_train_n_points"], model_variation, model_kwargs)
+    model = build_model_for_dataset(dataset, parameters["regression_train_n_points"], contributing_model_type, contributing_model_kwargs)
 
     forecaster = TrainingForecaster(model, dataset, root_dir=f'{working_dir}/trained_models/{str(job_id)}')
 
@@ -196,7 +196,6 @@ def append_scores_to_json(path: str, errors: list, val_errors: list, average_err
     data["validation_errors"] = val_errors
     data["average_error"] = average_error
     data["average_validation_error"] = val_error
-    
 
     with open(path, 'w') as f:
         json.dump(data, f, indent=4)
@@ -205,29 +204,24 @@ def append_scores_to_json(path: str, errors: list, val_errors: list, average_err
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument("model_variation", type=str, help="The model variation to use for the grid search.")
-    parser.add_argument('-i', '--input_dir', type=str, default='grid_search/jobs', help='Input directory for job JSON files to run')
-    parser.add_argument('-j', '--job_id', type=int, default=None, help='Job ID to run. If None, run all jobs in the input directory.')
+    parser.add_argument("gauge_id", type=str, help="The ID of the USGS gauge to use for the grid search.")
+    parser.add_argument("job_id", type=str, help='Job ID to run.')
+    parser.add_argument('-i', '--input_dir', type=str, default='grid_search', help='Input directory for job JSON files')
+
     args = parser.parse_args()
 
-    working_dir = os.path.join(args.input_dir, args.model_variation)
+    model_variation = args.model_variation
+    gauge_id = args.gauge_id
     job_id = args.job_id
+    input_dir = args.input_dir
+    working_dir = os.path.join(input_dir, model_variation, gauge_id, "jobs")
 
-    if job_id is None:
-        job_files = os.listdir(working_dir)
-        print(job_files)
-        for job_file in job_files:
-            job_id = job_file.split('.')[0]
-            job_filepath = os.path.join(working_dir, job_file)
-            with (open(job_filepath)) as f:
-                job_data = json.load(f)
+    job_filepath = os.path.join(working_dir, str(job_id) + '.json')
+    with (open(job_filepath)) as f:
+        job_data = json.load(f)
 
-            print("Running job: ", job_id)
-            print("Using parameters: ", job_data)
-            (errors, val_errors, average_error, val_error) = run_grid_search_job(job_data, working_dir, job_id)
-            append_scores_to_json(job_filepath, errors, val_errors, average_error, val_error)
+    if "errors" in job_data.keys():
+        print("Errors have already been calculated for this job. Skipping.")
     else:
-        job_filepath = os.path.join(working_dir, str(job_id) + '.json')
-        with (open(job_filepath)) as f:
-            job_data = json.load(f)
-        (errors, val_errors, average_error, val_error) = run_grid_search_job(job_data, working_dir, job_id)
+        errors, val_errors, average_error, val_error = run_grid_search_job(job_data, working_dir, job_id)
         append_scores_to_json(job_filepath, errors, val_errors, average_error, val_error)
