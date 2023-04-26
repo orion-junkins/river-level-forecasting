@@ -180,7 +180,7 @@ class PartitionedTrainingDataset(TrainingDataset):
             weather_provider.coordinates = [coord]
             historical_weather = weather_provider.fetch_historical(start_date=earliest_historical_level, columns=columns)
 
-            # this should not be that inefficient since not much preprocessing is happens to historical_level
+            # this should not be that inefficient since not much preprocessing happens to historical_level
             X, y = self._pre_process(historical_weather, historical_level)
 
             partition_path = os.path.join(self._cache_path, f"{self.prefix_for_lon_lat(coord.lon, coord.lat)}.parquet")

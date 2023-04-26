@@ -16,6 +16,7 @@ from darts.utils.utils import (
 import numpy as np
 import pandas as pd
 
+from rlf.forecasting.training_dataset import PartitionedTrainingDataset
 from rlf.models.contributing_model import ContributingModel
 
 
@@ -71,6 +72,8 @@ class Ensemble(GlobalForecastingModel):
                 retrain=False,
                 forecast_horizon=self._target_horizon,
                 stride=self._combiner_train_stride,
+                verbose=False,
+                show_warnings=False
             )
             for contributing_model in self.contributing_models
         ]
@@ -85,6 +88,72 @@ class Ensemble(GlobalForecastingModel):
                 contributing_model.fit(series=series, past_covariates=past_covariates, future_covariates=future_covariates)
 
         return self
+
+    def fit_dataset(self, dataset, as_future: bool = True, retrain_contributing_models: bool = False):
+        if not isinstance(dataset, PartitionedTrainingDataset):
+            if as_future:
+                return self.fit(dataset.y_train, future_covariates=dataset.X_train, retrain_contributing_models=retrain_contributing_models)
+            else:
+                return self.fit(dataset.y_train, past_covariates=dataset.X_train, retrain_contributing_models=retrain_contributing_models)
+
+        # this is assumed to be a partitioned dataset
+        if as_future:
+            future_covariates = dataset.X_train
+            past_covariates = None
+        else:
+            future_covariates = None
+            past_covariates = dataset.X_train
+        super().fit(dataset.y_train, past_covariates, future_covariates)
+
+        series = dataset.y_train
+
+        super().fit(series, past_covariates, future_covariates)
+        contributing_model_y = series[:-self._combiner_holdout_size]
+
+        combiner_start = len(series) - self._combiner_holdout_size + self.contributing_models[0].input_chunk_length
+
+        predictions = []
+
+        for i, contributing_model in enumerate(self.contributing_models):
+            dataset.load_feature_partition(i)
+            if as_future:
+                past_covariates = None
+                future_covariates = dataset.X_train
+            else:
+                past_covariates = dataset.X_train
+                future_covariates = None
+            contributing_model.fit(series=contributing_model_y, past_covariates=past_covariates, future_covariates=future_covariates)
+            predictions.append(contributing_model.historical_forecasts(
+                series=series,
+                past_covariates=past_covariates,
+                future_covariates=future_covariates,
+                start=combiner_start,
+                last_points_only=True,
+                retrain=False,
+                forecast_horizon=self._target_horizon,
+                stride=self._combiner_train_stride,
+                verbose=False,
+                show_warnings=False,
+            ))
+
+        del contributing_model_y
+
+        predictions = reduce(self._stack_op, predictions)
+
+        self.combiner.fit(series=series.slice_intersect(predictions), future_covariates=predictions)
+
+        del predictions
+
+        if retrain_contributing_models:
+            for i, contributing_model in enumerate(self.contributing_models):
+                dataset.load_feature_partition(i)
+                if as_future:
+                    past_covariates = None,
+                    future_covariates = dataset.X_train
+                else:
+                    past_covariates = dataset.X_train
+                    future_covariates = None
+                contributing_model.fit(series=series, past_covariates=past_covariates, future_covariates=future_covariates)
 
     def predict(self,
                 n: int,
