@@ -172,16 +172,28 @@ def run_grid_search_job(parameters: dict[str, Any], working_dir: str, job_id: in
     forecaster = TrainingForecaster(model, dataset, root_dir=f'{working_dir}/trained_models/{str(job_id)}')
 
     forecaster.fit()
-    errors = forecaster.backtest_contributing_models()
-    val_errors = forecaster.backtest_contributing_models(run_on_validation=True)
+    scores = {}
+    contrib_test_errors = forecaster.backtest_contributing_models()
+    contrib_val_errors = forecaster.backtest_contributing_models(run_on_validation=True)
 
-    average_error = sum(errors) / len(errors)
-    val_error = sum(val_errors) / len(val_errors)
+    average_test_error = sum(contrib_test_errors) / len(contrib_test_errors)
+    average_val_error = sum(contrib_val_errors) / len(contrib_val_errors)
 
-    return (errors, val_errors, average_error, val_error)
+    scores["contrib test errors"] = contrib_test_errors
+    scores["contrib val errors"] = contrib_val_errors
+    scores["contrib test error average"] = average_test_error
+    scores["contrib val error average"] = average_val_error
+
+    ensemble_test_error = forecaster.backtest()
+    ensemble_val_error = forecaster.backtest(run_on_validation=True)
+
+    scores["ensemble test error"] = ensemble_test_error
+    scores["ensemble val error"] = ensemble_val_error
+
+    return scores
 
 
-def append_scores_to_json(path: str, errors: list, val_errors: list, average_error: float, val_error: float) -> None:
+def append_scores_to_json(path: str, scores: dict) -> None:
     """Append the scores to a JSON file.
 
     Args:
@@ -192,10 +204,7 @@ def append_scores_to_json(path: str, errors: list, val_errors: list, average_err
     with open(path, 'r') as f:
         data = json.load(f)
 
-    data["errors"] = errors
-    data["validation_errors"] = val_errors
-    data["average_error"] = average_error
-    data["average_validation_error"] = val_error
+    data.update(scores)
 
     with open(path, 'w') as f:
         json.dump(data, f, indent=4)
@@ -206,7 +215,7 @@ if __name__ == '__main__':
     parser.add_argument("model_variation", type=str, help="The model variation to use for the grid search.")
     parser.add_argument("gauge_id", type=str, help="The ID of the USGS gauge to use for the grid search.")
     parser.add_argument("job_id", type=str, help='Job ID to run.')
-    parser.add_argument('-i', '--input_dir', type=str, default='grid_search', help='Input directory for job JSON files')
+    parser.add_argument('-i', '--input_dir', type=str, default='grid_search_0', help='Input directory for job JSON files')
 
     args = parser.parse_args()
 
@@ -223,5 +232,5 @@ if __name__ == '__main__':
     if "errors" in job_data.keys():
         print("Errors have already been calculated for this job. Skipping.")
     else:
-        errors, val_errors, average_error, val_error = run_grid_search_job(job_data, working_dir, job_id)
-        append_scores_to_json(job_filepath, errors, val_errors, average_error, val_error)
+        scores = run_grid_search_job(job_data, working_dir, job_id)
+        append_scores_to_json(job_filepath, scores)
