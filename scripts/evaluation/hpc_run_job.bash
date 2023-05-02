@@ -18,5 +18,6 @@ echo SLURM Running single GS job. Model: $MODEL Gauge: $GAUGE Jobs $START up to 
 source activate river-level-2
  
 for ((i = $START; i < $END; i++)); do
+    echo STARTING JOB $i
     srun python scripts/evaluation/run_single_gs_job_center_only.py $MODEL $GAUGE $i
 done
