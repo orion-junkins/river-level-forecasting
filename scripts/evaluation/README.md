@@ -32,3 +32,10 @@ To run multiple jobs, ie `0.json`, `1.json`, and `2.json` run:
 ```
 sbatch scripts/evaluation/hpc_run_job.bash RNN 14219000 0 3
 ```
+
+5) To identify the best accuracies, you can use the `identify_best_score.py` script. It takes a jobs directory and prints the filename and average contributing test error for the lowest three scoring files.
+
+For example:
+```
+python scripts/evaluation/identify_best_score.py grid_search/RNN/14377100/jobs
+```
