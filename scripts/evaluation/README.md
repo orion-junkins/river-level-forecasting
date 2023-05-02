@@ -17,16 +17,18 @@ For example, to run the job stored in `0.json`, run:
 ```
 python scripts/evaluation/run_single_gs_job.py RNN 14219000 0
 ```
-This will train a model using the parameters from the provided JSON and append results as additional fields in the same json file.
+This will train a model using the parameters from the provided JSON and append results as additional fields in the same json file. By default, only the centermost coordinate is used. Pass `--use_all_coords` to use all coordinates.
 
-4) To run a single job on SLURM, run `hpc_run_single_job.bash` with the same arguments as `run_single_gs_job.py`
+4) To run a job on SLURM, run `hpc_run_job.bash` or `dgx_run_job.bash`. The HPC script will run on Soundbendor nodes while the DGX script will run on DGX nodes. You may need to edit nodelist SBATCH arg in these files as needed. 
+
+Use the same initial Model/Gauge Id arguments as `run_single_gs_job.py`. But, rather than passing a single job id, pass a starting and ending index. All jobs from the first index up to (but not including the second) will be run.
 For example, to run the job stored in `0.json`, run:
 ```
-sbatch scripts/evaluation/hpc_run_single_job.bash RNN 14219000 0
+sbatch scripts/evaluation/hpc_run_job.bash RNN 14219000 0 1
 ```
-This will simply forward arguments to `run_single_gs_job.py` and run it on the SLURM node specified in `hpc_run_single_job.bash`. 
-5) To run multiple jobs on SLURM, run `hpc_run_multiple_jobs.bash`. Use the same arguments as `run_single_gs_job.py`except instead of providing a single job id, provide a minimum and a maximum. All jobs with ids greater than or equal to the lower bound and less than the upper bound will be run. 
-For example, to run the jobs stored in `0.json` and `1.json`, run:
+This will forward arguments to `run_single_gs_job.py` and run it on the SLURM node specified in `hpc_run_job.bash`. 
+
+To run multiple jobs, ie `0.json`, `1.json`, and `2.json` run:
 ```
-sbatch scripts/evaluation/hpc_run_multiple_jobs.bash RNN 14219000 0 2
+sbatch scripts/evaluation/hpc_run_job.bash RNN 14219000 0 3
 ```
