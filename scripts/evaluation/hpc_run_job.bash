@@ -9,6 +9,14 @@
 #SBATCH --mail-user=junkinso@oregonstate.edu
 #SBATCH --mail-type=END
 #SBATCH --export=ALL
-echo SLURM Running single GS job. Model: $1 Gauge: $2 Job: $3
+MODEL=$1
+GAUGE=$2
+START=$3
+END=$4
+
+echo SLURM Running single GS job. Model: $MODEL Gauge: $GAUGE Jobs $START up to but not including $END
 source activate river-level-2
-python scripts/evaluation/run_single_gs_job.py $1 $2 $3 # RNN 14219000 0
+ 
+for ((i = $START; i < $END; i++)); do
+    srun python scripts/evaluation/run_single_gs_job_center_only.py $MODEL $GAUGE $i
+done
