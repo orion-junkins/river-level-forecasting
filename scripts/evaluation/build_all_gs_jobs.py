@@ -51,7 +51,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument("model_variation", type=str, help="The model variation to use for the grid search.")
     parser.add_argument("gauge_id", type=str, help="The ID of the USGS gauge to use for the grid search.")
-    parser.add_argument('-s', '--search_space', type=str, default='data/grid_search_space.json', help='JSON file containing all grid search spaces')
+    parser.add_argument('-s', '--search_space', type=str, default='data/grid_search_space_model.json', help='JSON file containing all grid search spaces')
     parser.add_argument('-o', '--output_dir', type=str, default='grid_search', help='Ouput directory for generated job JSON files')
     parser.add_argument('-p', '--purge_output_dir', type=bool, default=False, help='=Purge the output directory before generating jobs')
 
