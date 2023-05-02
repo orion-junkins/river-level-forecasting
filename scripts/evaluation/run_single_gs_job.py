@@ -1,6 +1,7 @@
 import argparse
 import json
 import os
+import statistics
 from typing import Any, List, Optional
 
 try:
@@ -80,12 +81,36 @@ def build_model_for_dataset(
     return model
 
 
-def get_coordinates_for_catchment(filename: str, gauge_id: str) -> Optional[List[Coordinate]]:
+def get_center_coordinate(all_coords: List[Coordinate]) -> List[Coordinate]:
+    """
+    Reduce a list of coordinates to a single element list of only the centermost point.
+
+    Args:
+        all_coords (List[Coordinate]): The initial list of all coordinates.
+
+    Returns:
+        List[Coordinate]: A single element list containing only the centermost coordinate.
+    """
+    lats = []
+    lons = []
+    for coord in all_coords:
+        lats.append(coord.lat)
+        lons.append(coord.lon)
+
+    median_lat = round((statistics.median(lats) / 0.1) * 0.1, 1)
+    median_lon = round((statistics.median(lons) / 0.1) * 0.1, 1)
+
+    coord = Coordinate(lon=median_lon, lat=median_lat)
+    return ([coord])
+
+
+def get_coordinates_for_catchment(filename: str, gauge_id: str, center_only: bool) -> Optional[List[Coordinate]]:
     """Get the list of coordinates for a specific gauge ID from a geojson file.
 
     Args:
         filename (str): geojson file that contains catchment information.
         gauge_id (str): gauge ID to retrieve coordinates for.
+        center_only (bool): whether to use only the centermost point or all points for the grid search.
 
     Returns:
         Optional[List[Coordinate]]: List of coordinates for the given gauge or None if the gauge could not be found.
@@ -96,6 +121,8 @@ def get_coordinates_for_catchment(filename: str, gauge_id: str) -> Optional[List
     for feature in target["features"]:
         if feature["properties"]["gauge_id"] == gauge_id:
             coordinates = [Coordinate(lon, lat) for lon, lat in feature["geometry"]["coordinates"]]
+            if center_only:
+                coordinates = get_center_coordinate(coordinates)
             return coordinates
 
     return None
@@ -144,20 +171,21 @@ def get_columns(column_file: str) -> List[str]:
         return [c.strip() for c in f.readlines()]
 
 
-def run_grid_search_job(parameters: dict[str, Any], working_dir: str, job_id: int):
+def run_grid_search_job(parameters: dict[str, Any], working_dir: str, job_id: int, center_only: bool):
     """Run a grid search job with the given parameters.
 
     Args:
         parameters (dict[str, Any]): Parameters to use for the grid search.
         working_dir (str): Working directory to save the trained models to.
         job_id (int): ID of the job. Used to save the model.
+        center_only (bool): whether to use only the centermost point or all points for the grid search
 
     Returns:
         Tuple[list, list, float, float]: Score and validation score of the best model.
     """
     contributing_model_type = parameters["contributing_model_type"]
     contributing_model_kwargs = {k: v for k, v in parameters.items() if k not in STANDARD_JOB_PARAMETERS}
-    coordinates = get_coordinates_for_catchment(parameters["data_file"], parameters["gauge_id"])
+    coordinates = get_coordinates_for_catchment(parameters["data_file"], parameters["gauge_id"], center_only=center_only)
 
     if coordinates is None:
         print(f"Unable to locate {parameters['gauge_id']} in catchment data file.")
@@ -216,6 +244,7 @@ if __name__ == '__main__':
     parser.add_argument("gauge_id", type=str, help="The ID of the USGS gauge to use for the grid search.")
     parser.add_argument("job_id", type=str, help='Job ID to run.')
     parser.add_argument('-i', '--input_dir', type=str, default='grid_search_0', help='Input directory for job JSON files')
+    parser.add_argument('--use_all_coords', action='store_false', help="Use all coords in grid search rather than only the center point")
 
     args = parser.parse_args()
 
@@ -223,6 +252,7 @@ if __name__ == '__main__':
     gauge_id = args.gauge_id
     job_id = args.job_id
     input_dir = args.input_dir
+    center_only = args.use_all_coords
     working_dir = os.path.join(input_dir, model_variation, gauge_id, "jobs")
 
     job_filepath = os.path.join(working_dir, str(job_id) + '.json')
@@ -232,5 +262,5 @@ if __name__ == '__main__':
     if "errors" in job_data.keys():
         print("Errors have already been calculated for this job. Skipping.")
     else:
-        scores = run_grid_search_job(job_data, working_dir, job_id)
+        scores = run_grid_search_job(job_data, working_dir, job_id, center_only=center_only)
         append_scores_to_json(job_filepath, scores)
