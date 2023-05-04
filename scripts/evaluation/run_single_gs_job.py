@@ -185,16 +185,16 @@ def run_grid_search_job(parameters: Dict[str, Any], working_dir: str, job_id: in
     """
     contributing_model_type = parameters["contributing_model_type"]
     contributing_model_kwargs = {k: v for k, v in parameters.items() if k not in STANDARD_JOB_PARAMETERS}
-    
+
     coordinates = get_coordinates_for_catchment(parameters["data_file"], parameters["gauge_id"], center_only=center_only)
     if coordinates is None:
         print(f"Unable to locate {parameters['gauge_id']} in catchment data file.")
-        return 1
+        return {}
 
     columns = get_columns(parameters["columns_file"])
     dataset = get_training_data(parameters["gauge_id"], coordinates, columns)
     model = build_model_for_dataset(dataset, parameters["regression_train_n_points"], contributing_model_type, contributing_model_kwargs)
-    
+
     forecaster = TrainingForecaster(model, dataset, root_dir=f'{working_dir}/trained_models/{str(job_id)}')
     forecaster.fit()
 
