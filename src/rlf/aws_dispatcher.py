@@ -11,10 +11,6 @@ from rlf.forecasting.data_fetching_utilities.weather_provider.weather_datum impo
 from typing import Optional
 
 
-DEFAULT_LOCAL_PATH = os.path.join("data", "aws_dispatch")
-os.makedirs(DEFAULT_LOCAL_PATH, exist_ok=True)
-
-
 class AWSDispatcher():
     def __init__(self, bucket_name: str, directory_name: str) -> None:
         """Create a new AWS Dispatcher instance.
