@@ -156,7 +156,7 @@ class ContributingModel(GlobalForecastingModel):
 
         return contributing_model
 
-    def untrained_model(self):
+    def untrained_model(self) -> "ContributingModel":
         """Return an untrained model of the same type as this model.
 
         Returns:

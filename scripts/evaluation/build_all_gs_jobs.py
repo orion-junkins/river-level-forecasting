@@ -20,13 +20,14 @@ MODEL_VARIATIONS = {
 }
 
 
-def build_json_jobs(search_space: Dict[str, Any], dir: str = "grid_search", purge_directory=False):
+def build_json_jobs(search_space: Dict[str, Any], dir: str = "grid_search", purge_directory: bool = False) -> None:
     """
     Build a JSON file containing all jobs from a search space.
 
     Args:
         search_space (Dict[str, Any]): The search space to explore.
-        dir (str, optional): Directory to save the JSON file in.
+        dir (str, optional): Directory to save the JSON file in. Defaults to "grid_search".
+        purge_directory (bool, optional): If True then purge the directory before generating jobs. Defaults to False.
     """
     model_variation = search_space['contributing_model_type']
     gauge_id = search_space['gauge_id'][0]
@@ -64,6 +65,7 @@ if __name__ == '__main__':
     purge_directory = bool(args.purge_output_dir)
 
     current_timestamp = str(time.time())
+
     with open(search_space_filepath) as json_file:
         all_search_spaces = json.load(json_file)
     search_space = all_search_spaces[model_variation]

@@ -9,6 +9,7 @@
 #SBATCH --mail-user=junkinso@oregonstate.edu
 #SBATCH --mail-type=END
 #SBATCH --export=ALL
+
 MODEL=$1
 GAUGE=$2
 START=$3

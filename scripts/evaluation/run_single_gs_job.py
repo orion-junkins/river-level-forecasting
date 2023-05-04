@@ -141,7 +141,7 @@ def get_training_data(
         columns (List[str]): Columns to request from the weather provider.
 
     Returns:
-        TrainingDataset: _description_
+        TrainingDataset: A TrainingDataset instance for the specified gauge ID, coordinates and columns.
     """
     weather_provider = AWSWeatherProvider(
         coordinates,
@@ -171,7 +171,7 @@ def get_columns(column_file: str) -> List[str]:
         return [c.strip() for c in f.readlines()]
 
 
-def run_grid_search_job(parameters: Dict[str, Any], working_dir: str, job_id: int, center_only: bool):
+def run_grid_search_job(parameters: Dict[str, Any], working_dir: str, job_id: int, center_only: bool) -> Dict[str, Any]:
     """Run a grid search job with the given parameters.
 
     Args:
@@ -181,29 +181,26 @@ def run_grid_search_job(parameters: Dict[str, Any], working_dir: str, job_id: in
         center_only (bool): whether to use only the centermost point or all points for the grid search
 
     Returns:
-        Tuple[list, list, float, float]: Score and validation score of the best model.
+        Dict[str, Any]: Dict summarizing the results of the grid search job.
     """
     contributing_model_type = parameters["contributing_model_type"]
     contributing_model_kwargs = {k: v for k, v in parameters.items() if k not in STANDARD_JOB_PARAMETERS}
+    
     coordinates = get_coordinates_for_catchment(parameters["data_file"], parameters["gauge_id"], center_only=center_only)
-
     if coordinates is None:
         print(f"Unable to locate {parameters['gauge_id']} in catchment data file.")
         return 1
 
     columns = get_columns(parameters["columns_file"])
-
     dataset = get_training_data(parameters["gauge_id"], coordinates, columns)
-
     model = build_model_for_dataset(dataset, parameters["regression_train_n_points"], contributing_model_type, contributing_model_kwargs)
-
+    
     forecaster = TrainingForecaster(model, dataset, root_dir=f'{working_dir}/trained_models/{str(job_id)}')
-
     forecaster.fit()
+
     scores: Dict[str, Any] = {}
     contrib_test_errors = forecaster.backtest_contributing_models()
     contrib_val_errors = forecaster.backtest_contributing_models(run_on_validation=True)
-
     average_test_error = sum(contrib_test_errors) / len(contrib_test_errors)
     average_val_error = sum(contrib_val_errors) / len(contrib_val_errors)
 

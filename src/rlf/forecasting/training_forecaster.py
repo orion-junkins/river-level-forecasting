@@ -129,7 +129,7 @@ class TrainingForecaster(BaseForecaster):
             run_on_validation (bool, optional): Whether to run on the validation dataset. Runs on Test set if False. Defaults to False.
             future_covariates (bool, optional): Whether to pass X as future covariates. X will be passed as past_covariates if False. Defaults to True.
             retrain (bool, optional): Whether to retrain the model on the entire training dataset. Defaults to False.
-            start (float, optional): The proportion of the training dataset to use for backtesting. Defaults to 0.95.
+            start (float, optional): The proportion of the training dataset to use for backtesting. Defaults to 0.05.
             forecast_horizon (int, optional): The forecast horizon to use. Defaults to 24.
             stride (int, optional): The stride to use. Defaults to 24.
             last_points_only (bool, optional): Whether to only use the last point in the training dataset. Defaults to False.
