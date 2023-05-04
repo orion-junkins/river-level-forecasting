@@ -18,7 +18,7 @@ else:
     CATCHMENT_FILEPATH = "data/catchments_test.json"
 
 # Tunable parameters
-SLEEP_DURATION = 0.2
+SLEEP_DURATION = 0.5
 BUCKET_NAME = "all-weather-data"
 AWS_DIR_NAME = "open-meteo"
 

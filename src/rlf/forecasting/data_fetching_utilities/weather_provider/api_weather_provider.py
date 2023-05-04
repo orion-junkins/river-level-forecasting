@@ -17,10 +17,12 @@ from rlf.forecasting.data_fetching_utilities.weather_provider.base_weather_provi
 from rlf.forecasting.data_fetching_utilities.weather_provider.open_meteo.open_meteo_adapter import (
     OpenMeteoAdapter
 )
+from rlf.forecasting.data_fetching_utilities.weather_provider.api.exceptions import (
+    RestInvokerException
+)
 from rlf.forecasting.data_fetching_utilities.weather_provider.weather_datum import (
     WeatherDatum
 )
-
 
 DEFAULT_START_DATE = "2022-01-01"
 DEFAULT_END_DATE = datetime.now().strftime("%Y-%m-%d")
@@ -184,7 +186,7 @@ class APIWeatherProvider(BaseWeatherProvider):
         return datum
 
     def fetch_current(self, columns: Optional[List[str]] = None, sleep_duration: float = 0.0) -> List[WeatherDatum]:
-        """Fetch current weather for all coordinates.
+        """Fetch current weather for all coordinates. Will retry requests up to 5 times if throttled, sleeping for sleep_duration seconds between each retry.
 
         Args:
             columns (list[str], optional): The columns/parameters to fetch. All available will be fetched if left equal to None. Defaults to None.
@@ -199,7 +201,16 @@ class APIWeatherProvider(BaseWeatherProvider):
             columns = self._remap_current_parameters_to_adapter(columns)
 
         for coordinate in self.coordinates:
-            datum = self.fetch_current_datum(coordinate=coordinate, columns=columns)
-            datums.append(datum)
-            time.sleep(sleep_duration)
+            running = True
+            num_tries = 0
+            max_tries = 5
+            while (running and num_tries < max_tries):
+                try:
+                    datum = self.fetch_current_datum(coordinate=coordinate, columns=columns)
+                    datums.append(datum)
+                    running = False
+                except RestInvokerException:
+                    num_tries += 1
+                    time.sleep(sleep_duration)
+                    
         return datums
