@@ -2,7 +2,7 @@ ARG PYTHON_VERSION="3.8"
 
 FROM python:${PYTHON_VERSION}-slim
 
-ARG APP_DIR="/tmp/app"
+ARG APP_DIR="/app"
 ARG CATCHMENTS_FILE="catchments_short.json"
 
 RUN mkdir -p ${APP_DIR}
