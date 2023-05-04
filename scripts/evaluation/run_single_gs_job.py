@@ -2,7 +2,7 @@ import argparse
 import json
 import os
 import statistics
-from typing import Any, List, Optional
+from typing import Any, Dict, List, Optional
 
 try:
     from darts.models.forecasting.forecasting_model import GlobalForecastingModel
@@ -36,12 +36,12 @@ MODEL_VARIATIONS = {
 }
 
 
-def generate_base_contributing_model(model_variation: str, contributing_model_kwargs: dict[str, Any]) -> GlobalForecastingModel:
+def generate_base_contributing_model(model_variation: str, contributing_model_kwargs: Dict[str, Any]) -> GlobalForecastingModel:
     """Generate a base model for an individual contributing model.
 
     Args:
         model_variation (str): Name of the model variation to use.
-        contributing_model_kwargs (dict[str, Any]): Keyword arguments to pass to the model constructor.
+        contributing_model_kwargs (Dict[str, Any]): Keyword arguments to pass to the model constructor.
 
     Returns:
         GlobalForecastingModel: Base model.
@@ -56,7 +56,7 @@ def build_model_for_dataset(
     training_dataset: TrainingDataset,
     train_n_points: int,
     contributing_model_type: str,
-    contributing_model_kwargs: dict
+    contributing_model_kwargs: Dict
 ) -> RegressionEnsembleModel:
     """Build the EnsembleModel with the contributing models.
 
@@ -64,7 +64,7 @@ def build_model_for_dataset(
         training_dataset (TrainingDataset): TrainingDataset instance that will be used to train the models.
         train_n_points (int): Number of points to train regression model on.
         contributing_model_type (str): Name of the model type to use.
-        contributing_model_kwargs (dict): Keyword arguments to pass to the model constructor.
+        contributing_model_kwargs (Dict): Keyword arguments to pass to the model constructor.
 
     Returns:
         RegressionEnsembleModel: Built ensemble model.
@@ -171,11 +171,11 @@ def get_columns(column_file: str) -> List[str]:
         return [c.strip() for c in f.readlines()]
 
 
-def run_grid_search_job(parameters: dict[str, Any], working_dir: str, job_id: int, center_only: bool):
+def run_grid_search_job(parameters: Dict[str, Any], working_dir: str, job_id: int, center_only: bool):
     """Run a grid search job with the given parameters.
 
     Args:
-        parameters (dict[str, Any]): Parameters to use for the grid search.
+        parameters (Dict[str, Any]): Parameters to use for the grid search.
         working_dir (str): Working directory to save the trained models to.
         job_id (int): ID of the job. Used to save the model.
         center_only (bool): whether to use only the centermost point or all points for the grid search
@@ -200,7 +200,7 @@ def run_grid_search_job(parameters: dict[str, Any], working_dir: str, job_id: in
     forecaster = TrainingForecaster(model, dataset, root_dir=f'{working_dir}/trained_models/{str(job_id)}')
 
     forecaster.fit()
-    scores = {}
+    scores: Dict[str, Any] = {}
     contrib_test_errors = forecaster.backtest_contributing_models()
     contrib_val_errors = forecaster.backtest_contributing_models(run_on_validation=True)
 
@@ -221,7 +221,7 @@ def run_grid_search_job(parameters: dict[str, Any], working_dir: str, job_id: in
     return scores
 
 
-def append_scores_to_json(path: str, scores: dict) -> None:
+def append_scores_to_json(path: str, scores: Dict) -> None:
     """Append the scores to a JSON file.
 
     Args:

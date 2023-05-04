@@ -2,7 +2,7 @@ import argparse
 import json
 import os
 import time
-from typing import Any
+from typing import Any, Dict
 import itertools
 import sys
 
@@ -20,12 +20,12 @@ MODEL_VARIATIONS = {
 }
 
 
-def build_json_jobs(search_space: dict[str, Any], dir: str = "grid_search", purge_directory=False):
+def build_json_jobs(search_space: Dict[str, Any], dir: str = "grid_search", purge_directory=False):
     """
     Build a JSON file containing all jobs from a search space.
 
     Args:
-        search_space (dict[str, Any]): The search space to explore.
+        search_space (Dict[str, Any]): The search space to explore.
         dir (str, optional): Directory to save the JSON file in.
     """
     model_variation = search_space['contributing_model_type']
