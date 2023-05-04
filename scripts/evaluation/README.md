@@ -3,7 +3,7 @@ This folder contains a variety of helper scripts for evaluating model performanc
 
 ## Grid Search
 To run a grid search for a particular parameter space: 
-1) Define the search space in json in 'data/grid_search_space.json'.
+1) Define the search space in json in `data/grid_search_space_[some search space].json`. `data/grid_search_space_model.json` is the default file for model parameter tuning.
 2) Run `build_all_gs_jobs.py` with the desired model variation (must exist as a top level key in the search space json file) and the desired USGS gauge (must have a catchment definition at the expected location in `data/`).
 For example, assuming there is an 'RNN' entry in the search space and assuming we have a catchment definition for gauge 14219000:
 ```
