@@ -18,5 +18,5 @@ source activate river-level-2
  
 for ((i = $START; i < $END; i++)); do
     echo STARTING JOB $i
-    srun python scripts/evaluation/run_single_gs_job_center_only.py $MODEL $GAUGE $i
+    srun python scripts/evaluation/run_single_gs_job.py $MODEL $GAUGE $i
 done

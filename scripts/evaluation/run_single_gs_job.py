@@ -240,7 +240,7 @@ if __name__ == '__main__':
     parser.add_argument("model_variation", type=str, help="The model variation to use for the grid search.")
     parser.add_argument("gauge_id", type=str, help="The ID of the USGS gauge to use for the grid search.")
     parser.add_argument("job_id", type=str, help='Job ID to run.')
-    parser.add_argument('-i', '--input_dir', type=str, default='grid_search_0', help='Input directory for job JSON files')
+    parser.add_argument('-i', '--input_dir', type=str, default='grid_search', help='Input directory for job JSON files')
     parser.add_argument('--use_all_coords', action='store_false', help="Use all coords in grid search rather than only the center point")
 
     args = parser.parse_args()
