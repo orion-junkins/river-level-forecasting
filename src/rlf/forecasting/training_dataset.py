@@ -124,6 +124,9 @@ class PartitionedTrainingDataset(TrainingDataset):
         self.feature_partitions = [coordinate for coordinate in catchment_data.weather_provider.coordinates]
         self._cache_path = cache_path
 
+        if not os.path.exists(self._cache_path):
+            os.makedirs(self._cache_path)
+
         super().__init__(
             catchment_data,
             validation_size=validation_size,
@@ -186,11 +189,14 @@ class PartitionedTrainingDataset(TrainingDataset):
             partition_path = os.path.join(self._cache_path, f"{self.prefix_for_lon_lat(coord.lon, coord.lat)}.parquet")
             X.pd_dataframe(copy=False).to_parquet(partition_path)
 
-        return None, y
+        return X, y
 
     @property
     def num_feature_partitions(self) -> int:
         return len(self.feature_partitions)
+
+    def prefix_for_lon_lat(self, lon: float, lat: float) -> str:
+        return f"{lon:.2f}_{lat:.2f}"
 
     def _partition(
         self,
