@@ -2,11 +2,8 @@ import json
 import os
 import pickle
 
-from darts.models.forecasting.forecasting_model import ForecastingModel
-
 from rlf.forecasting.base_forecaster import BaseForecaster, DEFAULT_WORK_DIR
 from rlf.forecasting.training_dataset import TrainingDataset
-from rlf.models.utils import save_ensemble_model
 from rlf.models.ensemble import Ensemble
 
 
