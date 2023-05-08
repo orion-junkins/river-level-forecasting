@@ -44,7 +44,6 @@ class Ensemble(GlobalForecastingModel):
         self._target_horizon = target_horizon
         self._combiner_train_stride = combiner_train_stride
 
-
     def fit(self,
             series: TimeSeries,
             *,
