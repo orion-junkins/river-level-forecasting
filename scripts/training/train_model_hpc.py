@@ -18,7 +18,7 @@ try:
     from rlf.forecasting.data_fetching_utilities.coordinate import Coordinate
     from rlf.forecasting.data_fetching_utilities.level_provider.level_provider_nwis import LevelProviderNWIS
     from rlf.forecasting.data_fetching_utilities.weather_provider.aws_weather_provider import AWSWeatherProvider
-    from rlf.forecasting.training_dataset import TrainingDataset, PartitionedTrainingDataset
+    from rlf.forecasting.training_dataset import TrainingDataset
     from rlf.forecasting.training_forecaster import TrainingForecaster
     from rlf.models.contributing_model import ContributingModel
     from rlf.models.ensemble import Ensemble
@@ -166,8 +166,7 @@ def get_training_data(
         level_provider,
         columns=columns
     )
-    # dataset = TrainingDataset(catchment_data)
-    dataset = PartitionedTrainingDataset(catchment_data, "cache_data")
+    dataset = TrainingDataset(catchment_data)
     return dataset
 
 
