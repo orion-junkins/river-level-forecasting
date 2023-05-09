@@ -20,7 +20,6 @@ def handler(event, context):
         coordinates.append(new_coord)
     coordinates = list(set(coordinates))
 
-
     now = datetime.utcnow()
     timestamp = now.strftime("%y-%m-%d_%H-%M")
     current_timestamp = str(timestamp)

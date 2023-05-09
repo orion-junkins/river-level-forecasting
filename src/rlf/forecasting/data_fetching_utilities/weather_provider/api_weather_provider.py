@@ -212,5 +212,5 @@ class APIWeatherProvider(BaseWeatherProvider):
                 except RestInvokerException:
                     num_tries += 1
                     time.sleep(sleep_duration)
-                    
+
         return datums
