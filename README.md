@@ -10,7 +10,7 @@ Using an ensemble of models trained on historical data, and a snapshot of recent
 The accuracy of these forecasts can be compared internally (ie. between model types), and externally (ie against USGS statistically modeled forecasts).
 
 ## Directory Structure
-This library contains the core River Level Forecasting package (`/src/rlf/`) as well as a collection of scripts (`/scripts/`) to facilitate data management, model training, and result evaluation. There is also a collection of demos (`/demos/`) to help showcase core package functionalities, and a directory of Docker containerized AWS lambda applications (`/containers/`) for the automation of data collection and model inference.
+This library contains the core River Level Forecasting package (`/src/rlf/`) as well as a collection of scripts (`/scripts/`) to facilitate data management, model training, and result evaluation. There is also a collection of demos (`/demos/`) to help showcase core package functionalities, and a directory of Docker containerized AWS lambda applications (`/containers/`) for the automation of data collection and model inference in the cloud.
 
 Single file scripts are documented with headers. More complex processes will have directory level READMEs with relavent information.
 
@@ -66,7 +66,7 @@ Although some functionality can be performed without AWS, much of this codebase 
 
 In order to interact with AWS, you must have the AWS CLI configured locally. See [this quickstart guide](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-quickstart.html) or [this full guide](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-quickstart.html#cli-configure-quickstart-creds) to get started.
 
-In general, S3 subdirectories will be created as needed, but the following buckets are assumed to exist: `all-weather-data` and `model-forecasts`. Scripts for populating these buckets are included in the `scripts/` directory. However, extensive historical data is available existing buckets. Reach out to Orion Junkins (orionjunkins@gmail.com) regarding IAM access to existing buckets or for single time copies of archived data.
+In general, S3 subdirectories will be created as needed, but the following buckets are assumed to exist: `all-weather-data` and `model-forecasts`. Scripts for populating these buckets are included in the `/scripts/` directory. However, extensive historical data is available existing buckets. Reach out to Orion Junkins (orionjunkins@gmail.com) regarding IAM access to existing buckets or for single time copies of archived data.
 
 ## Testing
 This repository uses Pytest for unit testing. In order to run all tests, from the root directory, run the following command:
