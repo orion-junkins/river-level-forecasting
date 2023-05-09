@@ -9,7 +9,10 @@ Using an ensemble of models trained on historical data, and a snapshot of recent
 
 The accuracy of these forecasts can be compared internally (ie. between model types), and externally (ie against USGS statistically modeled forecasts).
 
+## Directory Structure
 This library contains the core River Level Forecasting package (`/src/rlf/`) as well as a collection of scripts (`/scripts/`) to facilitate data management, model training, and result evaluation. There is also a collection of demos (`/demos/`) to help showcase core package functionalities, and a directory of Docker containerized AWS lambda applications (`/containers/`) for the automation of data collection and model inference.
+
+Single file scripts are documented with headers. More complex processes will have directory level READMEs with relavent information.
 
 ## Dependency Install
 All required dependencies are managed through an Anaconda environment. The needed environment is defined in `environment.yml`.
