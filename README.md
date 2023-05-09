@@ -1,6 +1,6 @@
 # River Level Forecasting
 ## Exploring various neural network architectures for river level forecasting
-### Research conducted by Orion Junkins, Douglas Dennis, Zachary Bochanski and Melissa Swearingen under Dr. Patrick Donnelly
+### Research conducted by Orion Junkins, Doug Dennis, Zachary Bochanski and Melissa Swearingen under Dr. Patrick Donnelly
 
 ## Introduction
 This repository seeks to compare various methodologies for forecasting river level flow rates based on a set of weather data sources spread throughout the river's tributaries. 
