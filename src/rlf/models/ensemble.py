@@ -400,7 +400,7 @@ class Ensemble(GlobalForecastingModel):
         models = self.contributing_models
         combiner = self.combiner
 
-        self.models = [None] * len(self.model.contributing_models)
+        self.contributing_models = [None] * len(self.contributing_models)
         self.combiner = combiner.__class__
 
         with open(os.path.join(path, "ensemble"), "wb") as f:
@@ -408,6 +408,20 @@ class Ensemble(GlobalForecastingModel):
 
         self.contributing_models = models
         self.combiner = combiner
+
+    @staticmethod
+    def load(path: str, load_cpu: bool) -> "Ensemble":
+        with open(os.path.join(path, "ensemble"), "rb") as f:
+            ensemble = pickle.load(f)
+
+        for i in range(len(ensemble.contributing_models)):
+            ensemble.contributing_models[i] = ContributingModel.load(
+                os.path.join(path, f"contributing_model_{i}"), load_cpu
+            )
+
+        ensemble.combiner = ensemble.combiner.load(os.path.join(path, "combiner"))
+
+        return ensemble
 
     def _compute_and_stack_contributing_predictions(self,
                                                     n: int,
