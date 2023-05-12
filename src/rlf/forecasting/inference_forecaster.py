@@ -10,7 +10,7 @@ from darts.models.forecasting.forecasting_model import ForecastingModel
 from rlf.forecasting.base_forecaster import BaseForecaster, DEFAULT_WORK_DIR
 from rlf.forecasting.catchment_data import CatchmentData
 from rlf.forecasting.inference_dataset import InferenceDataset
-from rlf.models.utils import load_ensemble_model
+from rlf.models.ensemble import Ensemble
 
 
 class InferenceForecaster(BaseForecaster):
@@ -66,7 +66,7 @@ class InferenceForecaster(BaseForecaster):
         Returns:
             ForecastingModel: Loaded ForecastingModel.
         """
-        model = load_ensemble_model(self.work_dir, load_cpu)
+        model = Ensemble.load(os.path.join(self.work_dir), load_cpu)
         return model
 
     def _load_scalers(self) -> Mapping[str, Scaler]:
