@@ -118,7 +118,6 @@ class TrainingForecaster(BaseForecaster):
 
     def backtest_contributing_models(self,
                                      run_on_validation: bool = False,
-                                     future_covariates: bool = True,
                                      retrain: bool = False,
                                      start: float = 0.05,  # Data must extend slightly before start. Increase value or use a larger dataset if "" error occurs.
                                      forecast_horizon: int = 24,
@@ -129,7 +128,6 @@ class TrainingForecaster(BaseForecaster):
 
         Args:
             run_on_validation (bool, optional): Whether to run on the validation dataset. Runs on Test set if False. Defaults to False.
-            future_covariates (bool, optional): Whether to pass X as future covariates. X will be passed as past_covariates if False. Defaults to True.
             retrain (bool, optional): Whether to retrain the model on the entire training dataset. Defaults to False.
             start (float, optional): The proportion of the training dataset to use for backtesting. Defaults to 0.05.
             forecast_horizon (int, optional): The forecast horizon to use. Defaults to 24.
