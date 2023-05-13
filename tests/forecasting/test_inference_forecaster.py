@@ -30,12 +30,13 @@ class MockModel:
             })
         })]
 
-    def predict(self, n, series, future_covariates):
+    def predict(self, n, series, future_covariates=None, past_covariates=None):
         print(series)
         print(self.expected_series)
         assert n == self.expected_n
         assert series == self.expected_series
         assert future_covariates == self.expected_future_covariates
+        assert past_covariates is None
         return self.prediction
 
 

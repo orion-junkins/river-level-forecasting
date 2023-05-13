@@ -8,6 +8,9 @@ try:
     from darts.models.forecasting.forecasting_model import GlobalForecastingModel
     from darts.models.forecasting.linear_regression_model import LinearRegressionModel
     from darts.models.forecasting.rnn_model import RNNModel
+    from darts.models.forecasting.transformer_model import TransformerModel
+    from darts.models.forecasting.nhits import NHiTSModel
+    from darts.models.forecasting.nbeats import NBEATSModel
 except ImportError as e:
     print("Import error on darts packages. Ensure darts and its dependencies have been installed into the local environment.")
     print(e)
@@ -33,7 +36,17 @@ STANDARD_JOB_PARAMETERS = ["data_file", "columns_file", "gauge_id", "contributin
 
 # Mapping of model variation names to their corresponding Darts classes.
 MODEL_VARIATIONS = {
-    "RNN": RNNModel
+    "RNN": RNNModel,
+    "Transformer": TransformerModel,
+    "NBEATS": NBEATSModel,
+    "NHiTS": NHiTSModel,
+}
+
+MODEL_USES_FUTURE_COVARIATES = {
+    "RNN": True,
+    "Transformer": False,
+    "NBEATS": False,
+    "NHiTS": False,
 }
 
 
@@ -197,7 +210,7 @@ def run_grid_search_job(parameters: Dict[str, Any], working_dir: str, job_id: in
     dataset = get_training_data(parameters["gauge_id"], coordinates, columns)
     model = build_model_for_dataset(dataset, parameters["regression_train_n_points"], contributing_model_type, contributing_model_kwargs)
 
-    forecaster = TrainingForecaster(model, dataset, root_dir=f'{working_dir}/trained_models/{str(job_id)}')
+    forecaster = TrainingForecaster(model, dataset, root_dir=f'{working_dir}/trained_models/{str(job_id)}', use_future_covariates=MODEL_USES_FUTURE_COVARIATES[contributing_model_type])
     forecaster.fit()
 
     scores: Dict[str, Any] = {}

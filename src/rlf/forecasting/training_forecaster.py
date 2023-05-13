@@ -16,6 +16,7 @@ class TrainingForecaster(BaseForecaster):
         dataset: TrainingDataset,
         root_dir: str = DEFAULT_WORK_DIR,
         scaler_filename: str = "scaler",
+        use_future_covariates: bool = True
     ) -> None:
         """Create a training forecaster. Note that many important parameters must be passed as keyword args. See BaseForecaster docs for complete list.
 
@@ -23,7 +24,8 @@ class TrainingForecaster(BaseForecaster):
             model (ForecastingModel): A darts ForecastingModel to train.
             dataset (TrainingDataset): TrainingDataset instance to use for training.
             root_dir (str, optional): Root dir to store trained model. Defaults to DEFAULT_WORK_DIR.
-            scaler_filename (str, optional): Filename to use for the scalers. Defaults to "scaler".
+            scaler_filename (str, optional): Filename to use for the scalers. Defaults to "scaler".\
+            use_future_covariates (bool, optional): Whether to use data as future covariates or past covariates. Defaults to True.
         """
         super().__init__(
             catchment_data=dataset.catchment_data,
@@ -33,6 +35,7 @@ class TrainingForecaster(BaseForecaster):
 
         self.model = model
         self.dataset = dataset
+        self.use_future_covariates = use_future_covariates
 
         os.makedirs(self.work_dir, exist_ok=True)
         if (os.path.isfile(self.model_save_path)):
@@ -43,7 +46,7 @@ class TrainingForecaster(BaseForecaster):
 
     def fit(self) -> None:
         """Fit the underlying Darts ForecastingModel model."""
-        self.model.fit_dataset(self.dataset, retrain_contributing_models=True)
+        self.model.fit_dataset(self.dataset, as_future=self.use_future_covariates, retrain_contributing_models=True)
         self.save_model()
 
     def save_model(self) -> None:
@@ -61,7 +64,8 @@ class TrainingForecaster(BaseForecaster):
             "engineered_columns": ["day_of_year"],
             "mean_columns": self.dataset.rolling_mean_columns,
             "sum_columns": self.dataset.rolling_sum_columns,
-            "windows": self.dataset.rolling_window_sizes
+            "windows": self.dataset.rolling_window_sizes,
+            "use_future_covariates": self.use_future_covariates,
         }
 
         with open(os.path.join(self.work_dir, "metadata"), "w") as f:
@@ -69,7 +73,6 @@ class TrainingForecaster(BaseForecaster):
 
     def backtest(self,
                  run_on_validation: bool = False,
-                 future_covariates: bool = True,
                  retrain: bool = False,
                  start: float = 0.05,  # Data must extend slightly before start. Increase value or use a larger dataset if "" error occurs.
                  forecast_horizon: int = 24,
@@ -97,16 +100,16 @@ class TrainingForecaster(BaseForecaster):
             x = self.dataset.X_test
             y = self.dataset.y_test
 
-        if (future_covariates):
-            past_covariates_data = None
-            future_covariates_data = x
+        if (self.use_future_covariates):
+            past_covariates = None
+            future_covariates = x
         else:
-            past_covariates_data = x
-            future_covariates_data = None
+            past_covariates = x
+            future_covariates = None
 
         return self.model.backtest(y,
-                                   past_covariates=past_covariates_data,
-                                   future_covariates=future_covariates_data,
+                                   past_covariates=past_covariates,
+                                   future_covariates=future_covariates,
                                    retrain=retrain,
                                    start=start,
                                    forecast_horizon=forecast_horizon,
@@ -143,18 +146,18 @@ class TrainingForecaster(BaseForecaster):
             x = self.dataset.X_test
             y = self.dataset.y_test
 
-        if (future_covariates):
-            past_covariates_data = None
-            future_covariates_data = x
+        if (self.use_future_covariates):
+            past_covariates = None
+            future_covariates = x
         else:
-            past_covariates_data = x
-            future_covariates_data = None
+            past_covariates = x
+            future_covariates = None
 
         model_errors = []
         for model in self.model.contributing_models:
             model_errors.append(model.backtest(y,
-                                               past_covariates=past_covariates_data,
-                                               future_covariates=future_covariates_data,
+                                               past_covariates=past_covariates,
+                                               future_covariates=future_covariates,
                                                retrain=retrain,
                                                start=start,
                                                forecast_horizon=forecast_horizon,
