@@ -2,6 +2,7 @@ import json
 import os
 import pickle
 
+from darts.metrics.metrics import mae
 from rlf.forecasting.base_forecaster import BaseForecaster, DEFAULT_WORK_DIR
 from rlf.forecasting.training_dataset import TrainingDataset
 from rlf.models.ensemble import Ensemble
@@ -114,7 +115,8 @@ class TrainingForecaster(BaseForecaster):
                                    start=start,
                                    forecast_horizon=forecast_horizon,
                                    stride=stride,
-                                   last_points_only=last_points_only)
+                                   last_points_only=last_points_only,
+                                   metric=mae)
 
     def backtest_contributing_models(self,
                                      run_on_validation: bool = False,
@@ -160,6 +162,7 @@ class TrainingForecaster(BaseForecaster):
                                                start=start,
                                                forecast_horizon=forecast_horizon,
                                                stride=stride,
-                                               last_points_only=last_points_only))
+                                               last_points_only=last_points_only,
+                                               metric=mae))
 
         return model_errors
