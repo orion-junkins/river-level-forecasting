@@ -21,7 +21,6 @@ dependencies:
     # Add pip packages which are not available through conda here
     # Note: to version lock a pip package, use '==' not '=' ie:
     # - packageName==0.123
-       
     - dataretrieval # Package for fetching NWIS river level dataa
     - simplekml     # Weather location KML generation
     - pyarrow       # Parquet file creation
