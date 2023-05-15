@@ -2,6 +2,10 @@ import json
 import os
 import pickle
 
+from darts.metrics.metrics import mae
+from darts.timeseries import TimeSeries
+
+import numpy as np
 from rlf.forecasting.base_forecaster import BaseForecaster, DEFAULT_WORK_DIR
 from rlf.forecasting.training_dataset import TrainingDataset
 from rlf.models.ensemble import Ensemble
@@ -107,14 +111,19 @@ class TrainingForecaster(BaseForecaster):
             past_covariates = x
             future_covariates = None
 
-        return self.model.backtest(y,
-                                   past_covariates=past_covariates,
-                                   future_covariates=future_covariates,
-                                   retrain=retrain,
-                                   start=start,
-                                   forecast_horizon=forecast_horizon,
-                                   stride=stride,
-                                   last_points_only=last_points_only)
+        error = self.model.backtest(y,
+                                    past_covariates=past_covariates,
+                                    future_covariates=future_covariates,
+                                    retrain=retrain,
+                                    start=start,
+                                    forecast_horizon=forecast_horizon,
+                                    stride=stride,
+                                    last_points_only=last_points_only,
+                                    metric=mae)
+        scaled_error = np.array([[error]], np.float32)
+        scaled_error_ts = TimeSeries.from_values(scaled_error)
+        unscaled_error = float(self.dataset.target_scaler.inverse_transform(scaled_error_ts).values()[0][0])
+        return unscaled_error
 
     def backtest_contributing_models(self,
                                      run_on_validation: bool = False,
@@ -153,13 +162,18 @@ class TrainingForecaster(BaseForecaster):
 
         model_errors = []
         for model in self.model.contributing_models:
-            model_errors.append(model.backtest(y,
-                                               past_covariates=past_covariates,
-                                               future_covariates=future_covariates,
-                                               retrain=retrain,
-                                               start=start,
-                                               forecast_horizon=forecast_horizon,
-                                               stride=stride,
-                                               last_points_only=last_points_only))
+            error = model.backtest(y,
+                                   past_covariates=past_covariates,
+                                   future_covariates=future_covariates,
+                                   retrain=retrain,
+                                   start=start,
+                                   forecast_horizon=forecast_horizon,
+                                   stride=stride,
+                                   last_points_only=last_points_only,
+                                   metric=mae)
+            scaled_error = np.array([[error]], np.float32)
+            scaled_error_ts = TimeSeries.from_values(scaled_error)
+            unscaled_error = float(self.dataset.target_scaler.inverse_transform(scaled_error_ts).values()[0][0])
+            model_errors.append(unscaled_error)
 
         return model_errors
