@@ -400,7 +400,8 @@ class Ensemble(GlobalForecastingModel):
         models = self.contributing_models
         combiner = self.combiner
 
-        self.contributing_models = [None] * len(self.contributing_models)
+        # mypy doesn't like this but contributing_models is only set to List[None] for a couple lines and then reverted back
+        self.contributing_models = [None] * len(self.contributing_models)  # type: ignore
         self.combiner = combiner.__class__
 
         with open(os.path.join(path, "ensemble"), "wb") as f:
