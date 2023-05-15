@@ -24,7 +24,7 @@ class TrainingForecaster(BaseForecaster):
             model (ForecastingModel): A darts ForecastingModel to train.
             dataset (TrainingDataset): TrainingDataset instance to use for training.
             root_dir (str, optional): Root dir to store trained model. Defaults to DEFAULT_WORK_DIR.
-            scaler_filename (str, optional): Filename to use for the scalers. Defaults to "scaler".\
+            scaler_filename (str, optional): Filename to use for the scalers. Defaults to "scaler".
             use_future_covariates (bool, optional): Whether to use data as future covariates or past covariates. Defaults to True.
         """
         super().__init__(
