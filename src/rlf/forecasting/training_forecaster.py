@@ -151,7 +151,7 @@ class TrainingForecaster(BaseForecaster):
             future_covariates_data = None
 
         model_errors = []
-        for model in self.model.models:
+        for model in self.model.contributing_models:
             model_errors.append(model.backtest(y,
                                                past_covariates=past_covariates_data,
                                                future_covariates=future_covariates_data,

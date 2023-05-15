@@ -21,7 +21,7 @@ class MockModel:
         self.expected_series = expected_series
         self.expected_future_covariates = expected_future_covariates
         self.prediction = prediction
-        self.models = [FakeObject({
+        self.contributing_models = [FakeObject({
             "_column_prefix": "prefix_",
             "_base_model": FakeObject({
                 "future_covariate_series": FakeObject({
