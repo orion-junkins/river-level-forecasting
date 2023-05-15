@@ -38,6 +38,7 @@ class InferenceForecaster(BaseForecaster):
         scalers = self._load_scalers()
         metadata = self._load_metadata()
         catchment_data.columns = metadata["api_columns"]
+        self.use_future_covariates = metadata["use_future_covariates"] if "use_future_covariates" in metadata else True
 
         self.dataset = InferenceDataset(
             scalers["scaler"],
@@ -92,7 +93,14 @@ class InferenceForecaster(BaseForecaster):
         if update:
             self.dataset.update()
 
-        scaled_predictions = self.model.predict(num_timesteps, series=self.dataset.y, future_covariates=self.dataset.X)
+        if (self.use_future_covariates):
+            past_covariates = None
+            future_covariates = self.dataset.X
+        else:
+            past_covariates = self.dataset.X
+            future_covariates = None
+
+        scaled_predictions = self.model.predict(num_timesteps, series=self.dataset.y, past_covariates=past_covariates, future_covariates=future_covariates)
         rescaled_predictions = self.dataset.target_scaler.inverse_transform(scaled_predictions)
 
         return rescaled_predictions

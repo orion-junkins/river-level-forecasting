@@ -8,6 +8,9 @@ import sys
 
 try:
     from darts.models.forecasting.rnn_model import RNNModel
+    from darts.models.forecasting.transformer_model import TransformerModel
+    from darts.models.forecasting.nhits import NHiTSModel
+    from darts.models.forecasting.nbeats import NBEATSModel
 except ImportError as e:
     print("Import error on darts packages. Ensure darts and its dependencies have been installed into the local environment.")
     print(e)
@@ -16,7 +19,10 @@ except ImportError as e:
 
 # Mapping of model variation names to their corresponding Darts classes.
 MODEL_VARIATIONS = {
-    "RNN": RNNModel
+    "RNN": RNNModel,
+    "Transformer": TransformerModel,
+    "NHiTS": NHiTSModel,
+    "NBEATS": NBEATSModel
 }
 
 

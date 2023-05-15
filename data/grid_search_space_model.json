@@ -47,5 +47,134 @@
         "regression_train_n_points": [
             480
         ]
+    },
+    "Transformer": {
+        "data_file": [
+            "data/catchments_short.json"
+        ],
+        "columns_file": [
+            "data/columns.txt"
+        ],
+        "input_chunk_length": [
+            96
+        ],
+        "output_chunk_length": [
+            24
+        ],
+        "batch_size": [
+            64
+        ],
+        "d_model": [
+            64
+        ],
+        "nhead": [
+            8
+        ],
+        "num_encoder_layers": [
+            4
+        ],
+        "num_decoder_layers": [
+            4
+        ],
+        "dim_feedforward":[
+            512
+        ],
+        "dropout": [
+            0.01
+        ],
+        "n_epochs": [
+            20
+        ],
+        "force_reset": [
+            true
+        ],
+        "pl_trainer_kwargs": [
+            {
+                "accelerator":"gpu",
+                "enable_progress_bar": false
+            }
+        ],
+        "optimizer_kwargs": [
+            {"lr": 0.1}
+        ],
+        "regression_train_n_points": [
+            480
+        ]
+    },
+    "NHiTS": {
+        "data_file": [
+            "data/catchments_short.json"
+        ],
+        "columns_file": [
+            "data/columns.txt"
+        ],
+        "input_chunk_length": [
+            96
+        ],
+        "output_chunk_length": [
+            24
+        ],
+        "batch_size": [
+            64
+        ],
+        "dropout": [
+            0.01
+        ],
+        "n_epochs": [
+            20
+        ],
+        "force_reset": [
+            true
+        ],
+        "pl_trainer_kwargs": [
+            {
+                "accelerator":"gpu",
+                "enable_progress_bar": false
+            }
+        ],
+        "optimizer_kwargs": [
+            {"lr": 0.1}
+        ],
+        "regression_train_n_points": [
+            480
+        ]
+    },
+    "NBEATS": {
+        "data_file": [
+            "data/catchments_short.json"
+        ],
+        "columns_file": [
+            "data/columns.txt"
+        ],
+        "input_chunk_length": [
+            96
+        ],
+        "output_chunk_length": [
+            24
+        ],
+        "batch_size": [
+            64
+        ],
+        "dropout": [
+            0.01
+        ],
+        "n_epochs": [
+            20
+        ],
+        "force_reset": [
+            true
+        ],
+        "pl_trainer_kwargs": [
+            {
+                "accelerator":"gpu",
+                "enable_progress_bar": false
+            }
+        ],
+        "optimizer_kwargs": [
+            {"lr": 0.1}
+        ],
+        "regression_train_n_points": [
+            480
+        ]
     }
 }
