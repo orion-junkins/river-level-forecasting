@@ -1,8 +1,18 @@
+import logging
 import pickle
-from typing import List, Optional, Set, Tuple
+from typing import Callable, List, Optional, Set, Tuple, Union
 
 from darts import TimeSeries
 from darts.models.forecasting.forecasting_model import GlobalForecastingModel
+from darts.utils import _build_tqdm_iterator
+from darts.utils.timeseries_generation import generate_index
+from darts.utils.utils import (
+    drop_after_index,
+    drop_before_index,
+    series2seq,
+)
+import numpy as np
+import pandas as pd
 
 from rlf.types import CovariateType
 
@@ -67,6 +77,192 @@ class ContributingModel(GlobalForecastingModel):
         """
         past_covariates, future_covariates = self._preprocess_input_data(past_covariates, future_covariates)
         return self._base_model.predict(n=n, series=series, past_covariates=past_covariates, future_covariates=future_covariates, **kwargs)
+
+    def historical_forecasts(
+        self,
+        series: CovariateType,
+        past_covariates: Optional[CovariateType] = None,
+        future_covariates: Optional[CovariateType] = None,
+        num_samples: int = 1,
+        train_length: Optional[int] = None,
+        start: Optional[Union[pd.Timestamp, float, int]] = None,
+        forecast_horizon: int = 1,
+        stride: int = 1,
+        retrain: Union[bool, int, Callable[..., bool]] = True,
+        overlap_end: bool = False,
+        last_points_only: bool = True,
+        verbose: bool = False,
+        show_warnings: bool = False
+    ) -> Union[TimeSeries, List[TimeSeries], CovariateType]:
+        past_covariates, future_covariates = self._preprocess_input_data(past_covariates, future_covariates)
+
+        # we will never retrain the model and have removed the functionality to do so
+        assert retrain is False
+
+        model = self._base_model
+
+        assert model._fit_called
+
+        series = series2seq(series)
+        past_covariates = series2seq(past_covariates)
+        future_covariates = series2seq(future_covariates)
+
+        if len(series) == 1:
+            # Use tqdm on the outer loop only if there's more than one series to iterate over
+            # (otherwise use tqdm on the inner loop).
+            outer_iterator = series
+        else:
+            outer_iterator = _build_tqdm_iterator(series, verbose)
+
+        forecasts_list = []
+        for idx, series_ in enumerate(outer_iterator):
+            past_covariates_ = past_covariates[idx] if past_covariates else None
+            future_covariates_ = future_covariates[idx] if future_covariates else None
+
+            # Prediction
+            historical_forecasts_time_index_predict = (
+                model._get_historical_forecastable_time_index(
+                    series_,
+                    past_covariates_,
+                    future_covariates_,
+                    is_training=False,
+                )
+            )
+
+            if historical_forecasts_time_index_predict is None:
+                raise ValueError(
+                        "Cannot build a single input for prediction with the provided model, "
+                        f"`series` and `*_covariates` at series index: {idx}. The minimum "
+                        "prediction input time index requirements were not met. "
+                        "Please check the time index of `series` and `*_covariates`."
+                    )
+
+            historical_forecasts_time_index = (
+                    historical_forecasts_time_index_predict
+                )
+
+            # Take into account overlap_end, and forecast_horizon.
+            last_valid_pred_time = model._get_last_prediction_time(
+                series_,
+                forecast_horizon,
+                overlap_end,
+            )
+
+            # The historical_forecasts_time_index end (which was just model dependent so far) is readjusted
+            # by function parameters overlap_end and forecast_horizon.
+            historical_forecasts_time_index = drop_after_index(
+                historical_forecasts_time_index, last_valid_pred_time
+            )
+
+            # adjust maximum index with optional `start` value
+            if start is not None:
+                start_time_ = series_.get_timestamp_at_point(start)
+                if (
+                    not historical_forecasts_time_index[0]
+                    <= start_time_
+                    <= historical_forecasts_time_index[-1]
+                ):
+                    if show_warnings:
+                        if not isinstance(start, pd.Timestamp):
+                            start_value_msg = f"value `{start}` corresponding to timestamp `{start_time_}`"
+                        else:
+                            start_value_msg = f"time `{start_time_}`"
+
+                        if start_time_ < historical_forecasts_time_index[0]:
+                            logging.warning(
+                                f"`start` {start_value_msg} is before the first predictable/trainable historical "
+                                f"forecasting point for series at index: {idx}. Ignoring `start` for this series and "
+                                f"beginning at first trainable/predictable time: {historical_forecasts_time_index[0]}. "
+                                f"To hide these warnings, set `show_warnings=False`."
+                            )
+                        else:
+                            logging.warning(
+                                f"`start` {start_value_msg} is after the last trainable/predictable historical "
+                                f"forecasting point for series at index: {idx}. This would results in empty historical "
+                                f"forecasts. Ignoring `start` for this series and beginning at first trainable/"
+                                f"predictable time: {historical_forecasts_time_index[0]}. Non-empty forecasts can be "
+                                f"generated by setting `start` value to times between (including): "
+                                f"{historical_forecasts_time_index[0], historical_forecasts_time_index[-1]}. "
+                                f"To hide these warnings, set `show_warnings=False`."
+                            )
+                    # ignore user-defined `start`
+                    start_time_ = None
+
+                if start_time_ is not None:
+                    historical_forecasts_time_index = drop_before_index(
+                        historical_forecasts_time_index,
+                        start_time_,
+                    )
+
+            if len(series) == 1:
+                # Only use tqdm if there's no outer loop
+                iterator = _build_tqdm_iterator(
+                    historical_forecasts_time_index[::stride], verbose
+                )
+            else:
+                iterator = historical_forecasts_time_index[::stride]
+
+            # Either store the whole forecasts or only the last points of each forecast, depending on last_points_only
+            forecasts = []
+
+            last_points_times = []
+            last_points_values = []
+
+            # iterate and forecast
+            for pred_time in iterator:
+                train_series = series_.drop_after(pred_time)
+
+                # for regression models with lags=None, lags_past_covariates=None and min(lags_future_covariates)>=0,
+                # the first predictable timestamp is the first timestamp of the series, a dummy ts must be created
+                # to support `predict()`
+                # >>>> I don't think this is needed but I haven't grokked what is happening yet
+                # if len(train_series) == 0:
+                #     train_series = TimeSeries.from_times_and_values(
+                #         times=generate_index(
+                #             start=pred_time - 1 * series_.freq,
+                #             length=1,
+                #             freq=series_.freq,
+                #         ),
+                #         values=np.array([np.NaN]),
+                #     )
+
+                forecast = model._predict_wrapper(
+                    n=forecast_horizon,
+                    series=train_series,
+                    past_covariates=past_covariates_,
+                    future_covariates=future_covariates_,
+                    num_samples=num_samples,
+                    verbose=verbose,
+                )
+
+                if last_points_only:
+                    last_points_values.append(forecast.all_values(copy=False)[-1])
+                    last_points_times.append(forecast.end_time())
+                else:
+                    forecasts.append(forecast)
+
+            if last_points_only:
+                forecasts_list.append(
+                    TimeSeries.from_times_and_values(
+                        generate_index(
+                            start=last_points_times[0],
+                            end=last_points_times[-1],
+                            freq=series_.freq * stride,
+                        ),
+                        np.array(last_points_values),
+                        columns=series_.columns,
+                        static_covariates=series_.static_covariates,
+                        hierarchy=series_.hierarchy,
+                    )
+                )
+            else:
+                forecasts_list.append(forecasts)
+
+        return forecasts_list if len(series) > 1 else forecasts_list[0]
+
+    @property
+    def input_chunk_length(self) -> int:
+        return self._base_model.input_chunk_length
 
     @property
     def _fit_called(self) -> bool:

@@ -6,7 +6,7 @@ from typing import Any, Dict, List, Optional
 
 try:
     from darts.models.forecasting.forecasting_model import GlobalForecastingModel
-    from darts.models.forecasting.regression_ensemble_model import RegressionEnsembleModel
+    from darts.models.forecasting.linear_regression_model import LinearRegressionModel
     from darts.models.forecasting.rnn_model import RNNModel
 except ImportError as e:
     print("Import error on darts packages. Ensure darts and its dependencies have been installed into the local environment.")
@@ -22,6 +22,7 @@ try:
     from rlf.forecasting.training_dataset import TrainingDataset
     from rlf.forecasting.training_forecaster import TrainingForecaster
     from rlf.models.contributing_model import ContributingModel
+    from rlf.models.ensemble import Ensemble
 except ImportError as e:
     print("Import error on rlf packages. Ensure rlf and its dependencies have been installed into the local environment.")
     print(e)
@@ -57,7 +58,7 @@ def build_model_for_dataset(
     train_n_points: int,
     contributing_model_type: str,
     contributing_model_kwargs: Dict
-) -> RegressionEnsembleModel:
+) -> Ensemble:
     """Build the EnsembleModel with the contributing models.
 
     Args:
@@ -67,14 +68,15 @@ def build_model_for_dataset(
         contributing_model_kwargs (Dict): Keyword arguments to pass to the model constructor.
 
     Returns:
-        RegressionEnsembleModel: Built ensemble model.
+        Ensemble: Built ensemble model.
     """
     models = []
     for prefix in training_dataset.subsets:
         model = ContributingModel(generate_base_contributing_model(contributing_model_type, contributing_model_kwargs), prefix)
         models.append(model)
 
-    model = RegressionEnsembleModel(
+    model = Ensemble(
+        LinearRegressionModel(lags=None, lags_future_covariates=[0], fit_intercept=False),
         models,
         train_n_points
     )
