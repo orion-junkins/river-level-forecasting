@@ -4,13 +4,13 @@ import pickle
 
 from darts.dataprocessing.transformers.scaler import Scaler
 from darts.models.forecasting.linear_regression_model import LinearRegressionModel
-from darts.models.forecasting.regression_ensemble_model import RegressionEnsembleModel
 import pytest
 
 from fake_providers import FakeLevelProvider, FakeWeatherProvider
 from rlf.forecasting.catchment_data import CatchmentData
 from rlf.forecasting.training_dataset import TrainingDataset
 from rlf.forecasting.training_forecaster import TrainingForecaster
+from rlf.models.ensemble import Ensemble
 
 
 @pytest.fixture
@@ -31,21 +31,21 @@ def test_training_forecaster_init(training_dataset):
 
 def test_training_forecaster_save_model(tmp_path, training_dataset):
     training_forecaster = TrainingForecaster(
-        RegressionEnsembleModel([LinearRegressionModel(lags=1)], 10),
+        Ensemble(LinearRegressionModel(lags=1), [LinearRegressionModel(lags=1)], 10),
         training_dataset,
         root_dir=tmp_path
     )
 
     training_forecaster.save_model()
     assert os.path.exists(os.path.join(tmp_path, "test_catchment"))
-    assert os.path.exists(os.path.join(tmp_path, "test_catchment", "frcstr"))
+    assert os.path.exists(os.path.join(tmp_path, "test_catchment", "ensemble"))
     assert os.path.exists(os.path.join(tmp_path, "test_catchment", "scaler"))
     assert os.path.exists(os.path.join(tmp_path, "test_catchment", "metadata"))
 
 
 def test_training_forecaster_save_model_scaler_is_correct(tmp_path, training_dataset):
     training_forecaster = TrainingForecaster(
-        RegressionEnsembleModel([LinearRegressionModel(lags=1)], 10),
+        Ensemble(LinearRegressionModel(lags=1), [LinearRegressionModel(lags=1)], 10),
         training_dataset,
         root_dir=tmp_path
     )
@@ -63,7 +63,7 @@ def test_training_forecaster_save_model_scaler_is_correct(tmp_path, training_dat
 
 def test_training_forecaster_save_model_metadata_is_correct(tmp_path, training_dataset):
     training_forecaster = TrainingForecaster(
-        RegressionEnsembleModel([LinearRegressionModel(lags=1)], 10),
+        Ensemble(LinearRegressionModel(lags=1), [LinearRegressionModel(lags=1)], 10),
         training_dataset,
         root_dir=tmp_path
     )
@@ -86,7 +86,7 @@ def test_training_forecaster_save_model_metadata_is_correct(tmp_path, training_d
 
 def test_training_forecaster_save_model_metadata_with_rolling_columns_correct(tmp_path, training_dataset):
     training_forecaster = TrainingForecaster(
-        RegressionEnsembleModel([LinearRegressionModel(lags=1)], 10),
+        Ensemble(LinearRegressionModel(lags=1), [LinearRegressionModel(lags=1)], 10),
         training_dataset,
         root_dir=tmp_path
     )
