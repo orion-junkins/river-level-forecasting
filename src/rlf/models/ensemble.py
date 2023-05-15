@@ -87,8 +87,8 @@ class Ensemble(GlobalForecastingModel):
 
         return self
 
-    def fit_dataset(self, dataset, as_future: bool = True, retrain_contributing_models: bool = False):
-        if as_future:
+    def fit_dataset(self, dataset, use_future_covariates: bool = True, retrain_contributing_models: bool = False):
+        if use_future_covariates:
             return self.fit(
                 dataset.y_train,
                 future_covariates=dataset.X_train,

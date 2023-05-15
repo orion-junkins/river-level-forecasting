@@ -46,7 +46,7 @@ class TrainingForecaster(BaseForecaster):
 
     def fit(self) -> None:
         """Fit the underlying Darts ForecastingModel model."""
-        self.model.fit_dataset(self.dataset, as_future=self.use_future_covariates, retrain_contributing_models=True)
+        self.model.fit_dataset(self.dataset, use_future_covariates=self.use_future_covariates, retrain_contributing_models=True)
         self.save_model()
 
     def save_model(self) -> None:
