@@ -5,7 +5,6 @@ from typing import List, Optional
 try:
     from darts.models.forecasting.forecasting_model import GlobalForecastingModel
     from darts.models.forecasting.linear_regression_model import LinearRegressionModel
-    from darts.models.forecasting.regression_ensemble_model import RegressionEnsembleModel
     from darts.models.forecasting.rnn_model import RNNModel
 except ImportError as e:
     print("Import error on darts packages. Ensure darts and its dependencies have been installed into the local environment.")
@@ -97,7 +96,7 @@ def generate_base_contributing_model(num_epochs: int) -> GlobalForecastingModel:
 def build_model_for_dataset(
     training_dataset: TrainingDataset,
     num_epochs: int
-) -> RegressionEnsembleModel:
+) -> Ensemble:
     """Build the EnsembleModel with the contributing models.
 
     Args:
@@ -105,7 +104,7 @@ def build_model_for_dataset(
         num_epochs (int): Number of epochs to train each contributing model.
 
     Returns:
-        RegressionEnsembleModel: Built ensemble model.
+        Ensemble: Built ensemble model.
     """
     contributing_models = [
         ContributingModel(RNNModel(120, n_epochs=num_epochs, random_state=42, model="GRU", hidden_dim=50, n_rnn_layers=5, dropout=0.01, training_length=139, force_reset=True, pl_trainer_kwargs={"accelerator": "gpu"}), prefix)
