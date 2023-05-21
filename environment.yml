@@ -1,4 +1,4 @@
-name: rlf-dep-testing
+name: river-level
 channels:
   - conda-forge
   - pytorch
