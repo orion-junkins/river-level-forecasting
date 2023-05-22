@@ -2,7 +2,7 @@ import argparse
 import json
 import os
 import statistics
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Sequence
 
 try:
     from darts.models.forecasting.forecasting_model import GlobalForecastingModel
@@ -146,7 +146,10 @@ def get_coordinates_for_catchment(filename: str, gauge_id: str, center_only: boo
 def get_training_data(
     gauge_id: str,
     coordinates: List[Coordinate],
-    columns: List[str]
+    columns: List[str],
+    rolling_sum_columns: Optional[List[str]] = None,
+    rolling_mean_columns: Optional[List[str]] = None,
+    rolling_window_sizes: Sequence[int] = (10 * 24, 30 * 24)
 ) -> TrainingDataset:
     """Generate the TrainingDataset for the given gauge ID, coordinates, and columns.
 
@@ -154,6 +157,9 @@ def get_training_data(
         gauge_id (str): gauge ID this TrainingDataset will represent.
         coordinates (List[Coordinate]): List of coordinates for this TrainingDataset.
         columns (List[str]): Columns to request from the weather provider.
+        rolling_sum_columns (Optional[List[str]], optional): Columns to generate rolling sums for. Defaults to None.
+        rolling_mean_columns (Optional[List[str]], optional): Columns to generate rolling means for. Defaults to None.
+        rolling_window_sizes (Sequence[int], optional): Window sizes to use for rolling sums and means. Defaults to (10 * 24, 30 * 24).
 
     Returns:
         TrainingDataset: A TrainingDataset instance for the specified gauge ID, coordinates and columns.
@@ -169,7 +175,10 @@ def get_training_data(
         level_provider,
         columns=columns
     )
-    dataset = TrainingDataset(catchment_data)
+    dataset = TrainingDataset(catchment_data,
+                              rolling_sum_columns=rolling_sum_columns,
+                              rolling_mean_columns=rolling_mean_columns,
+                              rolling_window_sizes=rolling_window_sizes)
     return dataset
 
 
@@ -207,7 +216,9 @@ def run_grid_search_job(parameters: Dict[str, Any], working_dir: str, job_id: in
         return {}
 
     columns = get_columns(parameters["columns_file"])
-    dataset = get_training_data(parameters["gauge_id"], coordinates, columns)
+    rolling_sum_columns = ["snowfall", "precipitation"]
+    rolling_mean_columns = ["temperature_2m"]
+    dataset = get_training_data(parameters["gauge_id"], coordinates, columns, rolling_sum_columns=rolling_sum_columns, rolling_mean_columns=rolling_mean_columns)
     model = build_model_for_dataset(dataset, parameters["regression_train_n_points"], contributing_model_type, contributing_model_kwargs)
 
     forecaster = TrainingForecaster(model, dataset, root_dir=f'{working_dir}/trained_models/{str(job_id)}', use_future_covariates=MODEL_USES_FUTURE_COVARIATES[contributing_model_type])

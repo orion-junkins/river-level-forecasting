@@ -58,13 +58,15 @@ class BaseDataset(ABC):
         # find the boundaries that are valid for all datasets
         first_date, last_date = self._find_timestamp_boundaries(Xs, y)
 
-        y = TimeSeries.from_dataframe(y).slice(first_date, last_date)
-
         X_last_date = None if allow_future_X else last_date
         processed_Xs = [self._process_datum(datum, first_date, X_last_date) for datum in Xs]
         X_concatenated = concatenate(processed_Xs, axis="component")
 
+        if X_concatenated.time_index[0] > first_date:
+            first_date = X_concatenated.time_index[0]
         X_concatenated = X_concatenated.astype("float32")
+
+        y = TimeSeries.from_dataframe(y).slice(first_date, last_date)
         y = y.astype("float32")
 
         return X_concatenated, y
