@@ -13,7 +13,7 @@ dependencies:
   - pytest                  # Unit testing framework
   - boto3                   # AWS S3 interaction
   - s3fs                    # AWS S3 interaction TODO: Convert to only boto3 OR only s3fs (Issue #30)
-  - holidays=0.24           # Holiday calendar for time series forecasting
+  - holidays=0.24           # Holiday calendar for time series forecasting. Version locked to avoid upstream issue.
   - pytorch=1.13.1          # Core underlying neural network library
   - pytorch-lightning=1.9.3 # High level interface for pytorch
   - u8darts-all=0.23        # Core Timeseries forecasting library
