@@ -6,28 +6,29 @@
         "columns_file": [
             "data/columns.txt"
         ],
+        "random_state": [
+            42
+        ],
         "input_chunk_length": [
-            96
+            120
         ],
         "training_length": [
-            120
+            144
         ],
         "batch_size": [
             64
         ],
         "model": [
-            "RNN",
-            "GRU",
-            "LSTM"
+            "GRU"
         ],
         "hidden_dim": [
-            64, 256, 512
+            64, 128, 256
         ],
         "n_rnn_layers": [
             4, 8, 16
         ],
         "dropout": [
-            0.01, 0.1
+            0.01, 0.05
         ],
         "n_epochs": [
             20
@@ -41,11 +42,8 @@
                 "enable_progress_bar": false
             }
         ],
-        "optimizer_kwargs": [
-            {"lr": 0.1}
-        ],
         "regression_train_n_points": [
-            480
+            26280
         ]
     },
     "Transformer": {
