@@ -6,6 +6,15 @@
         "columns_file": [
             "data/columns.txt"
         ],
+        "rolling_sum_columns": [
+            ["precipitation", "snowfall"]
+        ],
+        "rolling_mean_columns": [
+            ["temperature_2m"]
+        ],
+        "rolling_window_sizes": [
+            [10, 30]
+        ],
         "random_state": [
             42
         ],
