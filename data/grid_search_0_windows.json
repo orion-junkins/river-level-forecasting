@@ -14,25 +14,18 @@
         ],
         "rolling_window_sizes": [
             [],
-            [256, 512],
-            [512, 1024],
-            [1024, 2048],
-            [2048, 4096],
-            [256, 512, 1024],
-            [512, 1024, 2048],
-            [1024, 2048, 4096],
-            [256, 512, 1024, 2048],
-            [512, 1024, 2048, 4096],
-            [256, 512, 1024, 2048, 4096]        
-    ],
+            [256],
+            [1024],
+            [2048]    
+        ],
         "random_state": [
             42
         ],
         "input_chunk_length": [
-            120
+            128, 256
         ],
         "training_length": [
-            144
+            192, 320
         ],
         "batch_size": [
             64
@@ -41,13 +34,13 @@
             "GRU"
         ],
         "hidden_dim": [
-            "Best value from model grid search"
+            128
         ],
         "n_rnn_layers": [
-            "Best value from model grid search"
+            4
         ],
         "dropout": [
-            "Best value from model grid search"
+            0.05
         ],
         "n_epochs": [
             20
@@ -62,7 +55,7 @@
             }
         ],
         "regression_train_n_points": [
-            26280
+            720
         ]
     }
 }

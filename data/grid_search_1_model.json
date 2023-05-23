@@ -13,16 +13,16 @@
             ["temperature_2m"]
         ],
         "rolling_window_sizes": [
-            [10, 30]
+            "Best value from prior search"
         ],
         "random_state": [
             42
         ],
         "input_chunk_length": [
-            120
+            "Best value from prior search"
         ],
         "training_length": [
-            144
+            "Best value from prior search"
         ],
         "batch_size": [
             64
@@ -52,7 +52,7 @@
             }
         ],
         "regression_train_n_points": [
-            26280
+            720
         ]
     },
     "Transformer": {

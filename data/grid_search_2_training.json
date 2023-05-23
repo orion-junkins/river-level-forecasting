@@ -13,31 +13,31 @@
             ["temperature_2m"]
         ],
         "rolling_window_sizes": [
-            "Best value from lag windows grid search"
+            "Best value from prior search"
         ],
         "random_state": [
             42
         ],
         "input_chunk_length": [
-            120
+            "Best value from prior search"
         ],
         "training_length": [
-            144
+            "Best value from prior search"
         ],
         "batch_size": [
-            64
+            32, 64
         ],
         "model": [
             "GRU"
         ],
         "hidden_dim": [
-            "Best value from model grid search"
+            "Best value from prior search"
         ],
         "n_rnn_layers": [
-            "Best value from model grid search"
+            "Best value from prior search"
         ],
         "dropout": [
-            "Best value from model grid search"
+            "Best value from prior search"
         ],
         "n_epochs": [
             50, 100, 200
@@ -52,7 +52,7 @@
             }
         ],
         "regression_train_n_points": [
-            26280
+            720
         ]
     }
 }
