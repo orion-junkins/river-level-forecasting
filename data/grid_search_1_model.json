@@ -7,22 +7,22 @@
             "data/columns.txt"
         ],
         "rolling_sum_columns": [
-            ["precipitation", "snowfall"]
+            []
         ],
         "rolling_mean_columns": [
-            ["temperature_2m"]
+            []
         ],
         "rolling_window_sizes": [
-            "Best value from prior search"
+            []
         ],
         "random_state": [
             42
         ],
         "input_chunk_length": [
-            "Best value from prior search"
+            128
         ],
         "training_length": [
-            "Best value from prior search"
+            320
         ],
         "batch_size": [
             64
