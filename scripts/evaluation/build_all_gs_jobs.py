@@ -55,6 +55,7 @@ def build_json_jobs(search_space: Dict[str, Any], dir: str = "grid_search", purg
 
 
 if __name__ == '__main__':
+    # Parse the command-line arguments
     parser = argparse.ArgumentParser()
     parser.add_argument("model_variation", type=str, help="The model variation to use for the grid search.")
     parser.add_argument("gauge_id", type=str, help="The ID of the USGS gauge to use for the grid search.")
@@ -72,10 +73,12 @@ if __name__ == '__main__':
 
     current_timestamp = str(time.time())
 
+    # Load the search space for the specified model variation
     with open(search_space_filepath) as json_file:
         all_search_spaces = json.load(json_file)
     search_space = all_search_spaces[model_variation]
 
+    # Set up the output directory
     dir = os.path.join(output_dir, model_variation, gauge_id, "jobs")
     os.makedirs(dir, exist_ok=True)
     if purge_directory:
@@ -85,9 +88,11 @@ if __name__ == '__main__':
         print("Output directory is not empty. Please purge it before generating jobs.")
         sys.exit(1)
 
+    # Generate the job permutations
     keys, values = zip(*search_space.items())
     permutations_dicts = [dict(zip(keys, v)) for v in itertools.product(*values)]
 
+    # Save the job permutations to JSON files
     for i, permutation in enumerate(permutations_dicts):
         permutation['contributing_model_type'] = model_variation
         permutation['gauge_id'] = gauge_id
