@@ -46,13 +46,13 @@ def evaluator(df):
 
 
 def test_level_true(evaluator):
-    level_true = evaluator.level_true
+    level_true = evaluator.level_true()
     assert level_true.shape == (4,)
     assert (level_true == [20, 30, 40, 50]).all()
 
 
 def test_all_level_preds(evaluator):
-    all_level_preds = evaluator.all_level_preds
+    all_level_preds = evaluator.all_level_preds()
     assert all_level_preds.shape == (4, 3)
     assert (all_level_preds.columns == ["23-01-01_02-00", "23-01-01_03-00", "23-01-01_04-00"]).all()
 
@@ -69,7 +69,7 @@ def expected_absolute_errors_by_window():
 
 
 def test_absolute_errors_by_window(evaluator, expected_absolute_errors_by_window):
-    assert (evaluator.absolute_errors_by_window == expected_absolute_errors_by_window)
+    assert (evaluator.absolute_errors_by_window() == expected_absolute_errors_by_window)
 
 
 @pytest.fixture
@@ -80,7 +80,7 @@ def expected_percent_errors_by_window():
 
 
 def test_percent_errors_by_window(evaluator, expected_percent_errors_by_window):
-    assert (evaluator.percent_errors_by_window == expected_percent_errors_by_window)
+    assert (evaluator.percent_errors_by_window() == expected_percent_errors_by_window)
 
 
 @pytest.fixture
@@ -91,7 +91,7 @@ def expected_mae_by_window():
 
 
 def test_mae_by_window(evaluator, expected_mae_by_window):
-    assert (evaluator.mae_by_window == expected_mae_by_window)
+    assert (evaluator.mae_by_window() == expected_mae_by_window)
 
 
 @pytest.fixture
@@ -102,19 +102,19 @@ def expected_mape_by_window():
 
 
 def test_mape_by_window(evaluator, expected_mape_by_window):
-    assert (evaluator.mape_by_window == expected_mape_by_window)
+    assert (evaluator.mape_by_window() == expected_mape_by_window)
 
 
 def test_df_mae(evaluator, expected_mae_by_window):
-    expected = pd.DataFrame.from_dict(expected_mae_by_window, orient='index').sort_index()
+    expected = pd.DataFrame.from_dict(expected_mae_by_window(), orient='index').sort_index()
 
-    assert (evaluator.df_mae.equals(expected))
+    assert (evaluator.df_mae().equals(expected))
 
 
 def test_df_mape(evaluator, expected_mape_by_window):
     expected = pd.DataFrame.from_dict(expected_mape_by_window, orient='index').sort_index()
 
-    assert (evaluator.df_mape.equals(expected))
+    assert (evaluator.df_mape().equals(expected))
 
 
 @pytest.fixture
