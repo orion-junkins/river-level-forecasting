@@ -36,7 +36,7 @@ def get_all_scores(jobs_directory: str) -> dict[float, str]:
     return ordered_average_scores
 
 
-def generate_sorted_average_ranking(original_dict: dict[str, list[float]]) -> dict[str, float]:
+def generate_sorted_average_ranking(original_dict: dict[str, list[int]]) -> dict[str, float]:
     """
     Generate a dictionary where the keys are the job ids and the values are the average scores.
 
