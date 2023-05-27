@@ -106,7 +106,7 @@ def test_mape_by_window(evaluator, expected_mape_by_window):
 
 
 def test_df_mae(evaluator, expected_mae_by_window):
-    expected = pd.DataFrame.from_dict(expected_mae_by_window(), orient='index').sort_index()
+    expected = pd.DataFrame.from_dict(expected_mae_by_window, orient='index').sort_index()
 
     assert (evaluator.df_mae().equals(expected))
 
