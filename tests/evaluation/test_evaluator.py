@@ -46,13 +46,13 @@ def evaluator(df):
 
 
 def test_level_true(evaluator):
-    level_true = evaluator.level_true()
+    level_true = evaluator.level_true
     assert level_true.shape == (4,)
     assert (level_true == [20, 30, 40, 50]).all()
 
 
 def test_all_level_preds(evaluator):
-    all_level_preds = evaluator.all_level_preds()
+    all_level_preds = evaluator.all_level_preds
     assert all_level_preds.shape == (4, 3)
     assert (all_level_preds.columns == ["23-01-01_02-00", "23-01-01_03-00", "23-01-01_04-00"]).all()
 
