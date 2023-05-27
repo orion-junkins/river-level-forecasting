@@ -2,7 +2,6 @@ from datetime import datetime
 import pandas as pd
 from statistics import mean
 from typing import Dict, List
-from functools import cached_property
 
 
 class Evaluator:
@@ -35,7 +34,6 @@ class Evaluator:
         data = data.dropna(thresh=2)  # Given that there is a non NaN value in the level_true column, drop rows that do not have at least one other non NaN value (2 total non NaN values)
         return data
 
-    @cached_property
     def df_mape(self) -> pd.DataFrame:
         """
         Calculates the mean absolute percentage error for each window size.
@@ -43,9 +41,8 @@ class Evaluator:
         Returns:
             pd.DataFrame: A dataframe with the mean absolute percentage error for each window size.
         """
-        return pd.DataFrame.from_dict(self.mape_by_window, orient='index').sort_index()
+        return pd.DataFrame.from_dict(self.mape_by_window(), orient='index').sort_index()
 
-    @cached_property
     def df_mae(self) -> pd.DataFrame:
         """
         Calculates the mean absolute error for each window size.
@@ -53,9 +50,8 @@ class Evaluator:
         Returns:
             pd.DataFrame: A dataframe with the mean absolute error for each window size.
         """
-        return pd.DataFrame.from_dict(self.mae_by_window, orient='index').sort_index()
+        return pd.DataFrame.from_dict(self.mae_by_window(), orient='index').sort_index()
 
-    @cached_property
     def mape_by_window(self) -> Dict[pd.Timedelta, float]:
         """
         Calculates the mean absolute percentage error for each window size.
@@ -63,12 +59,12 @@ class Evaluator:
         Returns:
             Dict[pd.Timedelta, float]: A dictionary with the mean absolute percentage error for each window size.
         """
+        percent_errors_by_window = self.percent_errors_by_window()
         mape = {}
-        for window_size in self.percent_errors_by_window.keys():
-            mape[window_size] = mean(self.percent_errors_by_window[window_size])
+        for window_size in percent_errors_by_window.keys():
+            mape[window_size] = mean(percent_errors_by_window[window_size])
         return mape
 
-    @cached_property
     def mae_by_window(self) -> Dict[pd.Timedelta, float]:
         """
         Calculates the mean absolute error for each window size.
@@ -76,12 +72,12 @@ class Evaluator:
         Returns:
             Dict[pd.Timedelta, float]: A dictionary with the mean absolute error for each window size.
         """
+        absolute_errors_by_window = self.absolute_errors_by_window()
         mae = {}
-        for window_size in self.absolute_errors_by_window.keys():
-            mae[window_size] = mean(self.absolute_errors_by_window[window_size])
+        for window_size in absolute_errors_by_window.keys():
+            mae[window_size] = mean(absolute_errors_by_window[window_size])
         return mae
 
-    @cached_property
     def absolute_errors_by_window(self) -> Dict[pd.Timedelta, List[float]]:
         """
         Calculates the absolute errors between the level_true and level_pred values for each window size.
@@ -91,7 +87,6 @@ class Evaluator:
         """
         return self.errors_grouped_by_window(absolute=True)
 
-    @cached_property
     def percent_errors_by_window(self) -> Dict[pd.Timedelta, List[float]]:
         """
         Calculates the percentage errors between the level_true and level_pred values for each window size.
@@ -153,3 +148,5 @@ def build_evaluator_from_csv(path: str = "data/inference_eval_example.csv") -> E
 
     evaluator = Evaluator(data)
     return evaluator
+
+# %%
