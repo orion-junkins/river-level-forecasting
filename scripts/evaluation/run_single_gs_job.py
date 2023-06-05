@@ -32,7 +32,7 @@ except ImportError as e:
     exit(1)
 
 # Universal job parameters expected regardless of model variation. All other parameters will be passed as kwargs to the contributing model.
-STANDARD_JOB_PARAMETERS = ["data_file", "columns_file", "gauge_id", "contributing_model_type", "regression_train_n_points"]
+STANDARD_JOB_PARAMETERS = ["data_file", "columns_file", "gauge_id", "contributing_model_type", "regression_train_n_points", "rolling_window_sizes", "rolling_sum_columns", "rolling_mean_columns"]
 
 # Mapping of model variation names to their corresponding Darts classes.
 MODEL_VARIATIONS = {
@@ -216,9 +216,10 @@ def run_grid_search_job(parameters: Dict[str, Any], working_dir: str, job_id: in
         return {}
 
     columns = get_columns(parameters["columns_file"])
-    rolling_sum_columns = ["snowfall", "precipitation"]
-    rolling_mean_columns = ["temperature_2m"]
-    dataset = get_training_data(parameters["gauge_id"], coordinates, columns, rolling_sum_columns=rolling_sum_columns, rolling_mean_columns=rolling_mean_columns)
+    rolling_sum_columns = parameters["rolling_sum_columns"]
+    rolling_mean_columns = parameters["rolling_mean_columns"]
+    rolling_window_sizes = parameters["rolling_window_sizes"]
+    dataset = get_training_data(parameters["gauge_id"], coordinates, columns, rolling_sum_columns=rolling_sum_columns, rolling_mean_columns=rolling_mean_columns, rolling_window_sizes=rolling_window_sizes)
     model = build_model_for_dataset(dataset, parameters["regression_train_n_points"], contributing_model_type, contributing_model_kwargs)
 
     forecaster = TrainingForecaster(model, dataset, root_dir=f'{working_dir}/trained_models/{str(job_id)}', use_future_covariates=MODEL_USES_FUTURE_COVARIATES[contributing_model_type])

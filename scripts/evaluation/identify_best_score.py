@@ -7,8 +7,8 @@ parser = argparse.ArgumentParser(description='Calculate the average of the contr
 parser.add_argument('directory', metavar='dir', type=str, help='the directory containing the JSON files')
 args = parser.parse_args()
 
-# Create an empty dictionary to store the averages
-file_averages = {}
+# Create an empty dictionary to store the average score for each file
+file_averages: dict[str, float] = {}
 
 # Iterate through the files in the directory
 for filename in os.listdir(args.directory):
@@ -17,7 +17,7 @@ for filename in os.listdir(args.directory):
         # Load the JSON file
         with open(os.path.join(args.directory, filename), 'r') as f:
             data = json.load(f)
-        # Calculate the average of the 'contrib test errors' field
+        # Grab the 'contrib test error average' field
         try:
             average = data["contrib test error average"]
             # Add the average to the dictionary

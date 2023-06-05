@@ -6,14 +6,23 @@
         "columns_file": [
             "data/columns.txt"
         ],
+        "rolling_sum_columns": [
+            []
+        ],
+        "rolling_mean_columns": [
+            []
+        ],
+        "rolling_window_sizes": [
+            []
+        ],
         "random_state": [
             42
         ],
         "input_chunk_length": [
-            120
+            128
         ],
         "training_length": [
-            144
+            320
         ],
         "batch_size": [
             64
@@ -43,7 +52,7 @@
             }
         ],
         "regression_train_n_points": [
-            26280
+            720
         ]
     },
     "Transformer": {

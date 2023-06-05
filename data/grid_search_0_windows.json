@@ -1,0 +1,61 @@
+{
+    "RNN": {
+        "data_file": [
+            "data/catchments_short.json"
+        ],
+        "columns_file": [
+            "data/columns.txt"
+        ],
+        "rolling_sum_columns": [
+            ["precipitation", "snowfall"]
+        ],
+        "rolling_mean_columns": [
+            ["temperature_2m"]
+        ],
+        "rolling_window_sizes": [
+            [],
+            [256],
+            [1024],
+            [2048]    
+        ],
+        "random_state": [
+            42
+        ],
+        "input_chunk_length": [
+            128, 256
+        ],
+        "training_length": [
+            192, 320
+        ],
+        "batch_size": [
+            64
+        ],
+        "model": [
+            "GRU"
+        ],
+        "hidden_dim": [
+            128
+        ],
+        "n_rnn_layers": [
+            4
+        ],
+        "dropout": [
+            0.05
+        ],
+        "n_epochs": [
+            20
+        ],
+        "force_reset": [
+            true
+        ],
+        "pl_trainer_kwargs": [
+            {
+                "accelerator":"gpu",
+                "enable_progress_bar": false
+            }
+        ],
+        "regression_train_n_points": [
+            720
+        ]
+    }
+}
