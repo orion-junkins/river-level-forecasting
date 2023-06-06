@@ -74,10 +74,8 @@ class AWSWeatherProvider(BaseWeatherProvider):
         if sleep_duration != 0.0:
             raise ValueError("sleep_duration is not supported (and generally not needed) for aws_weather_provider")
 
-        if columns:
-            columns = self._remap_historical_parameters_to_adapter(columns)
-
-        datums = self.download_datums_from_aws(dir_path="historical", columns=columns)
+        # don't use the AWS dispatcher to filter columns since the remappings can be an issue
+        datums = self.download_datums_from_aws(dir_path="historical", columns=None)
 
         if start_date is not None:
             start_dt = datetime.strptime(
@@ -90,6 +88,10 @@ class AWSWeatherProvider(BaseWeatherProvider):
         else:
             end_dt = None
         for datum in datums:
+            if columns:
+                datum.hourly_parameters.columns = self._remap_historical_parameters_from_adapter(datum.hourly_parameters.columns)
+                columns = self._remap_historical_parameters_from_adapter(columns)
+                datum.hourly_parameters = datum.hourly_parameters[columns]
             # mypy doesn't like the datetime objects as slices
             datum.hourly_parameters = datum.hourly_parameters[start_dt:end_dt]  # type:ignore[misc]
             datum.hourly_parameters.columns = self._remap_historical_parameters_from_adapter(datum.hourly_parameters.columns)
@@ -112,14 +114,14 @@ class AWSWeatherProvider(BaseWeatherProvider):
         if self.current_timestamp is None:
             raise ValueError("Cannot fetch current data without a timestamp.")
 
-        if columns:
-            columns = self._remap_current_parameters_to_adapter(columns)
-
         dir_path = f'current/{self.current_timestamp}'
-        datums = self.download_datums_from_aws(dir_path=dir_path, columns=columns)
+        datums = self.download_datums_from_aws(dir_path=dir_path, columns=None)
 
         for datum in datums:
             datum.hourly_parameters.columns = self._remap_current_parameters_from_adapter(datum.hourly_parameters.columns)
+            if columns:
+                columns = self._remap_current_parameters_from_adapter(columns)
+                datum.hourly_parameters = datum.hourly_parameters[columns]
 
         return datums
 
