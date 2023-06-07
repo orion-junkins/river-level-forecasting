@@ -31,6 +31,7 @@ class BaseForecaster(ABC):
         self.catchment_data = catchment_data
         self.filename = filename
         self.scaler_filename = scaler_filename
+        self.root_dir = root_dir
         self.work_dir = os.path.join(root_dir, self.catchment_data.name)
 
     @property
