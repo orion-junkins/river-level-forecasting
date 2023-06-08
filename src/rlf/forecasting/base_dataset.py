@@ -1,4 +1,5 @@
 from abc import ABC
+import logging
 from typing import Dict, List, Optional, Sequence, Tuple
 
 from darts import TimeSeries
@@ -104,7 +105,7 @@ class BaseDataset(ABC):
         else:
             raise ValueError(f"Prefix will be represented twice in the global X set: {prefix}")
 
-        print(f"Length of X: {len(X)}")
+        logging.log(logging.INFO, f"Datum processed with length: {len(X)}")
 
         X = TimeSeries.from_dataframe(X)
 
