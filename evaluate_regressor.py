@@ -101,67 +101,65 @@ def get_level_true(starting_timestamps: List[str], inference_level_provider: Lev
     return level
 
 
-# def main(args: argparse.Namespace) -> int:
-# Fetch columns list from specified data file
-# %%
-args = {
-    "gauge_id": "12143400",
-    "data_file": "data/catchments_short.json",
-    "columns_file": "data/columns.txt",
-    "trained_model_dir": "half_trained_models",
-    "num_inferences": 5,
-    "forecast_window": 24
-}
+if __name__ == '__main__':
+    # Parse the command-line arguments
+    parser = argparse.ArgumentParser()
+    parser.add_argument("gauge_id", type=str, help="The ID of the USGS gauge to use for the grid search.")
+    parser.add_argument('-m', '--model_dir', type=str, default='half_trained_models', help='The directory containing half trained models')
+    parser.add_argument('-o', '--output_dir', type=str, default='regression_experiment_results', help='Ouput directory for generated job JSON files') 
+    parser.add_argument('-d', '--data_file', type=str, default="data/catchments_short.json", help='Data file with catchment definitions')
+    parser.add_argument('-c', '--columns_file', type=str, default="data/columns.txt", help='Data file with columns list')
 
-columns = get_columns(args["columns_file"])
-# %%
-# Fetch coordinates for the specified gauge ID
-coordinates = get_coordinates_for_catchment(args["data_file"], args["gauge_id"])
-if coordinates is None:
-    print("Unable to locate gauge id in catchment data file.")
-    exit(1)
-# %%
-# Create AWSDispatcher and load available timestamps
-aws_dispatcher = AWSDispatcher("all-weather-data", "open-meteo")
+    args = parser.parse_args()
+    gauge_id = args.gauge_id
+    model_dir = args.model_dir
+    data_file = args.data_file
+    columns_file = args.columns_file
+    output_dir = args.output_dir
 
+    # Get columns
+    columns = get_columns(column_file=columns_file)
 
-# %%
-# Ceate weather and level providers for inference
-inference_weather_provider = APIWeatherProvider(coordinates)
-inference_level_provider = LevelProviderNWIS(args["gauge_id"])
-inference_catchment_data = CatchmentData(args["gauge_id"], inference_weather_provider, inference_level_provider, columns=columns)
-inference_forecaster = InferenceForecaster(inference_catchment_data, args["trained_model_dir"], load_cpu=False)
-#%%
-forecast = inference_forecaster.predict(args["forecast_window"]).pd_dataframe()
-# %%
-training_weather_provider = AWSWeatherProvider(coordinates, aws_dispatcher=aws_dispatcher)
-tf = load_training_forecaster(inference_forecaster, training_weather_provider)
+    # Fetch coordinates for the specified gauge ID
+    coordinates = get_coordinates_for_catchment(data_file, gauge_id)
+    if coordinates is None:
+        print("Unable to locate gauge id in catchment data file.")
+        exit(1)
 
-# %%
+    # Create AWSDispatcher and load available timestamps
+    aws_dispatcher = AWSDispatcher("all-weather-data", "open-meteo")
 
-new_combiner = RegressionModel(lags=None, lags_future_covariates=[0], model=HuberRegressor())
+    # Ceate weather and level providers for inference
+    inference_weather_provider = APIWeatherProvider(coordinates)
+    inference_level_provider = LevelProviderNWIS(gauge_id)
+    inference_catchment_data = CatchmentData(gauge_id, inference_weather_provider, inference_level_provider, columns=columns)
+    inference_forecaster = InferenceForecaster(inference_catchment_data, model_dir, load_cpu=False)
 
-# %%
-tf.fit_new_combiner(new_combiner)
-# %%
-scores = {}
-contrib_test_errors = tf.backtest_contributing_models()
-contrib_val_errors = tf.backtest_contributing_models(run_on_validation=True)
-average_test_error = sum(contrib_test_errors) / len(contrib_test_errors)
-average_val_error = sum(contrib_val_errors) / len(contrib_val_errors)
+    print("inf forecaster built")
+    training_weather_provider = AWSWeatherProvider(coordinates, aws_dispatcher=aws_dispatcher)
+    tf = load_training_forecaster(inference_forecaster, training_weather_provider)
+    print("tf loaded")
+    new_combiner = RegressionModel(lags=None, lags_future_covariates=[0], model=HuberRegressor())
 
-scores["contrib test errors"] = contrib_test_errors
-scores["contrib val errors"] = contrib_val_errors
-scores["contrib test error average"] = average_test_error
-scores["contrib val error average"] = average_val_error
+    tf.fit_new_combiner(new_combiner, combiner_train_stride=2600)
+    print("tf fit")
+    scores = {}
+    contrib_test_errors = tf.backtest_contributing_models(start=0.95, stride=120)
+    contrib_val_errors = tf.backtest_contributing_models(run_on_validation=True, start=0.95, stride=120)
+    average_test_error = sum(contrib_test_errors) / len(contrib_test_errors)
+    average_val_error = sum(contrib_val_errors) / len(contrib_val_errors)
+    print("backtesting complete")
+    scores["contrib test errors"] = contrib_test_errors
+    scores["contrib val errors"] = contrib_val_errors
+    scores["contrib test error average"] = average_test_error
+    scores["contrib val error average"] = average_val_error
 
-ensemble_test_error = tf.backtest()
-ensemble_val_error = tf.backtest(run_on_validation=True)
+    ensemble_test_error = tf.backtest()
+    ensemble_val_error = tf.backtest(run_on_validation=True)
 
-scores["ensemble test error"] = ensemble_test_error
-scores["ensemble val error"] = ensemble_val_error
+    scores["ensemble test error"] = ensemble_test_error
+    scores["ensemble val error"] = ensemble_val_error
 
-# %%
-with open('result.json', 'w') as fp:
-    json.dump(scores, fp)
-# %%
+    # %%
+    with open(f'{output_dir}/{gauge_id}/result.json', 'w') as fp:
+        json.dump(scores, fp)
