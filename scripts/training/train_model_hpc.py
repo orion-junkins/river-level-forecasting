@@ -88,7 +88,6 @@ def generate_base_contributing_model(num_epochs: int) -> GlobalForecastingModel:
         force_reset=True,
         pl_trainer_kwargs={
             "accelerator": "gpu",
-            "enable_progress_bar": False  # this stops the output file from being HUGE
         }
     )
 
