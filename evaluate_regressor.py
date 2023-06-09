@@ -145,8 +145,8 @@ new_combiner = RegressionModel(lags=None, lags_future_covariates=[0], model=Hube
 tf.fit_new_combiner(new_combiner, combiner_train_stride=1)
 # %%
 scores = {}
-contrib_test_errors = tf.backtest_contributing_models(start=0.05, stride=25)
-contrib_val_errors = tf.backtest_contributing_models(run_on_validation=True, start=0.05, stride=25)
+contrib_test_errors = tf.backtest_contributing_models()
+contrib_val_errors = tf.backtest_contributing_models(run_on_validation=True)
 average_test_error = sum(contrib_test_errors) / len(contrib_test_errors)
 average_val_error = sum(contrib_val_errors) / len(contrib_val_errors)
 
