@@ -105,6 +105,7 @@ if __name__ == '__main__':
     # Parse the command-line arguments
     parser = argparse.ArgumentParser()
     parser.add_argument("gauge_id", type=str, help="The ID of the USGS gauge to use for the grid search.")
+    parser.add_argument("epsilon", type=str, help="Epsilon value for the huber regressor")
     parser.add_argument('-m', '--model_dir', type=str, default='half_trained_models', help='The directory containing half trained models')
     parser.add_argument('-o', '--output_dir', type=str, default='regression_experiment_results', help='Ouput directory for generated job JSON files') 
     parser.add_argument('-d', '--data_file', type=str, default="data/catchments_short.json", help='Data file with catchment definitions')
@@ -112,6 +113,7 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
     gauge_id = args.gauge_id
+    epsilon = float(args.epsilon)
     model_dir = args.model_dir
     data_file = args.data_file
     columns_file = args.columns_file
@@ -135,20 +137,17 @@ if __name__ == '__main__':
     inference_catchment_data = CatchmentData(gauge_id, inference_weather_provider, inference_level_provider, columns=columns)
     inference_forecaster = InferenceForecaster(inference_catchment_data, model_dir, load_cpu=False)
 
-    print("inf forecaster built")
     training_weather_provider = AWSWeatherProvider(coordinates, aws_dispatcher=aws_dispatcher)
     tf = load_training_forecaster(inference_forecaster, training_weather_provider)
-    print("tf loaded")
-    new_combiner = RegressionModel(lags=None, lags_future_covariates=[0], model=HuberRegressor(epsilon=1.35))
+    new_combiner = RegressionModel(lags=None, lags_future_covariates=[0], model=HuberRegressor(epsilon=epsilon))
 
     tf.fit_new_combiner(new_combiner, combiner_train_stride=5)
-    print("tf fit")
     scores = {}
+    scores["epsilon"] = str(epsilon)
     contrib_test_errors = tf.backtest_contributing_models()
     contrib_val_errors = tf.backtest_contributing_models(run_on_validation=True)
     average_test_error = sum(contrib_test_errors) / len(contrib_test_errors)
     average_val_error = sum(contrib_val_errors) / len(contrib_val_errors)
-    print("backtesting complete")
     scores["contrib test errors"] = contrib_test_errors
     scores["contrib val errors"] = contrib_val_errors
     scores["contrib test error average"] = average_test_error
