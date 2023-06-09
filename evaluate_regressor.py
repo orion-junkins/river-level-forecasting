@@ -1,4 +1,5 @@
 #%%
+import os
 from rlf.forecasting.data_fetching_utilities.weather_provider.api_weather_provider import APIWeatherProvider
 from rlf.forecasting.training_forecaster import TrainingForecaster, load_training_forecaster
 from darts.models.forecasting.regression_model import RegressionModel
@@ -159,6 +160,7 @@ if __name__ == '__main__':
     scores["ensemble test error"] = ensemble_test_error
     scores["ensemble val error"] = ensemble_val_error
 
-    # %%
-    with open(f'{output_dir}/{gauge_id}/result.json', 'w') as fp:
+    output_dir = os.path.join(output_dir, str(gauge_id))
+    os.makedirs(output_dir, exist_ok=True)
+    with open(f'{output_dir}/result.json', 'w') as fp:
         json.dump(scores, fp)
