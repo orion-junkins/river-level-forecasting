@@ -3,6 +3,7 @@ import os
 import pickle
 
 from darts.metrics.metrics import mae
+from darts.models.forecasting.forecasting_model import GlobalForecastingModel
 from darts.timeseries import TimeSeries
 
 import numpy as np
@@ -51,15 +52,38 @@ class TrainingForecaster(BaseForecaster):
         if (os.path.isfile(self.scaler_save_path)):
             raise ValueError(f"{self.scaler_save_path} already exists. Specify a unique save path.")
 
-    def fit(self) -> None:
-        """Fit the underlying Darts ForecastingModel model."""
-        self.model.fit_dataset(self.dataset, use_future_covariates=self.use_future_covariates, retrain_contributing_models=True)
+    def fit(self, retrain_contributing_models: bool = True) -> None:
+        """Fit the underlying Darts ForecastingModel model.
+
+        Args:
+            retrain_contributing_models (bool, optional): Whether to retrain the contributing models after training the regression model. Defaults to True.
+        """
+        self.model.fit_dataset(self.dataset, use_future_covariates=self.use_future_covariates, retrain_contributing_models=retrain_contributing_models)
         self.save_model()
 
-    def save_model(self) -> None:
+    def fit_new_combiner(self, combiner: GlobalForecastingModel, dir_suffix: str = "_new_combiner", target_horizon=12, combiner_train_stride=25) -> None:
+        """Fit a new combiner to the existing contributing models. Assumes existing contributing models are already trained.
+
+        Args:
+            combiner (GlobalForecastingModel): A new combiner to fit.
+        """
+        self.model.combiner = combiner
+        self.model._target_horizon = target_horizon
+        self.model._combiner_train_stride = combiner_train_stride
+        self.model.fit_dataset(self.dataset, use_future_covariates=self.use_future_covariates, train_contributing_models=False, retrain_contributing_models=False)
+        
+        self.save_model(alternative_work_dir=self.work_dir + dir_suffix)
+
+    def save_model(self, alternative_work_dir=None) -> None:
         """Save the model and scalers to their specific paths."""
         # save_ensemble_model(self.work_dir, self.model)
-        self.model.save(self.work_dir)
+        if alternative_work_dir:
+            work_dir = alternative_work_dir
+            os.makedirs(work_dir, exist_ok=True)
+        else:
+            work_dir = self.work_dir
+
+        self.model.save(work_dir)
 
         scaler_map = {"scaler": self.dataset.scaler, "target_scaler": self.dataset.target_scaler}
         with open(self.scaler_save_path, "wb") as f:
@@ -75,7 +99,7 @@ class TrainingForecaster(BaseForecaster):
             "use_future_covariates": self.use_future_covariates,
         }
 
-        with open(os.path.join(self.work_dir, "metadata"), "w") as f:
+        with open(os.path.join(work_dir, "metadata"), "w") as f:
             json.dump(metadata, f)
 
     def backtest(self,

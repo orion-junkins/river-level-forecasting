@@ -31,7 +31,7 @@ usage = """
     usage: train_model_hpc.py <gauge id> [-d <path/to/data/file.json>] [-e <epoch count>] [-c <path/to/column/file>]
         gauge id: The numeric gauge ID to train for. This will be used as the catchment name as well.
         -d <path/to/data/file.json>: The path to a geojson data file to use for catchment data.
-                                     If not given then catchments_high_precision_short.json will be used.
+                                     If not given then data/catchments_short.json will be used.
         -e <epoch count>: The number of epochs to train the model for.
                           Must be an integer greater than 0.
                           If not given then a default number of 1 will be used.
@@ -43,7 +43,7 @@ usage = """
 
 
 DEFAULT_EPOCHS = 1
-DEFAULT_DATA_FILE = "catchments_short.json"
+DEFAULT_DATA_FILE = "data/catchments_short.json"
 DEFAULT_COLUMNS = [
     "temperature_2m",
     "relativehumidity_2m",
@@ -60,14 +60,14 @@ DEFAULT_COLUMNS = [
     "windspeed_10m",
     "et0_fao_evapotranspiration",
     "vapor_pressure_deficit",
-    # "soil_temperature_level_1",
-    # "soil_temperature_level_2",
-    # "soil_temperature_level_3",
-    # "soil_temperature_level_4",
-    # "soil_moisture_level_1",
-    # "soil_moisture_level_2",
-    # "soil_moisture_level_3",
-    # "soil_moisture_level_4"
+    "soil_temperature_level_1",
+    "soil_temperature_level_2",
+    "soil_temperature_level_3",
+    "soil_temperature_level_4",
+    "soil_moisture_level_1",
+    "soil_moisture_level_2",
+    "soil_moisture_level_3",
+    "soil_moisture_level_4"
 ]
 
 
@@ -197,7 +197,7 @@ def get_parameters_from_args(args: List[str]) -> Optional[dict]:
         return None
 
     run_parameters = {
-        "data_file": "catchments_high_precision_short.json",
+        "data_file": "data/catchments_short.json",
         "epochs": 1,
         "columns": None,
         "gauge_id": None,
@@ -266,8 +266,8 @@ def main(args: List[str]) -> int:
 
     print(f"Training Run Parameters: {parameters}")
 
-    forecaster = TrainingForecaster(model, dataset)
-    forecaster.fit()
+    forecaster = TrainingForecaster(model, dataset, root_dir="half_trained_models")
+    forecaster.fit(retrain_contributing_models=False)
     return 0
 
 

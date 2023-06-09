@@ -49,16 +49,19 @@ class Ensemble(GlobalForecastingModel):
             *,
             past_covariates: TimeSeries = None,
             future_covariates: TimeSeries = None,
+            train_contributing_models: bool = True,
             retrain_contributing_models: bool = False) -> "Ensemble":
         super().fit(series, past_covariates, future_covariates)
+
         contributing_model_y = series[:-self._combiner_holdout_size]
 
         combiner_start = len(series) - self._combiner_holdout_size + self.contributing_models[0].input_chunk_length
+        
+        if train_contributing_models:
+            for contributing_model in self.contributing_models:
+                contributing_model.fit(series=contributing_model_y, past_covariates=past_covariates, future_covariates=future_covariates)
 
-        for contributing_model in self.contributing_models:
-            contributing_model.fit(series=contributing_model_y, past_covariates=past_covariates, future_covariates=future_covariates)
-
-        del contributing_model_y
+            del contributing_model_y
 
         predictions: List[TimeSeries] = [
             contributing_model.historical_forecasts(
@@ -87,17 +90,17 @@ class Ensemble(GlobalForecastingModel):
 
         return self
 
-    def fit_dataset(self, dataset, use_future_covariates: bool = True, retrain_contributing_models: bool = False):
+    def fit_dataset(self, dataset, use_future_covariates: bool = True, train_contributing_models: bool = True, retrain_contributing_models: bool = False):
         if use_future_covariates:
             return self.fit(
                 dataset.y_train,
                 future_covariates=dataset.X_train,
-                retrain_contributing_models=retrain_contributing_models)
+                train_contributing_models=train_contributing_models, retrain_contributing_models=retrain_contributing_models)
         else:
             return self.fit(
                 dataset.y_train,
                 past_covariates=dataset.X_train,
-                retrain_contributing_models=retrain_contributing_models)
+                train_contributing_models=train_contributing_models, retrain_contributing_models=retrain_contributing_models)
 
     def predict(self,
                 n: int,
