@@ -81,7 +81,6 @@ class TrainingForecaster(BaseForecaster):
             work_dir = alternative_work_dir
             os.makedirs(work_dir, exist_ok=True)
             scaler_path = os.path.join(alternative_work_dir, self.scaler_filename)
-            os.makedirs(scaler_path, exist_ok=True)
 
         else:
             work_dir = self.work_dir
