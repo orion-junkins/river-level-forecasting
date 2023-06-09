@@ -105,7 +105,7 @@ def get_level_true(starting_timestamps: List[str], inference_level_provider: Lev
 # Fetch columns list from specified data file
 # %%
 args = {
-    "gauge_id": "12458000",
+    "gauge_id": "12143400",
     "data_file": "data/catchments_short.json",
     "columns_file": "data/columns.txt",
     "trained_model_dir": "half_trained_models",
@@ -142,7 +142,7 @@ tf = load_training_forecaster(inference_forecaster, training_weather_provider)
 new_combiner = RegressionModel(lags=None, lags_future_covariates=[0], model=HuberRegressor())
 
 # %%
-tf.fit_new_combiner(new_combiner, combiner_train_stride=1)
+tf.fit_new_combiner(new_combiner)
 # %%
 scores = {}
 contrib_test_errors = tf.backtest_contributing_models()
