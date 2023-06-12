@@ -191,7 +191,7 @@ if __name__ == "__main__":
         "-e",
         "--epochs",
         type=int,
-        default=0,
+        default=50,
         help="Number of epochs to train Contributing Models",
     )
     parser.add_argument(
