@@ -57,11 +57,11 @@ class BaseLevelProvider(ABC):
         df_formatted = df_formatted[~df_formatted.index.duplicated()]
 
         # Set frequency as hourly
-        df_formatted = df_formatted.asfreq('H')
+        # df_formatted = df_formatted.asfreq('H')
 
         # Compute forward/back filled data
-        for_fill = df_formatted.fillna(method='ffill')
-        back_fill = df_formatted.fillna(method='bfill')
+        for_fill = df_formatted.asfreq('H', method='ffill')
+        back_fill = df_formatted.asfreq('H', method='bfill')
 
         # Average the forward and back filled values
         df_formatted = (for_fill + back_fill) / 2

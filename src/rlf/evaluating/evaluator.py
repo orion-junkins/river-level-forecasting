@@ -123,8 +123,11 @@ class Evaluator:
                     if level_true == 0:
                         raise (ZeroDivisionError("Cannot calculate percentage error when level_true is 0"))
                     error = error / level_true
-
-                window_size = pred_time - datetime.strptime(issue_time, "%y-%m-%d_%H-%M")
+                tz_time = datetime.strptime(issue_time, "%Y-%m-%d %H:%M:%S%z")
+                naive_time = tz_time.replace(tzinfo=None)
+                window_size = pred_time - tz_time
+                if window_size.seconds // 60 % 60 != 0:
+                    continue
                 if window_size not in errors:
                     errors[window_size] = [error]
                 else:

@@ -113,6 +113,20 @@ class Ensemble(GlobalForecastingModel):
 
         return self.combiner.predict(n, series=series, future_covariates=predictions, verbose=verbose)
 
+    def predict_contributing_models(self,
+                                    n: int,
+                                    series: TimeSeries,
+                                    past_covariates: TimeSeries = None,
+                                    future_covariates: TimeSeries = None,
+                                    num_samples: int = 1,
+                                    verbose: bool = False) -> TimeSeries:
+        predictions = self._compute_and_stack_contributing_predictions(n,
+                                                                       series,
+                                                                       past_covariates=past_covariates,
+                                                                       future_covariates=future_covariates)
+
+        return predictions
+
     def historical_forecasts(
         self,
         series: Union[TimeSeries, Sequence[TimeSeries]],
@@ -262,15 +276,15 @@ class Ensemble(GlobalForecastingModel):
 
             if historical_forecasts_time_index_predict is None:
                 raise ValueError(
-                        "Cannot build a single input for prediction with the provided model, "
-                        f"`series` and `*_covariates` at series index: {idx}. The minimum "
-                        "prediction input time index requirements were not met. "
-                        "Please check the time index of `series` and `*_covariates`."
-                    )
+                    "Cannot build a single input for prediction with the provided model, "
+                    f"`series` and `*_covariates` at series index: {idx}. The minimum "
+                    "prediction input time index requirements were not met. "
+                    "Please check the time index of `series` and `*_covariates`."
+                )
 
             historical_forecasts_time_index = (
-                    historical_forecasts_time_index_predict
-                )
+                historical_forecasts_time_index_predict
+            )
 
             # Take into account overlap_end, and forecast_horizon.
             last_valid_pred_time = model._get_last_prediction_time(

@@ -43,7 +43,7 @@ usage = """
 
 
 DEFAULT_EPOCHS = 1
-DEFAULT_DATA_FILE = "catchments_short.json"
+DEFAULT_DATA_FILE = "data/catchments_short.json"
 DEFAULT_COLUMNS = [
     "temperature_2m",
     "relativehumidity_2m",
@@ -60,37 +60,15 @@ DEFAULT_COLUMNS = [
     "windspeed_10m",
     "et0_fao_evapotranspiration",
     "vapor_pressure_deficit",
-    # "soil_temperature_level_1",
-    # "soil_temperature_level_2",
-    # "soil_temperature_level_3",
-    # "soil_temperature_level_4",
-    # "soil_moisture_level_1",
-    # "soil_moisture_level_2",
-    # "soil_moisture_level_3",
-    # "soil_moisture_level_4"
+    "soil_temperature_level_1",
+    "soil_temperature_level_2",
+    "soil_temperature_level_3",
+    "soil_temperature_level_4",
+    "soil_moisture_level_1",
+    "soil_moisture_level_2",
+    "soil_moisture_level_3",
+    "soil_moisture_level_4"
 ]
-
-
-def generate_base_contributing_model(num_epochs: int) -> GlobalForecastingModel:
-    """Generate a base model for an individual contributing model.
-
-    Modify this function if you want to use a different base model besides RNN.
-
-    Args:
-        num_epochs (int): Number of epochs to train for.
-
-    Returns:
-        GlobalForecastingModel: Base model.
-    """
-    return RNNModel(
-        120,
-        n_epochs=num_epochs,
-        force_reset=True,
-        pl_trainer_kwargs={
-            "accelerator": "gpu",
-            "enable_progress_bar": False  # this stops the output file from being HUGE
-        }
-    )
 
 
 def build_model_for_dataset(
@@ -107,7 +85,7 @@ def build_model_for_dataset(
         Ensemble: Built ensemble model.
     """
     contributing_models = [
-        ContributingModel(RNNModel(120, n_epochs=num_epochs, random_state=42, model="GRU", hidden_dim=50, n_rnn_layers=5, dropout=0.01, training_length=139, force_reset=True, pl_trainer_kwargs={"accelerator": "gpu"}), prefix)
+        ContributingModel(RNNModel(input_chunk_length=128, training_length=320, n_epochs=num_epochs, random_state=42, model="GRU", hidden_dim=64, n_rnn_layers=4, dropout=0.01, force_reset=True, pl_trainer_kwargs={"accelerator": "gpu", "enable_progress_bar": False}), prefix)
         for prefix in training_dataset.subsets
     ]
 
@@ -197,7 +175,7 @@ def get_parameters_from_args(args: List[str]) -> Optional[dict]:
         return None
 
     run_parameters = {
-        "data_file": "catchments_high_precision_short.json",
+        "data_file": "data/catchments_short.json",
         "epochs": 1,
         "columns": None,
         "gauge_id": None,

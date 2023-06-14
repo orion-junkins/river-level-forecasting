@@ -5,7 +5,7 @@ from rlf.evaluating.evaluator import build_evaluator_from_csv
 # Toggle False if running from the command
 running_as_notebook = True
 if running_as_notebook:
-    evaluator = build_evaluator_from_csv(path="../data/inference_eval_example.csv")
+    evaluator = build_evaluator_from_csv(path="../flow_summary copy 2.csv")
 else:
     evaluator = build_evaluator_from_csv(path="data/inference_eval_example.csv")
 

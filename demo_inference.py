@@ -72,8 +72,8 @@ The predictions are all rescaled such that they should be in physical units agai
 """
 
 # %%
-print(forecaster.predict(24))
-print(forecaster.predict_contributing_models(24))
+fcast = forecaster.predict(24)
+c_fcast = forecaster.predict_contributing_models(24)
 
 # %%
 """

@@ -104,3 +104,29 @@ class InferenceForecaster(BaseForecaster):
         rescaled_predictions = self.dataset.target_scaler.inverse_transform(scaled_predictions)
 
         return rescaled_predictions
+
+
+    def predict_contributing_models(self, num_timesteps: int = 24, update: bool = False) -> TimeSeries:
+        """Generate a prediction.
+
+        Args:
+            num_timesteps (int, optional): Number of timesteps into the future to predict. Defaults to 24.
+            update (bool, optional): Whether or not to update underlying Dataset before inference. Defaults to False.
+
+        Returns:
+            TimeSeries: The forecasted timeseries rescaled to be in real units.
+        """
+        if update:
+            self.dataset.update()
+
+        if (self.use_future_covariates):
+            past_covariates = None
+            future_covariates = self.dataset.X
+        else:
+            past_covariates = self.dataset.X
+            future_covariates = None
+
+        scaled_predictions = self.model.predict_contributing_models(num_timesteps, series=self.dataset.y, past_covariates=past_covariates, future_covariates=future_covariates)
+        rescaled_predictions = self.dataset.target_scaler.inverse_transform(scaled_predictions)
+
+        return rescaled_predictions
