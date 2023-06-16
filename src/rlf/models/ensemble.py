@@ -17,6 +17,22 @@ import numpy as np
 import pandas as pd
 
 from rlf.models.contributing_model import ContributingModel
+import math
+
+def geometric_average(values):
+    
+    if len(values) <= 2:
+        raise ValueError("The list should have at least 3 values.")
+
+    trimmed_values = sorted(values)[1:-1]  # Drop the first and last elements
+
+    # Calculate the product of the trimmed values
+    product = math.prod(trimmed_values)
+
+    # Calculate the geometric average by taking the nth root of the product, where n is the number of trimmed values
+    geometric_avg = product ** (1 / len(trimmed_values))
+
+    return geometric_avg
 
 
 class Ensemble(GlobalForecastingModel):
@@ -51,39 +67,38 @@ class Ensemble(GlobalForecastingModel):
             future_covariates: TimeSeries = None,
             retrain_contributing_models: bool = False) -> "Ensemble":
         super().fit(series, past_covariates, future_covariates)
-        contributing_model_y = series[:-self._combiner_holdout_size]
+        # contributing_model_y = series[:-self._combiner_holdout_size]
 
-        combiner_start = len(series) - self._combiner_holdout_size + self.contributing_models[0].input_chunk_length
+        # combiner_start = len(series) - self._combiner_holdout_size + self.contributing_models[0].input_chunk_length
+
+        # for contributing_model in self.contributing_models:
+        #     contributing_model.fit(series=contributing_model_y, past_covariates=past_covariates, future_covariates=future_covariates)
+
+        # del contributing_model_y
+
+        # predictions: List[TimeSeries] = [
+        #     contributing_model.historical_forecasts(
+        #         series=series,
+        #         past_covariates=past_covariates,
+        #         future_covariates=future_covariates,
+        #         start=combiner_start,
+        #         last_points_only=True,
+        #         retrain=False,
+        #         forecast_horizon=self._target_horizon,
+        #         stride=self._combiner_train_stride,
+        #         verbose=False,
+        #         show_warnings=False
+        #     )
+        #     for contributing_model in self.contributing_models
+        # ]
+        # predictions = reduce(self._stack_op, predictions)
+
+        # self.combiner.fit(series=series.slice_intersect(predictions), future_covariates=predictions)
+
+        # del predictions
 
         for contributing_model in self.contributing_models:
-            contributing_model.fit(series=contributing_model_y, past_covariates=past_covariates, future_covariates=future_covariates)
-
-        del contributing_model_y
-
-        predictions: List[TimeSeries] = [
-            contributing_model.historical_forecasts(
-                series=series,
-                past_covariates=past_covariates,
-                future_covariates=future_covariates,
-                start=combiner_start,
-                last_points_only=True,
-                retrain=False,
-                forecast_horizon=self._target_horizon,
-                stride=self._combiner_train_stride,
-                verbose=False,
-                show_warnings=False
-            )
-            for contributing_model in self.contributing_models
-        ]
-        predictions = reduce(self._stack_op, predictions)
-
-        self.combiner.fit(series=series.slice_intersect(predictions), future_covariates=predictions)
-
-        del predictions
-
-        if retrain_contributing_models:
-            for contributing_model in self.contributing_models:
-                contributing_model.fit(series=series, past_covariates=past_covariates, future_covariates=future_covariates)
+            contributing_model.fit(series=series, past_covariates=past_covariates, future_covariates=future_covariates)
 
         return self
 
@@ -111,7 +126,10 @@ class Ensemble(GlobalForecastingModel):
                                                                        past_covariates=past_covariates,
                                                                        future_covariates=future_covariates)
 
-        return self.combiner.predict(n, series=series, future_covariates=predictions, verbose=verbose)
+        contributing_preds = predictions.pd_dataframe()
+        averages = contributing_preds.apply(geometric_average, axis=1)
+        ts = TimeSeries.from_series(averages)
+        return ts
 
     def predict_contributing_models(self,
                                     n: int,

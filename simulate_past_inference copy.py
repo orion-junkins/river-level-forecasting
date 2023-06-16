@@ -6,6 +6,8 @@ import json
 from matplotlib import patches, pyplot as plt
 import pandas as pd
 from typing import List, Optional
+import matplotlib.patches as mpatches
+
 
 try:
     from rlf.aws_dispatcher import AWSDispatcher
@@ -103,11 +105,11 @@ def get_level_true(starting_timestamps: List[str], inference_level_provider: Lev
 args = {
     "gauge_id": "12143400",
     "data_file": "data/catchments_short.json",
-    "out_file": "inference_simulations/500_12143400_average.csv",
+    "out_file": "inference_simulations/500_12143400.csv",
     "columns_file": "data/columns.txt",
     "trained_model_dir": "trained_models/RNN/Huber/remote_50",
     "num_inferences": 5,
-    "forecast_window": 96
+    "forecast_window": 24
 }
 
 columns = get_columns(args["columns_file"])
@@ -120,14 +122,14 @@ if coordinates is None:
 # %%
 # Create AWSDispatcher and load available timestamps
 aws_dispatcher = AWSDispatcher("all-weather-data", "open-meteo")
-all_timestamps = get_recent_available_timestamps(aws_dispatcher, 500)
+all_timestamps = get_recent_available_timestamps(aws_dispatcher, 50)
 
 #%%
 # Ceate weather and level providers for inference
 inference_weather_provider = AWSWeatherProvider(coordinates, aws_dispatcher=aws_dispatcher)
 inference_level_provider = LevelProviderNWIS(args["gauge_id"])
 #%%
-timestamps = all_timestamps
+timestamps = all_timestamps[:10]
 level_true = get_level_true(timestamps, inference_level_provider, args["forecast_window"])
 all_level_data = []
 all_level_data.append(level_true)
@@ -146,57 +148,122 @@ for timestamp in timestamps:
         # Run inference -> DataFrame
         inference_catchment_data = CatchmentData(args["gauge_id"], inference_weather_provider, inference_level_provider, columns=columns)
         forecaster = InferenceForecaster(inference_catchment_data, args["trained_model_dir"], load_cpu=False)
-        forecast = forecaster.predict_average(args["forecast_window"]).pd_dataframe()
+        ensemble_pred = forecaster.predict()[12].pd_dataframe()
+        ensemble_pred.rename(columns={"level": "ensemble"}, inplace=True)
+        average_pred = forecaster.predict_average()[12].pd_dataframe()
+        geo_average_pred = forecaster.predict_geo_average()[12].pd_dataframe()
+        average_pred.rename(columns={"0": "average"}, inplace=True)
+        geo_average_pred.rename(columns={"0": "geo_average"}, inplace=True)
 
-        # # Convert the timestamp to the form "%Y-%m-%d %H:%M:%S%z"
-        # column_name = datetime.strptime(timestamp, "%y-%m-%d_%H-%M").strftime("%Y-%m-%d %H:%M:%S%z") 
-        forecast.rename(columns={"0": timestamp}, inplace=True)
-        all_level_data.append(forecast)
-        print(forecast)
+        contrib_preds = forecaster.predict_contributing_models()[12].pd_dataframe()
 
+        rename_mapping = {}
+        for id, col in enumerate(contrib_preds.columns):
+            rename_mapping[col] = f'contrib_{id}'
+
+        contrib_preds.rename(columns=rename_mapping, inplace=True)
+
+        df = ensemble_pred.join(contrib_preds)
+        df = df.join(average_pred)
+        df = df.join(geo_average_pred)
+
+        dfs.append(df)
     except (FileNotFoundError, TypeError):
-        # If data is not available for the current timestamp in AWS, skip it
-        # This occurs if data was not fully fetched properly
+#         # If data is not available for the current timestamp in AWS, skip it
+#         # This occurs if data was not fully fetched properly
         print("Skipping timestamp due to missing data.")
         skipped_timestamps.append(timestamp)
         continue
 
+
 #%%
-# Concatenate all_level_data into a single DataFrame and save to CSV
-merged = pd.concat(all_level_data, axis=1)
-new_columns = []
-for col in merged.columns:
-    if col == "level_true":
-        new_columns.append(col)
-    else:
-        new_columns.append(pd.to_datetime(col, format='%y-%m-%d_%H-%M', utc=True).strftime("%Y-%m-%d %H:%M:%S%z"))
+df_pred = pd.concat(dfs)
 
-merged.columns = new_columns
-merged.dropna(subset=["level_true"], inplace=True)
+df_true = level_true
+df = df_pred.copy()
+df["true"] = df_true["level_true"]
+# df = df.drop(df[df['true'] < -1000].index)
+df = df[::-1]
+contrib_columns = [col for col in df.columns if col.startswith('contrib_')]
 
-# %%
-merged.to_csv(args["out_file"])
+# Create plot objects for each line
+contrib_plots = df[contrib_columns].plot(color='green', legend=False)
+ensemble_plot = df['ensemble'].plot(color='blue', legend=False)
+true_plot = df['true'].plot(color='red', legend=False)
+average_plot = df['average'].plot(color='black', legend=False)
+geo_average_plot = df['geo_average'].plot(color='black', legend=False)
+
+# Create custom proxy artists for legend
+contrib_patch = mpatches.Patch(color='green', label='Contributing Model Predictions')
+ensemble_patch = mpatches.Patch(color='blue', label='Ensemble Prediction')
+true_patch = mpatches.Patch(color='red', label='True Recorded')
+average_patch = mpatches.Patch(color='black', label='Average')
+geo_average_patch = mpatches.Patch(color='black', label='Geo Average')
+
+# Adding the legend with custom proxy artists outside the plot
+plt.legend(handles=[contrib_patch, ensemble_patch, true_patch, average_patch, geo_average_patch],
+           bbox_to_anchor=(1.05, 1),
+           loc='upper left')
+
+# Displaying the plot
+plt.savefig(f'output_chart_sim_5.png')
+plt.show()
+
 #%%
-# Print skipped timestamps
-if len(skipped_timestamps) > 0:
-    for timestamp in skipped_timestamps:
-        print(f"Skipped timestamp {timestamp} due to missing data.")
+#         forecast = forecaster.predict_geo_average(args["forecast_window"]).pd_dataframe()
+#         forecast.rename(columns={"0": timestamp}, inplace=True)
+#         all_level_data.append(forecast)
+#         print(forecast)
 
-    # return 0
+#     except (FileNotFoundError, TypeError):
+#         # If data is not available for the current timestamp in AWS, skip it
+#         # This occurs if data was not fully fetched properly
+#         print("Skipping timestamp due to missing data.")
+#         skipped_timestamps.append(timestamp)
+#         continue
+
+# #%%
+# # Concatenate all_level_data into a single DataFrame and save to CSV
+# merged = pd.concat(all_level_data, axis=1)
+# new_columns = []
+# for col in merged.columns:
+#     if col == "level_true":
+#         new_columns.append(col)
+#     else:
+#         new_columns.append(pd.to_datetime(col, format='%y-%m-%d_%H-%M').strftime("%y-%m-%d_%H-%M"))
+
+# merged.columns = new_columns
+# merged.dropna(subset=["level_true"], inplace=True)
+
+# # %%
+# merged.to_csv(args["out_file"])
+# #%%
+
+# merged.plot()
+# plt.savefig(f'past_inference.png')
+
+# # Print skipped timestamps
+# if len(skipped_timestamps) > 0:
+#     for timestamp in skipped_timestamps:
+#         print(f"Skipped timestamp {timestamp} due to missing data.")
+
+#     # return 0
 
 
-# if __name__ == "__main__":
-#     parser = argparse.ArgumentParser()
-#     parser.add_argument("gauge_id")
-#     parser.add_argument('-d', '--data_file', type=str, default='data/catchments_short.json', help='input file with catchment definitions, in JSON format')
-#     parser.add_argument('-o', '--out_file', type=str, default='out.csv', help='output file for generated forecasts, in CSV format')
-#     parser.add_argument('-c', '--columns_file', type=str, default='data/columns.txt', help='input text file with list of columns to use, one per line')
-#     parser.add_argument('-m', '--trained_model_dir', type=str, default='trained_models', help='directory containing trained_models')
-#     parser.add_argument('-i', '--num_inferences', type=int, default=5, help='the number of cached samples to run inference for')
-#     parser.add_argument('-w', '--forecast_window', type=int, default=96, help='the number of timesteps to predict at each inference')
+# # if __name__ == "__main__":
+# #     parser = argparse.ArgumentParser()
+# #     parser.add_argument("gauge_id")
+# #     parser.add_argument('-d', '--data_file', type=str, default='data/catchments_short.json', help='input file with catchment definitions, in JSON format')
+# #     parser.add_argument('-o', '--out_file', type=str, default='out.csv', help='output file for generated forecasts, in CSV format')
+# #     parser.add_argument('-c', '--columns_file', type=str, default='data/columns.txt', help='input text file with list of columns to use, one per line')
+# #     parser.add_argument('-m', '--trained_model_dir', type=str, default='trained_models', help='directory containing trained_models')
+# #     parser.add_argument('-i', '--num_inferences', type=int, default=5, help='the number of cached samples to run inference for')
+# #     parser.add_argument('-w', '--forecast_window', type=int, default=96, help='the number of timesteps to predict at each inference')
 
-#     # args = parser.parse_args()
+# #     # args = parser.parse_args()
 
-#     exit(main(args))
+# #     exit(main(args))
+
+# # %%
 
 # %%

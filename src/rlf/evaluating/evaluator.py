@@ -18,8 +18,10 @@ class Evaluator:
         """
         self.data = self.process_data(data)
         self.level_true = self.data["level_true"]
-        self.all_level_preds = self.data.drop(columns="level_true")
 
+    def all_level_preds(self) -> pd.DataFrame:
+        return self.data.drop(columns="level_true")
+    
     def process_data(self, data: pd.DataFrame) -> pd.DataFrame:
         """
         Processes the data to remove any rows that are missing values. The output dataframe is guaranteed to have no missing values in the level_true column and at least one forecasted value in each row.
@@ -32,6 +34,14 @@ class Evaluator:
         """
         data = data.dropna(subset=["level_true"])
         data = data.dropna(thresh=2)  # Given that there is a non NaN value in the level_true column, drop rows that do not have at least one other non NaN value (2 total non NaN values)
+        # Convert all column names to date time objects, then to strings in the format "%Y-%m-%d %H:%M:%S%z" and rename the columns accordingly
+        new_col_names = []
+        for col in data.columns:
+            if col == "level_true":
+                new_col_names.append(col)
+            else:
+                new_col_names.append(pd.to_datetime(col, format='%Y-%m-%d %H:%M:%S%z', utc=True).strftime("%Y-%m-%d %H:%M:%S%z"))
+        data.columns = new_col_names
         return data
 
     def df_mape(self) -> pd.DataFrame:
@@ -110,10 +120,11 @@ class Evaluator:
             ZeroDivisionError: If the level_true value is 0 and absolute is False. This is because the percentage error cannot be calculated when the level_true value is 0.
         """
         errors = {}
-        for issue_time in self.all_level_preds.columns:
-            for pred_time in self.all_level_preds.index:
+        all_level_preds = self.all_level_preds()
+        for issue_time in all_level_preds.columns:
+            for pred_time in all_level_preds.index:
                 level_true = self.level_true[pred_time]
-                level_pred = self.all_level_preds[issue_time][pred_time]
+                level_pred = all_level_preds[issue_time][pred_time]
 
                 if (pd.isna(level_true) or pd.isna(level_pred)):
                     continue
@@ -123,9 +134,16 @@ class Evaluator:
                     if level_true == 0:
                         raise (ZeroDivisionError("Cannot calculate percentage error when level_true is 0"))
                     error = error / level_true
-                tz_time = datetime.strptime(issue_time, "%Y-%m-%d %H:%M:%S%z")
-                naive_time = tz_time.replace(tzinfo=None)
-                window_size = pred_time - tz_time
+                # try:
+                issue_dt = datetime.strptime(issue_time, "%Y-%m-%d %H:%M:%S%z")
+                naive_issue_dt = issue_dt.replace(tzinfo=None)
+                naive_pred_time = pred_time.replace(tzinfo=None)
+                window_size = naive_pred_time - naive_issue_dt
+                # except ValueError:
+                #     tz_time = datetime.strptime(issue_time, "%y-%m-%d_%H-%M")
+                #     naive_time = tz_time.replace(tzinfo=None)
+                #     window_size = pred_time - naive_time
+
                 if window_size.seconds // 60 % 60 != 0:
                     continue
                 if window_size not in errors:
@@ -133,6 +151,14 @@ class Evaluator:
                 else:
                     errors[window_size].append(error)
         return errors
+
+    def filter_timestamps(self, other_evaluator):
+        """Drop any columns in self.data that are not in other_evaluator.data. Convert the column names to datetime objects before comparing.
+
+        Args:
+            other_evaluator (Evaluator): The other evaluator to compare against.
+        """
+        self.data = self.data[self.data.columns.intersection(other_evaluator.data.columns)]
 
 
 def build_evaluator_from_csv(path: str = "data/inference_eval_example.csv") -> Evaluator:
@@ -151,5 +177,7 @@ def build_evaluator_from_csv(path: str = "data/inference_eval_example.csv") -> E
 
     evaluator = Evaluator(data)
     return evaluator
+
+
 
 # %%

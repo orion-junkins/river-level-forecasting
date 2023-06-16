@@ -6,11 +6,40 @@ from typing import Mapping
 from darts import TimeSeries
 from darts.dataprocessing.transformers import Scaler
 from darts.models.forecasting.forecasting_model import ForecastingModel
+import numpy as np
 
 from rlf.forecasting.base_forecaster import BaseForecaster, DEFAULT_WORK_DIR
 from rlf.forecasting.catchment_data import CatchmentData
 from rlf.forecasting.inference_dataset import InferenceDataset
 from rlf.models.ensemble import Ensemble
+
+def average_without_extremes(values):
+    if len(values) <= 2:
+        raise ValueError("The list should have at least 3 values.")
+
+    sorted_values = sorted(values)
+    trimmed_values = sorted_values[2:-2]  # Drop the first and last elements
+
+    return sum(trimmed_values) / len(trimmed_values)
+
+
+import math
+
+def geometric_average(values):
+    
+    if len(values) <= 2:
+        raise ValueError("The list should have at least 3 values.")
+
+    trimmed_values = sorted(values)[1:-1]  # Drop the first and last elements
+
+    # Calculate the product of the trimmed values
+    product = math.prod(trimmed_values)
+
+    # Calculate the geometric average by taking the nth root of the product, where n is the number of trimmed values
+    geometric_avg = product ** (1 / len(trimmed_values))
+
+    return geometric_avg
+
 
 
 class InferenceForecaster(BaseForecaster):
@@ -106,6 +135,74 @@ class InferenceForecaster(BaseForecaster):
         return rescaled_predictions
 
 
+    def predict_average(self, num_timesteps: int = 24, update: bool = False) -> TimeSeries:
+        """Generate a prediction that is the average of the predictions from each model in the ensemble. Drop the two largest and two smallest values at each step before averaging.
+
+        Args:
+            num_timesteps (int, optional): Number of timesteps to forecast. Defaults to 24.
+            update (bool, optional): Whether or not to update the dataset. Defaults to False.
+
+        Returns:
+            TimeSeries: The prediction
+        """
+        if update:
+            self.dataset.update()
+
+        if (self.use_future_covariates):
+            past_covariates = None
+            future_covariates = self.dataset.X
+        else:
+            past_covariates = self.dataset.X
+            future_covariates = None
+
+        # Make the underlying contributing model predictions
+        contributing_preds = self.model.predict_contributing_models(num_timesteps, series=self.dataset.y, past_covariates=past_covariates, future_covariates=future_covariates)
+
+        # Convert the predictions to a single dataframe
+        contributing_preds = contributing_preds.pd_dataframe()
+        averages = contributing_preds.apply(average_without_extremes, axis=1)
+        ts = TimeSeries.from_series(averages)
+        # contributing_preds['averages'] = contributing_preds.apply(average_without_extremes, axis=1)
+        
+        # # Convert the averaged predictions to a TimeSeries
+        rescaled_predictions = self.dataset.target_scaler.inverse_transform(ts)
+        
+        return rescaled_predictions
+
+    def predict_geo_average(self, num_timesteps: int = 24, update: bool = False) -> TimeSeries:
+        """Generate a prediction that is the average of the predictions from each model in the ensemble. Drop the two largest and two smallest values at each step before averaging.
+
+        Args:
+            num_timesteps (int, optional): Number of timesteps to forecast. Defaults to 24.
+            update (bool, optional): Whether or not to update the dataset. Defaults to False.
+
+        Returns:
+            TimeSeries: The prediction
+        """
+        if update:
+            self.dataset.update()
+
+        if (self.use_future_covariates):
+            past_covariates = None
+            future_covariates = self.dataset.X
+        else:
+            past_covariates = self.dataset.X
+            future_covariates = None
+
+        # Make the underlying contributing model predictions
+        contributing_preds = self.model.predict_contributing_models(num_timesteps, series=self.dataset.y, past_covariates=past_covariates, future_covariates=future_covariates)
+
+        # Convert the predictions to a single dataframe
+        contributing_preds = contributing_preds.pd_dataframe()
+        averages = contributing_preds.apply(geometric_average, axis=1)
+        ts = TimeSeries.from_series(averages)
+        # contributing_preds['averages'] = contributing_preds.apply(average_without_extremes, axis=1)
+
+        # # Convert the averaged predictions to a TimeSeries
+        rescaled_predictions = self.dataset.target_scaler.inverse_transform(ts)
+
+        return rescaled_predictions
+
     def predict_contributing_models(self, num_timesteps: int = 24, update: bool = False) -> TimeSeries:
         """Generate a prediction.
 
@@ -130,3 +227,6 @@ class InferenceForecaster(BaseForecaster):
         rescaled_predictions = self.dataset.target_scaler.inverse_transform(scaled_predictions)
 
         return rescaled_predictions
+
+
+

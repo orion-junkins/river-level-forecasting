@@ -147,14 +147,18 @@ forecaster = InferenceForecaster(inference_catchment_data, "trained_models/RNN/H
 model = forecaster.model
 all_y = forecaster.dataset.y.copy()
 # %%
-
+forecaster.predict_average()
 # %%
 dfs = []
 #%%
-for i in range(100):
+for i in range(50):
     forecaster.dataset.y = forecaster.dataset.y[:-12]
     ensemble_pred = forecaster.predict()[12].pd_dataframe()
     ensemble_pred.rename(columns={"level": "ensemble"}, inplace=True)
+    average_pred = forecaster.predict_average()[12].pd_dataframe()
+    geo_average_pred = forecaster.predict_geo_average()[12].pd_dataframe()
+    average_pred.rename(columns={"0": "average"}, inplace=True)
+    geo_average_pred.rename(columns={"0": "geo_average"}, inplace=True)
 
     contrib_preds = forecaster.predict_contributing_models()[12].pd_dataframe()
 
@@ -165,6 +169,8 @@ for i in range(100):
     contrib_preds.rename(columns=rename_mapping, inplace=True)
 
     df = ensemble_pred.join(contrib_preds)
+    df = df.join(average_pred)
+    df = df.join(geo_average_pred)
 
     dfs.append(df)
 
@@ -180,7 +186,11 @@ df = df_pred.copy()
 df["true"] = df_true["level"]
 # df = df.drop(df[df['true'] < -1000].index)
 df = df[::-1]
-df.to_csv("test.csv")
+
+#%%
+
+
+df.to_csv("test_1.csv")
 # %%
 # Assuming your DataFrame is named 'df'
 # Selecting the columns with "Contrib" prefix
@@ -190,18 +200,22 @@ contrib_columns = [col for col in df.columns if col.startswith('contrib_')]
 contrib_plots = df[contrib_columns].plot(color='green', legend=False)
 ensemble_plot = df['ensemble'].plot(color='blue', legend=False)
 true_plot = df['true'].plot(color='red', legend=False)
+average_plot = df['average'].plot(color='black', legend=False)
+geo_average_plot = df['geo_average'].plot(color='black', legend=False)
 
 # Create custom proxy artists for legend
 contrib_patch = mpatches.Patch(color='green', label='Contributing Model Predictions')
 ensemble_patch = mpatches.Patch(color='blue', label='Ensemble Prediction')
 true_patch = mpatches.Patch(color='red', label='True Recorded')
+average_patch = mpatches.Patch(color='black', label='Average')
+geo_average_patch = mpatches.Patch(color='black', label='Geo Average')
 
 # Adding the legend with custom proxy artists outside the plot
-plt.legend(handles=[contrib_patch, ensemble_patch, true_patch],
+plt.legend(handles=[contrib_patch, ensemble_patch, true_patch, average_patch, geo_average_patch],
            bbox_to_anchor=(1.05, 1),
            loc='upper left')
 
 # Displaying the plot
-plt.savefig(f'output_chart_{target["properties"]["gauge_id"]}.png')
+plt.savefig(f'output_chart_{target["properties"]["gauge_id"]}_5.png')
 plt.show()
 # %%
