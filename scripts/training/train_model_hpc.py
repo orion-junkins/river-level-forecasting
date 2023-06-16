@@ -1,12 +1,13 @@
 import argparse
 import json
 import os
+import sys
 from sklearn.linear_model import HuberRegressor
 from typing import Dict, List, Optional, Union
 
 try:
     from darts.models.forecasting.forecasting_model import GlobalForecastingModel
-    from darts.models.forecasting.linear_regression_model import RegressionModel
+    from darts.models.forecasting.regression_model import RegressionModel
     from darts.models.forecasting.rnn_model import RNNModel
 except ImportError as e:
     print(
@@ -218,7 +219,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "-b", "--test_stride", type=int, default=5, help="Stride for backtesting"
     )
-
+    
     args = parser.parse_args()
     gauge_id = args.gauge_id
     data_file = args.data_file
@@ -228,6 +229,10 @@ if __name__ == "__main__":
     combiner_holdout_size = args.combiner_holdout_size
     test_start = args.test_start
     test_stride = args.test_stride
+
+    print("TRAINING", file=sys.stderr)
+    print(gauge_id, file=sys.stderr)
+    print(epochs, file=sys.stderr)
 
     coordinates = get_coordinates_for_catchment(data_file, gauge_id)
     if coordinates is None:
@@ -244,7 +249,7 @@ if __name__ == "__main__":
     os.makedirs(root_dir, exist_ok=True)
 
     forecaster = TrainingForecaster(model, dataset, root_dir=root_dir)
-    forecaster.fit()
+    forecaster.fit(retrain_contributing_models=False)
 
     contrib_test_errors = forecaster.backtest_contributing_models(
         start=test_start, stride=test_stride

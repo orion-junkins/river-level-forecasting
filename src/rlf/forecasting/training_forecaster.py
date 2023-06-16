@@ -48,9 +48,9 @@ class TrainingForecaster(BaseForecaster):
         if (os.path.isfile(self.scaler_save_path)):
             raise ValueError(f"{self.scaler_save_path} already exists. Specify a unique save path.")
 
-    def fit(self) -> None:
+    def fit(self, retrain_contributing_models=True) -> None:
         """Fit the underlying Darts ForecastingModel model."""
-        self.model.fit_dataset(self.dataset, use_future_covariates=self.use_future_covariates, retrain_contributing_models=True)
+        self.model.fit_dataset(self.dataset, use_future_covariates=self.use_future_covariates, retrain_contributing_models=retrain_contributing_models)
         self.save_model()
 
     def save_model(self) -> None:
