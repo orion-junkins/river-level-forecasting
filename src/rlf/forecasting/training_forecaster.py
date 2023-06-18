@@ -3,10 +3,14 @@ import os
 import pickle
 
 from darts.metrics.metrics import mae
+from darts.models.forecasting.forecasting_model import GlobalForecastingModel
 from darts.timeseries import TimeSeries
 
 import numpy as np
 from rlf.forecasting.base_forecaster import BaseForecaster, DEFAULT_WORK_DIR
+from rlf.forecasting.catchment_data import CatchmentData
+from rlf.forecasting.data_fetching_utilities.weather_provider.base_weather_provider import BaseWeatherProvider
+from rlf.forecasting.inference_forecaster import InferenceForecaster
 from rlf.forecasting.training_dataset import TrainingDataset
 from rlf.models.ensemble import Ensemble
 
@@ -177,3 +181,35 @@ class TrainingForecaster(BaseForecaster):
             model_errors.append(unscaled_error)
 
         return model_errors
+
+
+def load_training_forecaster(loaded_inference_forecaster: InferenceForecaster, weather_provider: BaseWeatherProvider) -> TrainingForecaster:
+    """Given a loaded inference forecaster, extract the trained models and build a training forecaster.
+
+    Args:
+        loaded_inference_forecaster (InferenceForecaster): Loaded Inference Forecaster with trained models
+        weather_provider (BaseWeatherProvider): Weather Provider to use for training forecaster
+
+    Returns:
+        TrainingForecaster: Loaded Training Forecaster with models from Inference Forecaster.
+    """
+    # Isolate needed data from loaded inference forecaster
+    catchment_name = loaded_inference_forecaster.catchment_data.name
+    level_provider = loaded_inference_forecaster.catchment_data.level_provider
+    columns = loaded_inference_forecaster.catchment_data.columns
+    root_dir = os.path.join("loaded_trained_model", loaded_inference_forecaster.root_dir)
+    model = loaded_inference_forecaster.model
+
+    # Build a new CatchmentData object with the same data and the provided weather provider
+    catchment_data = CatchmentData(
+        catchment_name,
+        weather_provider,
+        level_provider,
+        columns=columns
+    ) 
+
+    # Build a new TrainingForecaster object with the same model and the new CatchmentData object
+    dataset = TrainingDataset(catchment_data)
+    training_forecaster = TrainingForecaster(model, dataset, root_dir=root_dir)
+
+    return training_forecaster
