@@ -3,7 +3,6 @@ import os
 import pickle
 
 from darts.metrics.metrics import mae
-from darts.models.forecasting.forecasting_model import GlobalForecastingModel
 from darts.timeseries import TimeSeries
 
 import numpy as np
@@ -206,7 +205,7 @@ def load_training_forecaster(loaded_inference_forecaster: InferenceForecaster, w
         weather_provider,
         level_provider,
         columns=columns
-    ) 
+    )
 
     # Build a new TrainingForecaster object with the same model and the new CatchmentData object
     dataset = TrainingDataset(catchment_data)
