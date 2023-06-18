@@ -1,15 +1,12 @@
 # %%
 import os
 from rlf.forecasting.data_fetching_utilities.weather_provider.api_weather_provider import APIWeatherProvider
-from rlf.forecasting.training_forecaster import TrainingForecaster, load_training_forecaster
-from darts.models.forecasting.regression_model import RegressionModel
-from sklearn.linear_model import HuberRegressor
+from rlf.forecasting.training_forecaster import load_training_forecaster
 
-import argparse
 from datetime import datetime
 import json
 import pandas as pd
-from typing import List, Optional
+from typing import Dict, List, Optional, Union
 
 try:
     from rlf.aws_dispatcher import AWSDispatcher
@@ -100,7 +97,6 @@ def get_level_true(starting_timestamps: List[str], inference_level_provider: Lev
 
     return level
 
-#%%
 
 gauge_id = "14182500"
 model_dir = "../trained_models/RNN/Huber/50"
@@ -129,7 +125,7 @@ inference_forecaster = InferenceForecaster(inference_catchment_data, model_dir, 
 training_weather_provider = AWSWeatherProvider(coordinates, aws_dispatcher=aws_dispatcher)
 tf = load_training_forecaster(inference_forecaster, training_weather_provider)
 
-scores = {}
+scores: Dict[str, Union[float, List[float]]] = {}
 contrib_test_errors = tf.backtest_contributing_models(start=0.99, stride=100)
 contrib_val_errors = tf.backtest_contributing_models(run_on_validation=True, start=0.99, stride=100)
 average_test_error = sum(contrib_test_errors) / len(contrib_test_errors)
