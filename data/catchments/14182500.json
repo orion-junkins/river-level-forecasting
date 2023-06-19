@@ -1,0 +1,45 @@
+{
+    "type": "FeatureCollection",
+    "features": [
+        {
+            "type": "Feature",
+            "bbox": [
+                -122.60881365,
+                44.77735762,
+                -122.13162998,
+                44.89996432
+            ],
+            "properties": {
+                "gauge_id": "14182500",
+                "noaa_id": "LSMO3",
+                "gauge_name": "LITTLE NORTH SANTIAM RIVER NEAR MEHAMA, OR",
+                "area_sq_km": 292.475
+            },
+            "geometry": {
+                "type": "MultiPoint",
+                "coordinates": [
+                    [
+                        -122.6,
+                        44.8
+                    ],
+                    [
+                        -122.5,
+                        44.8
+                    ],
+                    [
+                        -122.4,
+                        44.8
+                    ],
+                    [
+                        -122.3,
+                        44.8
+                    ],
+                    [
+                        -122.2,
+                        44.8
+                    ]
+                ]
+            }
+        }
+    ]
+}

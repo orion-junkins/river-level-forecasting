@@ -1,0 +1,29 @@
+{
+    "type": "FeatureCollection",
+    "features": [
+        {
+            "type": "Feature",
+            "bbox": [
+                -121.60385476,
+                47.34862724999999,
+                -121.37847998,
+                47.46295243
+            ],
+            "properties": {
+                "gauge_id": "12143400",
+                "noaa_id": "GARW1",
+                "gauge_name": "SF SNOQUALMIE RIVER AB ALICE CREEK NEAR GARCIA, WA",
+                "area_sq_km": 107.831
+            },
+            "geometry": {
+                "type": "MultiPoint",
+                "coordinates": [
+                    [
+                        -121.5,
+                        47.4
+                    ]
+                ]
+            }
+        }
+    ]
+}

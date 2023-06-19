@@ -1,0 +1,61 @@
+{
+    "type": "FeatureCollection",
+    "features": [
+        {
+            "type": "Feature",
+            "bbox": [
+                -122.94611736,
+                42.38917002,
+                -122.13684008,
+                43.13428486
+            ],
+            "properties": {
+                "gauge_id": "14339000",
+                "noaa_id": "EGLO3",
+                "gauge_name": "ROGUE RIVER AT DODGE BRIDGE, NEAR EAGLE POINT, OR",
+                "area_sq_km": 3156.863
+            },
+            "geometry": {
+                "type": "MultiPoint",
+                "coordinates": [
+                    [
+                        -122.4,
+                        42.5
+                    ],
+                    [
+                        -122.8,
+                        42.7
+                    ],
+                    [
+                        -122.6,
+                        42.7
+                    ],
+                    [
+                        -122.4,
+                        42.7
+                    ],
+                    [
+                        -122.2,
+                        42.7
+                    ],
+                    [
+                        -122.6,
+                        42.9
+                    ],
+                    [
+                        -122.4,
+                        42.9
+                    ],
+                    [
+                        -122.2,
+                        42.9
+                    ],
+                    [
+                        -122.2,
+                        43.1
+                    ]
+                ]
+            }
+        }
+    ]
+}
