@@ -8,7 +8,7 @@ from rlf.aws_dispatcher import AWSDispatcher
 from rlf.forecasting.data_fetching_utilities.weather_provider.aws_weather_provider import AWSWeatherProvider
 
 # Declare coordinates
-coordinates = [Coordinate(lon=-120.75, lat=44.25), Coordinate(lon=-121.0, lat=44.5)]
+coordinates = [Coordinate(lon=-122.4, lat=45.8), Coordinate(lon=-122.3, lat=45.8)]
 
 # Create an AWSDispatcher
 aws_dispatcher = AWSDispatcher(bucket_name="all-weather-data", directory_name="open-meteo")
@@ -35,7 +35,7 @@ datums[0].hourly_parameters
 
 # %% ------------------------------
 # Supply a timestamp to the AWSWeatherProvider
-weather_provider.set_timestamp("22-12-04_09-09")
+weather_provider.set_timestamp("23-09-15_12-00")
 
 # Fetch 'current' data logged at the given timestamp
 datums = weather_provider.fetch_current()
