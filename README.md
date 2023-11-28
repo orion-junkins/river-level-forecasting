@@ -18,7 +18,7 @@ Single file scripts are documented with headers. More complex processes will hav
 All required dependencies are managed through an Anaconda environment. The needed environment is defined in `environment.yml`.
 1) Create a new Conda Environment from this yml definition. This will create a new conda environment named 'river-level'
 ```
-conda env create -f environment_gpu.yml
+conda env create -f environment.yml
 ```
 
 2) Activate the environment
@@ -47,7 +47,7 @@ pip install -e .
 This will install the package as 'editable' meaning that any changes to the repo will automatically be reflected the next time you import a module. You will not have to reinstall the package.
 
 ## GPU Training
-If you wish to train on a GPU, follow the standard install steps above but use the `environment_gpu.yml` instead of the standard `environment_gpu.yml`. It is assumed that you have CUDA 11.7 installed on your machine. Future versions of CUDA will likely also work, however you may need to update the version locks in the `yml` file accordingly. See this [pytorch installation guide for previous versions](https://pytorch.org/get-started/previous-versions/) to identify compatible versions.   
+If you wish to train on a GPU, follow the standard install steps above but use the `environment_gpu.yml` instead of the standard `environment.yml`. It is assumed that you have CUDA 11.7 installed on your machine. Future versions of CUDA will likely also work, however you may need to update the version locks in the `yml` file accordingly. See this [pytorch installation guide for previous versions](https://pytorch.org/get-started/previous-versions/) to identify compatible versions.   
 
 To test that install has succeeded, run the following in python:
 ```
