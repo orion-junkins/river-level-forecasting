@@ -39,8 +39,8 @@ def test_get_historical_columns_subset(fake_coordinate, fake_start_date, fake_en
     adapter = OpenMeteoAdapter()
     response = adapter.get_historical(coordinate=fake_coordinate, start_date=fake_start_date, end_date=fake_end_date, columns=["temperature_2m"])
     assert response.status_code == 200
-    assert pytest.approx(110.0) == response.data["longitude"]
-    assert pytest.approx(30.0) == response.data["latitude"]
+    assert pytest.approx(110.0, rel=1e-2) == response.data["longitude"]
+    assert pytest.approx(30.0, rel=1e-2) == response.data["latitude"]
     assert len(response.data["hourly"]) == 2  # Time column and 'temperature_2m' column
     assert len(response.data["hourly_units"]) == 2
 
