@@ -1,5 +1,4 @@
 from typing import List, Optional
-import openmeteo_requests
 
 from rlf.forecasting.data_fetching_utilities.coordinate import Coordinate
 from rlf.forecasting.data_fetching_utilities.weather_provider.api.base_api_adapter import BaseAPIAdapter
@@ -7,12 +6,12 @@ from rlf.forecasting.data_fetching_utilities.weather_provider.api.models import 
 from rlf.forecasting.data_fetching_utilities.weather_provider.api.rest_invoker import RestInvoker
 from rlf.forecasting.data_fetching_utilities.weather_provider.open_meteo.parameters import get_hourly_parameters
 
-
+import openmeteo_requests
 from retry_requests import retry
 import requests_cache
 
 
-class OpenMeteoAdapter(BaseAPIAdapter):
+class OpenMeteoECMWFAdapter(BaseAPIAdapter):
     """Adapts the OpenMeteo API to be used by the RequestBuilder"""
 
     def __init__(self, archive_hourly_parameters: Optional[List[str]] = None,
@@ -110,3 +109,16 @@ class OpenMeteoAdapter(BaseAPIAdapter):
             str: "time"
         """
         return "time"
+
+def main():
+    data = OpenMeteoECMWFAdapter()
+    historical_data = data.get_historical(Coordinate(44.2,-119.6),"2022-01-01","2022-01-02")
+    forecast_data = data.get_current(Coordinate(44.2,-119.6),0,7)
+
+    print("Historical Data:")
+    print(historical_data)
+
+    print("Historical Data:")
+    print(forecast_data)
+
+main()
