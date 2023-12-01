@@ -1,3 +1,6 @@
+import sys
+print(sys.path)
+
 from typing import List, Optional
 
 from rlf.forecasting.data_fetching_utilities.coordinate import Coordinate
@@ -109,16 +112,3 @@ class OpenMeteoECMWFAdapter(BaseAPIAdapter):
             str: "time"
         """
         return "time"
-
-def main():
-    data = OpenMeteoECMWFAdapter()
-    historical_data = data.get_historical(Coordinate(44.2,-119.6),"2022-01-01","2022-01-02")
-    forecast_data = data.get_current(Coordinate(44.2,-119.6),0,7)
-
-    print("Historical Data:")
-    print(historical_data)
-
-    print("Historical Data:")
-    print(forecast_data)
-
-main()
