@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta
+import logging
 from typing import List
 import pytz
 
@@ -18,6 +19,9 @@ class LevelProviderNWIS(BaseLevelProvider):
         Args:
             gauge_id (str): A string of the USGS gauge id number.
         """
+        if not isinstance(gauge_id, str):
+            logging.warning(f"gauge_id passed to LevelProviderNWIS should be a string but it was not, casting to string: {gauge_id}")
+            gauge_id = str(gauge_id)
         self.gauge_id = gauge_id
         self.reference_timestamp: Optional[datetime] = None
 
