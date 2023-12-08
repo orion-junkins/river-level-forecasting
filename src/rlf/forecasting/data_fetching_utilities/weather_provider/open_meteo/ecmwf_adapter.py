@@ -70,7 +70,7 @@ class OpenMeteoECMWFAdapter(BaseAPIAdapter):
             "models": "ecmwf_ifs"
         }
 
-        return openmeteo.weather_api(url, params=params)
+        return openmeteo.weather_api(url, params=params)[0]
 
     def get_current(self,
                     coordinate: Coordinate,
@@ -103,7 +103,7 @@ class OpenMeteoECMWFAdapter(BaseAPIAdapter):
             "past_days": 92,
             "forecast_days": 7
         }
-        return openmeteo.weather_api(url, params=params)
+        return openmeteo.weather_api(url, params=params)[0]
 
     def get_index_parameter(self) -> str:
         """Temporal index parameter for OpenMeteo hourly data is "time".
