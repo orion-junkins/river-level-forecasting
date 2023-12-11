@@ -10,32 +10,6 @@ from rlf.forecasting.data_fetching_utilities.weather_provider.weather_datum impo
 DEFAULT_START_DATE = "2022-01-01"
 DEFAULT_END_DATE = datetime.now().strftime("%Y-%m-%d")
 
-current_parameter_remaps_from_adapter = {
-    "soil_temperature_0_to_10cm": "soil_temperature_level_1",
-    "soil_temperature_10_to_40cm": "soil_temperature_level_2",
-    "soil_temperature_40_to_100cm": "soil_temperature_level_3",
-    "soil_temperature_100_to_200cm": "soil_temperature_level_4",
-    "soil_moisture_0_to_10cm": "soil_moisture_level_1",
-    "soil_moisture_10_to_40cm": "soil_moisture_level_2",
-    "soil_moisture_40_to_100cm": "soil_moisture_level_3",
-    "soil_moisture_100_to_200cm": "soil_moisture_level_4",
-}
-
-current_parameter_remaps_to_adapter = {value: key for key, value in current_parameter_remaps_from_adapter.items()}
-
-historical_parameter_remaps_from_adapter = {
-    "soil_temperature_0_to_7cm": "soil_temperature_level_1",
-    "soil_temperature_7_to_28cm": "soil_temperature_level_2",
-    "soil_temperature_28_to_100cm": "soil_temperature_level_3",
-    "soil_temperature_100_to_255cm": "soil_temperature_level_4",
-    "soil_moisture_0_to_7cm": "soil_moisture_level_1",
-    "soil_moisture_7_to_28cm": "soil_moisture_level_2",
-    "soil_moisture_28_to_100cm": "soil_moisture_level_3",
-    "soil_moisture_100_to_255cm": "soil_moisture_level_4"
-}
-
-historical_parameter_remaps_to_adapter = {value: key for key, value in historical_parameter_remaps_from_adapter.items()}
-
 
 class BaseWeatherProvider(ABC):
     """Provides historical and forecasted weather for a given set of locations. WeatherProviders exist at a single moment in time. Relative to that moment, they provide access to current (recent + forecasted) weather data as well as historical (beginning of collection to some point in the past) weather data."""
@@ -81,47 +55,3 @@ class BaseWeatherProvider(ABC):
             list[WeatherDatum]: A list of WeatherDatums containing the weather data about the location.
         """
         pass
-
-    def _remap_current_parameters_to_adapter(self, params: List[str]) -> List[str]:
-        """Remap the parameter names for current data from the consistent names to the adapter's actual names.
-
-        Args:
-            params (List[str]): Initial list of params to remap.
-
-        Returns:
-            List[str]: New list with param names either remapped or left alone (maintains order).
-        """
-        return [current_parameter_remaps_to_adapter.get(param, param) for param in params]
-
-    def _remap_current_parameters_from_adapter(self, params: List[str]) -> List[str]:
-        """Remap the parameter names for current data from the adapter's actual name to the consistent names.
-
-        Args:
-            params (List[str]): Initial list of params to remap.
-
-        Returns:
-            List[str]: New list with param names either remapped or left alone (maintains order).
-        """
-        return [current_parameter_remaps_from_adapter.get(param, param) for param in params]
-
-    def _remap_historical_parameters_to_adapter(self, params: List[str]) -> List[str]:
-        """Remap the parameter names for historical data from the consistent names to the adapter's actual names.
-
-        Args:
-            params (List[str]): Initial list of params to remap.
-
-        Returns:
-            List[str]: New list with param names either remapped or left alone (maintains order).
-        """
-        return [historical_parameter_remaps_to_adapter.get(param, param) for param in params]
-
-    def _remap_historical_parameters_from_adapter(self, params: List[str]) -> List[str]:
-        """Remap the parameter names for historical data from the adapter's actual names to the consistent names.
-
-        Args:
-            params (List[str]): Initial list of params to remap.
-
-        Returns:
-            List[str]: New list with param names either remapped or left alone (maintains order).
-        """
-        return [historical_parameter_remaps_from_adapter.get(param, param) for param in params]
