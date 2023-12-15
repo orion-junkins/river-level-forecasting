@@ -70,7 +70,7 @@ HOURLY_PARAMETERS = {"era5": [
     "soil_moisture_100_to_200cm"
     ],
 
-    "ecmwf_h": ["temperature_2m",
+    "ecmwf_ifs": ["temperature_2m",
               "relative_humidity_2m", 
               "dew_point_2m", 
               "apparent_temperature", 
@@ -101,7 +101,7 @@ HOURLY_PARAMETERS = {"era5": [
               "soil_moisture_28_to_100cm", 
               "soil_moisture_100_to_255cm"],
 
-    "ecmwf_f": ["temperature_2m", 
+    "ecmwf": ["temperature_2m", 
                 "relative_humidity_2m", 
                 "dew_point_2m", 
                 "apparent_temperature", 

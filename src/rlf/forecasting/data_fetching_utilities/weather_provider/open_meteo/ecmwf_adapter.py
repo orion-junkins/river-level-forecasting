@@ -23,23 +23,17 @@ class OpenMeteoECMWFAdapter(BaseAPIAdapter):
         Adapts the OpenMeteo API to be used by the RequestBuilder
 
         Args:
-            protocol (str, optional): The protocol to use. Defaults to "https".
-            archive_hostname (str, optional): The hostname to use for archived/historical data. Defaults to "archive-api.open-meteo.com".
-            forecast_hostname (str, optional): The hostname to use for current/forecasted data. Defaults to "api.open-meteo.com".
-            version (str, optional): The version of the API to use. Defaults to "v1".
-            archive_path (str, optional): The path to use for archived/historical data. Defaults to "era5".
-            forecast_path (str, optional): The path to use for current/forecasted data. Defaults to "gfs".
             archive_hourly_parameters (list[str], optional): Which parameters to fetch for archived/historical queries. Defaults to None.
             forecast_hourly_parameters (list[str], optional): Which parameters to fetch for current/forecasted queries. Defaults to None.
         """
-        self.archive_hourly_parameters = archive_hourly_parameters if archive_hourly_parameters is not None else get_hourly_parameters("ecmwf_h")
-        self.forecast_hourly_parameters = forecast_hourly_parameters if forecast_hourly_parameters is not None else get_hourly_parameters("ecmwf_f")
+        self.archive_hourly_parameters = archive_hourly_parameters if archive_hourly_parameters is not None else get_hourly_parameters("ecmwf_ifs")
+        self.forecast_hourly_parameters = forecast_hourly_parameters if forecast_hourly_parameters is not None else get_hourly_parameters("ecmwf")
 
     def get_historical(self,
                        coordinate: Coordinate,
                        start_date: str,
                        end_date: str,
-                       columns: Optional[List[str]] = None) -> Response:
+                       columns: Optional[List[str]] = None): #->WeatherApiResponse
         """Make a GET request to the Open Meteo API for historical/archived data.
 
         Args:
@@ -76,7 +70,7 @@ class OpenMeteoECMWFAdapter(BaseAPIAdapter):
                     coordinate: Coordinate,
                     past_days: int = 92,
                     forecast_days: int = 16,
-                    columns: Optional[List[str]] = None) -> Response:
+                    columns: Optional[List[str]] = None): #->WeatherApiResponse
         """Make a GET request to the Open Meteo API for current/forecasted data.
 
         Args:

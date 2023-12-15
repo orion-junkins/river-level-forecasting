@@ -3,15 +3,19 @@ from rlf.forecasting.data_fetching_utilities.coordinate import Coordinate
 
 from rlf.forecasting.data_fetching_utilities.weather_provider.open_meteo.ecmwf_adapter import OpenMeteoECMWFAdapter
 
+REAL_LATITUDE = 44.2
+REAL_LONGITUDE = -119.3
+REAL_COLUMNS = ["temperature_2m", "rain"]
+
 
 @pytest.fixture
 def fake_latitude() -> float:
-    return 30.4
+    return REAL_LATITUDE
 
 
 @pytest.fixture
 def fake_longitude() -> float:
-    return 110.0
+    return REAL_LONGITUDE
 
 
 @pytest.fixture
@@ -37,18 +41,17 @@ def weather_api_parameters() -> OpenMeteoECMWFAdapter:
 @pytest.mark.slow
 def test_get_historical_columns_subset(fake_coordinate, fake_start_date, fake_end_date):
     adapter = OpenMeteoECMWFAdapter()
-    response = adapter.get_historical(coordinate=fake_coordinate, start_date=fake_start_date, end_date=fake_end_date, columns=["temperature_2m"])
+    response = adapter.get_historical(coordinate=fake_coordinate, start_date=fake_start_date, end_date=fake_end_date, columns=REAL_COLUMNS)
     
-    assert pytest.approx(110.0, rel=1e-2) == response.Longitude()   
-    assert pytest.approx(30.4, rel=1e-2) == response.Latitude()  
-    assert response.Hourly().VariablesLength() == 1  #'temperature_2m' column
-
+    assert pytest.approx(REAL_LONGITUDE, rel=1e-2) == response.Longitude()   
+    assert pytest.approx(REAL_LATITUDE, rel=1e-2) == response.Latitude()  
+    assert response.Hourly().VariablesLength() == len(REAL_COLUMNS)  
 
 @pytest.mark.slow
 def test_get_current_columns_subset(fake_coordinate):
     adapter = OpenMeteoECMWFAdapter()
-    response = adapter.get_current(coordinate=fake_coordinate, past_days=1, forecast_days=1, columns=["temperature_2m"])
+    response = adapter.get_current(coordinate=fake_coordinate, past_days=1, forecast_days=1, columns=REAL_COLUMNS)
     
-    assert pytest.approx(110.0, rel=1e-2) == response.Longitude()    
-    assert pytest.approx(30.0, rel=1e-2) == response.Latitude()    
-    assert response.Hourly().VariablesLength() == 1  #'temperature_2m' column
+    assert pytest.approx(REAL_LONGITUDE, rel=1e-2) == response.Longitude()    
+    assert pytest.approx(REAL_LATITUDE, rel=1e-2) == response.Latitude()    
+    assert response.Hourly().VariablesLength() == len(REAL_COLUMNS)  
