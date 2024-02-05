@@ -4,13 +4,11 @@ import time
 from typing import List, Optional
 
 from pandas import DataFrame
-import pytz
 
 from rlf.forecasting.data_fetching_utilities.coordinate import Coordinate
 from rlf.forecasting.data_fetching_utilities.weather_provider.api.base_api_adapter import (
     BaseAPIAdapter
 )
-from rlf.forecasting.data_fetching_utilities.weather_provider.api.models import Response
 from rlf.forecasting.data_fetching_utilities.weather_provider.base_weather_provider import (
     BaseWeatherProvider
 )
@@ -20,16 +18,21 @@ from rlf.forecasting.data_fetching_utilities.weather_provider.open_meteo.ecmwf_a
 from rlf.forecasting.data_fetching_utilities.weather_provider.weather_datum import (
     WeatherDatum
 )
+from rlf.forecasting.data_fetching_utilities.weather_provider.open_meteo.parameters import get_hourly_parameters
+
+from openmeteo_sdk import (
+    WeatherApiResponse, VariablesWithTime
+)
 
 
 DEFAULT_START_DATE = "2022-01-01"
 DEFAULT_END_DATE = datetime.now().strftime("%Y-%m-%d")
 
-RESPONSE_TOLERANCE = 0.05
+RESPONSE_TOLERANCE = 0.5
 
 
 class APIWeatherProviderECMWF(BaseWeatherProvider):
-    """Provides a historical of forecasted weather for a given location and time period."""
+    """Provides a historical or forecasted weather for a given location and time period."""
 
     def __init__(self,
                  coordinates: List[Coordinate],
@@ -38,35 +41,48 @@ class APIWeatherProviderECMWF(BaseWeatherProvider):
 
         Args:
             coordinates (list[Coordinate(longitude: float, latitude: float)]): Named tuple WSG84 coordinates: (longitude, latitude).
-            api_adapter (BaseAPIAdapter, optional): An adapter for a weather API. Defaults to OpenMeteoAdapter().
+            api_adapter (BaseAPIAdapter, optional): An adapter for a weather API. Defaults to OpenMeteoECMWFAdapter().
         """
         self.coordinates = coordinates
         self.api_adapter = api_adapter
 
-    def _build_hourly_parameters_from_response(self, hourly_parameters_response, tz: str, columns) -> DataFrame:
+    def _build_hourly_parameters_from_response(self, hourly_parameters_response: VariablesWithTime, columns: Optional[List[str]] = get_hourly_parameters("ecmwf_shared")) -> DataFrame:
+        """Construct a WeatherDatum from a Response.
+
+        Args:
+            hourly_parameters_response (Response): The Response to draw data from.
+            columns (List): List of columns, defaults to all shared parameters
+
+        Returns:
+            df: The constructed dataframe, with index column: time
+        """
         index_parameter = self.api_adapter.get_index_parameter()
 
         hourly_data = {}
+
         for i in range(hourly_parameters_response.VariablesLength()):
-            hourly_data[columns[i]] = hourly_parameters_response.Variables(i)
+            hourly_data[columns[i]] = hourly_parameters_response.Variables(i).ValuesAsNumpy()
+
+        hourly_data["time"] = hourly_parameters_response.Time()
         df = DataFrame(hourly_data)
 
-        df.index = df[index_parameter].map(lambda x: datetime.fromisoformat(x).replace(tzinfo=pytz.timezone(tz)).astimezone(pytz.timezone("UTC")))
+        df.index = df[index_parameter].map(lambda x: datetime.fromtimestamp(x))
         df.drop(columns=[index_parameter], inplace=True)
         return df
 
-    def build_datum_from_response(self, response, coordinate: Coordinate, columns = None, precision: int = 5) -> WeatherDatum:  #response: WeatherApiResponse
+    def build_datum_from_response(self, response: WeatherApiResponse, coordinate: Coordinate, columns: Optional[List[str]] = get_hourly_parameters("ecmwf_shared"), precision: int = 5) -> WeatherDatum:
         """Construct a WeatherDatum from a Response.
 
         Args:
             response (Response): The Response to draw data from.
             coordinate (Coordinate): The coordinate that is requested by the user.
+            columns (List): List of columns, defaults to all shared parameters
             precision (int): The precision to round the response coordinates to. Defaults to 5 decimal places.
 
         Returns:
             WeatherDatum: The constructed WeatherDatum instance.
         """
-        assert response.data is not None
+        assert response.Hourly().VariablesLength() > 0
 
         requested_lon = coordinate.lon
         requested_lat = coordinate.lat
@@ -80,7 +96,7 @@ class APIWeatherProviderECMWF(BaseWeatherProvider):
         difference_rounded_lon = response_rounded_lon - requested_lon
         difference_rounded_lat = response_rounded_lat - requested_lat
 
-        #Outside Response Tolerance (Not Tolerated)
+        # Outside Response Tolerance (Not Tolerated)
         if abs(difference_rounded_lon) > RESPONSE_TOLERANCE or abs(difference_rounded_lat) > RESPONSE_TOLERANCE:
             logging.error(
                 "The API responded with a location outside the requested location tolerance. "
@@ -89,18 +105,13 @@ class APIWeatherProviderECMWF(BaseWeatherProvider):
                 "To change the tolerance, change the RESPONSE_TOLERANCE constant in the APIWeatherProvider class. "
                 "To change the rounding precision, change the precision argument in the build_datum_from_response method.")
 
-        #Exactly Equal (Ideal)
-        elif abs(difference_rounded_lon) == 0 and abs(difference_rounded_lat) ==0:
+        # Exactly Equal (Ideal)
+        elif abs(difference_rounded_lon) == 0 and abs(difference_rounded_lat) == 0:
             pass
 
-        #Not Equal but within Response Tolerance (Not Ideal but Tolerated)
+        # Not Equal but within Response Tolerance (Not Ideal but Tolerated)
         else:
-            logging.warning(
-                "The API responded with a location within the requested location tolerance, but not equal. "
-                f"The requested location is ({requested_lon}, {requested_lat}) vs. the response location ({response_lon}, {response_lat}). "
-                f"The difference in longitude is {difference_rounded_lon} and the difference in latitude is {difference_rounded_lat}. "
-                "To change the tolerance, change the RESPONSE_TOLERANCE constant in the APIWeatherProvider class. "
-                "To change the rounding precision, change the precision argument in the build_datum_from_response method.")
+            pass
 
         datum = WeatherDatum(
             longitude=requested_lon,
@@ -110,8 +121,7 @@ class APIWeatherProviderECMWF(BaseWeatherProvider):
             elevation=response.Elevation(),
             utc_offset_seconds=response.UtcOffsetSeconds(),
             timezone=response.Timezone(),
-            hourly_units=response.data.get(
-                "hourly_units", None), #Need clarification on this one
+            hourly_units={},  # Not Necessary with WeatherApiResponse
             hourly_parameters=self._build_hourly_parameters_from_response(
                 response.Hourly(), response.Timezone(), columns))
 
@@ -121,7 +131,7 @@ class APIWeatherProviderECMWF(BaseWeatherProvider):
                                coordinate: Coordinate,
                                start_date: str = DEFAULT_START_DATE,
                                end_date: str = DEFAULT_END_DATE,
-                               columns: Optional[List[str]] = None) -> WeatherDatum:
+                               columns: Optional[List[str]] = get_hourly_parameters("ecmwf_shared")) -> WeatherDatum:
         """
         Fetch historical weather for a single coordinate or datum.
 
@@ -129,7 +139,7 @@ class APIWeatherProviderECMWF(BaseWeatherProvider):
             coordinate (Coordinate): The location to fetch data for.
             start_date (str, optional): iso8601 format YYYY-MM-DD. Defaults to DEFAULT_START_DATE.
             end_date (str, optional): iso8601 format YYYY-MM-DD. Defaults to DEFAULT_END_DATE.
-            columns (list[str], optional): The columns/parameters to fetch. All available will be fetched if left equal to None. Defaults to None.
+            columns (List): List of columns, defaults to all shared parameters
 
         Returns:
             WeatherDatum: A Datum object containing the weather data and metadata about a coordinate.
@@ -138,20 +148,17 @@ class APIWeatherProviderECMWF(BaseWeatherProvider):
 
         datum = self.build_datum_from_response(response, coordinate, columns)
 
-        #CLARIFY
-        #datum.hourly_parameters.columns = self._remap_historical_parameters_from_adapter(datum.hourly_parameters.columns)
-
         return datum
 
     def fetch_historical(self,
-                         columns: Optional[List[str]] = None,
+                         columns: Optional[List[str]] = get_hourly_parameters("ecmwf_shared"),
                          start_date: str = DEFAULT_START_DATE,
                          end_date: str = DEFAULT_END_DATE,
                          sleep_duration: float = 0.0) -> List[WeatherDatum]:
         """Fetch historical weather for all coordinates.
 
         Args:
-            columns (list[str], optional): The columns/parameters to fetch. All available will be fetched if left equal to None. Defaults to None.
+            columns (List): List of columns, defaults to all shared parameters
             start_date (str, optional): iso8601 format YYYY-MM-DD. Defaults to DEFAULT_START_DATE.
             end_date (str, optional): iso8601 format YYYY-MM-DD. Defaults to DEFAULT_END_DATE.
             sleep_duration (float, optional): How many seconds to sleep after each query. Helps prevent throttling. Defaults to 0.0.
@@ -161,10 +168,6 @@ class APIWeatherProviderECMWF(BaseWeatherProvider):
         """
         datums = {}
 
-        #CLARIFY
-        # if columns:
-        #     columns = self._remap_historical_parameters_to_adapter(columns)
-
         for coordinate in self.coordinates:
             datum = self.fetch_historical_datum(coordinate=coordinate, start_date=start_date, end_date=end_date, columns=columns)
             coord = Coordinate(datum.longitude, datum.latitude)
@@ -173,12 +176,12 @@ class APIWeatherProviderECMWF(BaseWeatherProvider):
             time.sleep(sleep_duration)
         return list(datums.values())
 
-    def fetch_current_datum(self, coordinate: Coordinate, columns: Optional[List[str]] = None) -> WeatherDatum:
+    def fetch_current_datum(self, coordinate: Coordinate, columns: Optional[List[str]] = get_hourly_parameters("ecmwf_shared")) -> WeatherDatum:
         """Fetch current weather for a single coordinate.
 
         Args:
             coordinate (Coordinate): The location to fetch data for.
-            columns (list[str], optional): The columns/parameters to fetch. All available will be fetched if left equal to None. Defaults to None.
+            columns (List): List of columns, defaults to all shared parameters
 
         Returns:
             WeatherDatum: A Datum object containing the weather data and metadata about a coordinate
@@ -187,26 +190,19 @@ class APIWeatherProviderECMWF(BaseWeatherProvider):
 
         datum = self.build_datum_from_response(response, coordinate, columns)
 
-        #CLARIFY
-        #datum.hourly_parameters.columns = self._remap_current_parameters_from_adapter(datum.hourly_parameters.columns)
-
         return datum
 
-    def fetch_current(self, columns: Optional[List[str]] = None, sleep_duration: float = 0.0) -> List[WeatherDatum]:
+    def fetch_current(self, columns: Optional[List[str]] = get_hourly_parameters("ecmwf_shared"), sleep_duration: float = 0.0) -> List[WeatherDatum]:
         """Fetch current weather for all coordinates.
 
         Args:
-            columns (list[str], optional): The columns/parameters to fetch. All available will be fetched if left equal to None. Defaults to None.
+            columns (List): List of columns, defaults to all shared parameters
             sleep_duration (float, optional): How many seconds to sleep after each query. Helps prevent throttling. Defaults to 0.0.
 
         Returns:
             list[WeatherDatum]: A list of WeatherDatums containing the weather data about the location.
         """
         datums = []
-
-        #CLARIFY
-        # if columns:
-        #     columns = self._remap_current_parameters_to_adapter(columns)
 
         for coordinate in self.coordinates:
             datum = self.fetch_current_datum(coordinate=coordinate, columns=columns)
