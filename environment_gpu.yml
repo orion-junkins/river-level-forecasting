@@ -29,3 +29,7 @@ dependencies:
     - dataretrieval # Package for fetching NWIS river level dataa
     - simplekml     # Weather location KML generation
     - pyarrow       # Parquet file creation
+    - openmeteo-requests==1.1.0 # Handling Open Meteo HTTP Request
+    - requests-cache==1.1.1 # Improves performance of HTTP Requests
+    - retry-requests==2.0.0 # For retrying failed requests
+    - openmeteo-sdk==1.7.0 # For creating a WeatherApiResponse object
