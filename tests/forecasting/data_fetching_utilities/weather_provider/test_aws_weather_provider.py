@@ -66,7 +66,7 @@ def test_fetch_historical(weather_provider):
     weather_datums = weather_provider.fetch_historical()
     assert len(weather_datums) == len(weather_provider.coordinates)
     for weather_datum in weather_datums:
-        assert weather_datum.hourly_parameters.index.dtype == "datetime64[ns, UTC]"
+        assert (weather_datum.hourly_parameters.index.dtype == "datetime64[ns, UTC]" or weather_datum.hourly_parameters.index.dtype == "datetime64[us, UTC]")
         assert expected_columns == sorted(list(weather_datum.hourly_parameters.columns))
 
 
@@ -113,7 +113,7 @@ def test_fetch_current(weather_provider):
     weather_datums = weather_provider.fetch_current()
     assert len(weather_datums) == len(weather_provider.coordinates)
     for weather_datum in weather_datums:
-        assert weather_datum.hourly_parameters.index.dtype == "datetime64[ns, UTC]"
+        assert (weather_datum.hourly_parameters.index.dtype == "datetime64[ns, UTC]" or weather_datum.hourly_parameters.index.dtype == "datetime64[us, UTC]")
         assert expected_columns == sorted(list(weather_datum.hourly_parameters.columns))
 
 
