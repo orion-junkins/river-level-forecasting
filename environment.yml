@@ -15,13 +15,14 @@ dependencies:
   - s3fs                    # AWS S3 interaction TODO: Convert to only boto3 OR only s3fs (Issue #30)
   - holidays=0.24           # Holiday calendar for time series forecasting. Version locked to avoid upstream issue.
   - pytorch=1.13.1          # Core underlying neural network library
-  - pytorch-lightning=1.9.3 # High level interface for pytorch
-  - u8darts-all=0.23        # Core Timeseries forecasting library
+  - pytorch-lightning=1.9.3 # High level interface for pytorch      
+  - u8darts=0.23       # Core Timeseries forecasting library
   - pip                     # Package installer for dependencies not available through Conda
   - pip:
     # Add pip packages which are not available through conda here
     # Note: to version lock a pip package, use '==' not '=' ie:
     # - packageName==0.123
-    - dataretrieval # Package for fetching NWIS river level dataa
-    - simplekml     # Weather location KML generation
-    - pyarrow       # Parquet file creation
+    - dataretrieval       # Package for fetching NWIS river level dataa
+    - simplekml           # Weather location KML generation
+    - pyarrow             # Parquet file creation
+    - scikit-learn==1.3   # ML library used internally by darts
