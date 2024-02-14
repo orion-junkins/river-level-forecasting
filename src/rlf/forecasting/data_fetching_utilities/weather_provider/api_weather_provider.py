@@ -2,7 +2,7 @@ from datetime import datetime
 import logging
 import time
 from typing import List, Optional
-import pandas as pd
+
 from pandas import DataFrame
 import pytz
 
@@ -14,8 +14,8 @@ from rlf.forecasting.data_fetching_utilities.weather_provider.api.models import 
 from rlf.forecasting.data_fetching_utilities.weather_provider.base_weather_provider import (
     BaseWeatherProvider
 )
-from rlf.forecasting.data_fetching_utilities.weather_provider.open_meteo.ecmwf_adapter import (
-    OpenMeteoECMWFAdapter
+from rlf.forecasting.data_fetching_utilities.weather_provider.open_meteo.open_meteo_adapter import (
+    OpenMeteoAdapter
 )
 from rlf.forecasting.data_fetching_utilities.weather_provider.weather_datum import (
     WeatherDatum
@@ -25,7 +25,7 @@ from rlf.forecasting.data_fetching_utilities.weather_provider.weather_datum impo
 DEFAULT_START_DATE = "2022-01-01"
 DEFAULT_END_DATE = datetime.now().strftime("%Y-%m-%d")
 
-RESPONSE_TOLERANCE = 0.25
+RESPONSE_TOLERANCE = 0.05
 
 
 class APIWeatherProvider(BaseWeatherProvider):
@@ -33,7 +33,7 @@ class APIWeatherProvider(BaseWeatherProvider):
 
     def __init__(self,
                  coordinates: List[Coordinate],
-                 api_adapter: BaseAPIAdapter = OpenMeteoECMWFAdapter()) -> None:
+                 api_adapter: BaseAPIAdapter = OpenMeteoAdapter()) -> None:
         """Create an APIWeatherProvider for the given list of coordinates.
 
         Args:
@@ -43,29 +43,31 @@ class APIWeatherProvider(BaseWeatherProvider):
         self.coordinates = coordinates
         self.api_adapter = api_adapter
 
-
-
-    def _build_hourly_parameters_from_response(self, hourly, ...) -> DataFrame:
-        # This is the function that needs to be figure out
+    def _build_hourly_parameters_from_response(self, hourly_parameters_response: dict, tz: str) -> DataFrame:
+        index_parameter = self.api_adapter.get_index_parameter()
+        df = DataFrame(hourly_parameters_response)
+        df.index = df[index_parameter].map(lambda x: datetime.fromisoformat(x).replace(tzinfo=pytz.timezone(tz)).astimezone(pytz.timezone("UTC")))
+        df.drop(columns=[index_parameter], inplace=True)
         return df
-    
-    def build_datum_from_response(self, response, coordinate: Coordinate, precision = 5) -> WeatherDatum:
+
+    def build_datum_from_response(self, response: Response, coordinate: Coordinate, precision: int = 5) -> WeatherDatum:
         """Construct a WeatherDatum from a Response.
 
         Args:
-            response (WeatherApiResponse): The response from the API.
+            response (Response): The Response to draw data from.
             coordinate (Coordinate): The coordinate that is requested by the user.
-            precision (int, optional): The number of decimal places to round the response coordinates to. Defaults to 5.
+            precision (int): The precision to round the response coordinates to. Defaults to 5 decimal places.
 
         Returns:
             WeatherDatum: The constructed WeatherDatum instance.
         """
-        # Issue some query to get a response from the api
+        assert response.data is not None
+
         requested_lon = coordinate.lon
         requested_lat = coordinate.lat
 
-        response_lon = response.Longitude()
-        response_lat = response.Latitude()
+        response_lon = response.data.get("longitude", None)
+        response_lat = response.data.get("latitude", None)
 
         response_rounded_lon = round(response_lon, precision)
         response_rounded_lat = round(response_lat, precision)
@@ -81,18 +83,31 @@ class APIWeatherProvider(BaseWeatherProvider):
                 "To change the tolerance, change the RESPONSE_TOLERANCE constant in the APIWeatherProvider class. "
                 "To change the rounding precision, change the precision argument in the build_datum_from_response method.")
 
+        elif abs(difference_rounded_lon) <= RESPONSE_TOLERANCE or abs(difference_rounded_lat) <= RESPONSE_TOLERANCE:
+            logging.warning(
+                "The API responded with a location within the requested location tolerance, but not equal. "
+                f"The requested location is ({requested_lon}, {requested_lat}) vs. the response location ({response_lon}, {response_lat}). "
+                f"The difference in longitude is {difference_rounded_lon} and the difference in latitude is {difference_rounded_lat}. "
+                "To change the tolerance, change the RESPONSE_TOLERANCE constant in the APIWeatherProvider class. "
+                "To change the rounding precision, change the precision argument in the build_datum_from_response method.")
+        else:
+            pass
+
         datum = WeatherDatum(
             longitude=requested_lon,
             latitude=requested_lat,
             api_response_longitude=response_lon,
             api_response_latitude=response_lat,
-            elevation=response.Elevation(),
-            utc_offset_seconds=response.Hourly(),
-            timezone=response.Timezone(),
-            hourly_units=None,
-            hourly_parameters=self._build_hourly_parameters_from_response(response.Hourly())
-            
-        )
+            elevation=response.data.get(
+                "elevation", None),
+            utc_offset_seconds=response.data.get(
+                "utc_offset_seconds", None),
+            timezone=response.data.get(
+                "timezone", None),
+            hourly_units=response.data.get(
+                "hourly_units", None),
+            hourly_parameters=self._build_hourly_parameters_from_response(
+                response.data.get("hourly", None), response.data["timezone"]))
 
         return datum
 
@@ -117,6 +132,8 @@ class APIWeatherProvider(BaseWeatherProvider):
 
         datum = self.build_datum_from_response(response, coordinate)
 
+        datum.hourly_parameters.columns = self._remap_historical_parameters_from_adapter(datum.hourly_parameters.columns)
+
         return datum
 
     def fetch_historical(self,
@@ -136,6 +153,9 @@ class APIWeatherProvider(BaseWeatherProvider):
             list[WeatherDatum]: A list of WeatherDatum objects containing the weather data and metadata about the locations.
         """
         datums = {}
+
+        if columns:
+            columns = self._remap_historical_parameters_to_adapter(columns)
 
         for coordinate in self.coordinates:
             datum = self.fetch_historical_datum(coordinate=coordinate, start_date=start_date, end_date=end_date, columns=columns)
@@ -159,6 +179,8 @@ class APIWeatherProvider(BaseWeatherProvider):
 
         datum = self.build_datum_from_response(response, coordinate)
 
+        datum.hourly_parameters.columns = self._remap_current_parameters_from_adapter(datum.hourly_parameters.columns)
+
         return datum
 
     def fetch_current(self, columns: Optional[List[str]] = None, sleep_duration: float = 0.0) -> List[WeatherDatum]:
@@ -172,6 +194,9 @@ class APIWeatherProvider(BaseWeatherProvider):
             list[WeatherDatum]: A list of WeatherDatums containing the weather data about the location.
         """
         datums = []
+
+        if columns:
+            columns = self._remap_current_parameters_to_adapter(columns)
 
         for coordinate in self.coordinates:
             datum = self.fetch_current_datum(coordinate=coordinate, columns=columns)
