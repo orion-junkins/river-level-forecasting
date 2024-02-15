@@ -3,7 +3,9 @@ import logging
 import time
 from typing import List, Optional
 
-from pandas import DataFrame
+from pandas import (
+    DataFrame, to_datetime, Index
+)
 
 from rlf.forecasting.data_fetching_utilities.coordinate import Coordinate
 from rlf.forecasting.data_fetching_utilities.weather_provider.api.base_api_adapter import (
@@ -61,12 +63,14 @@ class APIWeatherProviderECMWF(BaseWeatherProvider):
         hourly_data = {}
 
         for i in range(hourly_parameters_response.VariablesLength()):
-            hourly_data[columns[i]] = hourly_parameters_response.Variables(i).ValuesAsNumpy()
+            if columns is not None:
+                hourly_data[columns[i]] = hourly_parameters_response.Variables(i).ValuesAsNumpy()
 
-        hourly_data["time"] = hourly_parameters_response.Time()
+        hourly_data[index_parameter] = to_datetime(hourly_parameters_response.Time(), unit='s')
         df = DataFrame(hourly_data)
 
-        df.index = df[index_parameter].map(lambda x: datetime.fromtimestamp(x))
+        df.index = Index(df[index_parameter])
+
         df.drop(columns=[index_parameter], inplace=True)
         return df
 
@@ -123,7 +127,7 @@ class APIWeatherProviderECMWF(BaseWeatherProvider):
             timezone=response.Timezone(),
             hourly_units={},  # Not Necessary with WeatherApiResponse
             hourly_parameters=self._build_hourly_parameters_from_response(
-                response.Hourly(), response.Timezone(), columns))
+                response.Hourly(), columns))
 
         return datum
 
