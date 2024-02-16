@@ -13,7 +13,7 @@ weather_provider = APIWeatherProviderECMWF(coordinates)
 
 # %% ------------------------------
 # Fetch historical data
-datums = weather_provider.fetch_historical(start_date="2018-01-01", end_date="2018-01-05")
+datums = weather_provider.fetch_historical(start_date="2020-01-01", end_date="2020-01-05")
 
 # Inspect the 0th dataframe
 datums[0].hourly_parameters
@@ -37,7 +37,7 @@ datums[0].hourly_parameters
 
 # %% ------------------------------
 # Fetch a subset of columns only
-datums = weather_provider.fetch_current(columns=['temperature_2m', 'dewpoint_2m'])
+datums = weather_provider.fetch_current(columns=['temperature_2m', 'precipitation'])
 
 # Inspect the 0th dataframe
 datums[0].hourly_parameters
