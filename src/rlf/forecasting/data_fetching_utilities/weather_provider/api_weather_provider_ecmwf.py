@@ -155,6 +155,9 @@ class APIWeatherProviderECMWF(BaseWeatherProvider):
         Returns:
             WeatherDatum: A Datum object containing the weather data and metadata about a coordinate.
         """
+        if columns is None:
+            columns = get_hourly_parameters("ecmwf_shared")
+
         response = self.api_adapter.get_historical(coordinate=coordinate, start_date=start_date, end_date=end_date, columns=columns)
 
         datum = self.build_datum_from_response(response, coordinate, columns)
@@ -197,6 +200,9 @@ class APIWeatherProviderECMWF(BaseWeatherProvider):
         Returns:
             WeatherDatum: A Datum object containing the weather data and metadata about a coordinate
         """
+        if columns is None:
+            columns = get_hourly_parameters("ecmwf_shared")
+
         response = self.api_adapter.get_current(coordinate=coordinate, columns=columns)
 
         datum = self.build_datum_from_response(response, coordinate, columns)
