@@ -88,8 +88,8 @@ class OpenMeteoECMWFAdapter(BaseAPIAdapter):
             "latitude": coordinate.lat,
             "longitude": coordinate.lon,
             "hourly": hourly_params,
-            "past_days": 92,
-            "forecast_days": 7
+            "past_days": past_days,
+            "forecast_days": forecast_days
         }
         return openmeteo.weather_api(url, params=params)[0]
 

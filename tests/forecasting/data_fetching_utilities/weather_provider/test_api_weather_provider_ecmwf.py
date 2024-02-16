@@ -4,30 +4,6 @@ from rlf.forecasting.data_fetching_utilities.coordinate import Coordinate
 from rlf.forecasting.data_fetching_utilities.weather_provider.api_weather_provider_ecmwf import APIWeatherProviderECMWF
 
 
-'''Different Response Object Type, Need to create different one
-
-Assume API Adapter Works
-
-Given that, test Weather Provider
-
-
-For now just run an instantiation test, so no need to actually pull any data
-
-Just make sure it actually creates an object of it
-
-Work more on the demo this week
-
-
-
-
-
-Goal for initial test:
-
-Create an intiitialization of the weather provider
-
-'''
-
-
 @ pytest.fixture
 def weather_provider_ecmwf() -> APIWeatherProviderECMWF:
     coordinates = [Coordinate(lon=-121.6, lat=47.3),

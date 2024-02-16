@@ -1,4 +1,4 @@
-# Demo of the APIWeatherProvider class. Demonstrates fetching historical and current data. Also demonstrates fetching column subsets.
+# Demo of the APIWeatherProviderECMWF class. Demonstrates fetching historical and current data. Also demonstrates fetching column subsets.
 # %% ------------------------------
 # Imports
 from rlf.forecasting.data_fetching_utilities.coordinate import Coordinate
@@ -21,7 +21,7 @@ datums[0].hourly_parameters
 
 # %% ------------------------------
 # Fetch historical data for a subset of columns only
-datums = weather_provider.fetch_historical(columns=['temperature_2m', 'dewpoint_2m'])
+datums = weather_provider.fetch_historical(columns=['temperature_2m', 'precipitation'])
 
 # Inspect the 0th dataframe
 datums[0].hourly_parameters

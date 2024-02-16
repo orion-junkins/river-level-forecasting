@@ -131,9 +131,6 @@ HOURLY_PARAMETERS = {
     ],
     "ecmwf_shared": [
         "temperature_2m",
-        "relative_humidity_2m",
-        "dew_point_2m",
-        "apparent_temperature",
         "precipitation",
         "rain",
         "snowfall",
@@ -144,10 +141,8 @@ HOURLY_PARAMETERS = {
         "cloud_cover_low",
         "cloud_cover_mid",
         "cloud_cover_high",
-        "vapour_pressure_deficit",
         "wind_speed_10m",
         "wind_direction_10m",
-        "wind_gusts_10m",
         "soil_temperature_0_to_7cm",
     ]
 }
