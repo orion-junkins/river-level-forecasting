@@ -67,7 +67,7 @@ class APIWeatherProviderECMWF(BaseWeatherProvider):
                 hourly_data[columns[i]] = hourly_parameters_response.Variables(i).ValuesAsNumpy()
 
         hourly_data[index_parameter] = to_datetime(hourly_parameters_response.Time(), unit='s')
-        df = DataFrame(hourly_data)
+        df = DataFrame(hourly_data, index=[])
 
         df.index = Index(df[index_parameter])
 
