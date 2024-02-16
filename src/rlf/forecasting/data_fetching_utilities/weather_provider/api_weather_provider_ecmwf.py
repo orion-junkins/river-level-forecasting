@@ -1,11 +1,13 @@
 from datetime import datetime
 import logging
-import time
-from typing import List, Optional
-
+from openmeteo_sdk import (
+    WeatherApiResponse, VariablesWithTime, Unit
+)
 from pandas import (
     DataFrame, to_datetime, Index, date_range, Timedelta
 )
+import time
+from typing import List, Optional
 
 from rlf.forecasting.data_fetching_utilities.coordinate import Coordinate
 from rlf.forecasting.data_fetching_utilities.weather_provider.api.base_api_adapter import (
@@ -21,10 +23,6 @@ from rlf.forecasting.data_fetching_utilities.weather_provider.weather_datum impo
     WeatherDatum
 )
 from rlf.forecasting.data_fetching_utilities.weather_provider.open_meteo.parameters import get_hourly_parameters
-
-from openmeteo_sdk import (
-    WeatherApiResponse, VariablesWithTime
-)
 
 
 DEFAULT_START_DATE = "2022-01-01"
@@ -48,6 +46,25 @@ class APIWeatherProviderECMWF(BaseWeatherProvider):
         self.coordinates = coordinates
         self.api_adapter = api_adapter
 
+    def _build_units_dict_from_response(self, hourly_parameters_response: VariablesWithTime, columns: Optional[List[str]] = get_hourly_parameters("ecmwf_shared")) -> dict:
+        if columns is None:
+            columns = get_hourly_parameters("ecmwf_shared")
+
+        def unit_code_to_name(code):
+            for name, value in Unit.Unit.__dict__.items():
+                if value == code:
+                    return name
+            return "Unknown Unit"
+
+        unit_ids = []
+        units = {}
+        for i in range(hourly_parameters_response.VariablesLength()):
+            unit_id = hourly_parameters_response.Variables(i).Unit()
+            unit_ids.append(unit_id)
+            units[columns[i]] = unit_code_to_name(unit_id)
+
+        return units
+
     def _build_hourly_parameters_from_response(self, hourly_parameters_response: VariablesWithTime, columns: Optional[List[str]] = get_hourly_parameters("ecmwf_shared")) -> DataFrame:
         """Construct a WeatherDatum from a Response.
 
@@ -58,13 +75,14 @@ class APIWeatherProviderECMWF(BaseWeatherProvider):
         Returns:
             df: The constructed dataframe, with index column: time
         """
+        if columns is None:
+            columns = get_hourly_parameters("ecmwf_shared")
         index_parameter = self.api_adapter.get_index_parameter()
 
         hourly_data = {}
 
         for i in range(hourly_parameters_response.VariablesLength()):
-            if columns is not None:
-                hourly_data[columns[i]] = hourly_parameters_response.Variables(i).ValuesAsNumpy()
+            hourly_data[columns[i]] = hourly_parameters_response.Variables(i).ValuesAsNumpy()
 
         hourly_data[index_parameter] = date_range(
             start=to_datetime(hourly_parameters_response.Time(), unit="s"),
@@ -132,7 +150,8 @@ class APIWeatherProviderECMWF(BaseWeatherProvider):
             elevation=response.Elevation(),
             utc_offset_seconds=response.UtcOffsetSeconds(),
             timezone=response.Timezone(),
-            hourly_units={},  # Not Necessary with WeatherApiResponse
+            hourly_units=self._build_units_dict_from_response(
+                response.Hourly(), columns),
             hourly_parameters=self._build_hourly_parameters_from_response(
                 response.Hourly(), columns))
 
