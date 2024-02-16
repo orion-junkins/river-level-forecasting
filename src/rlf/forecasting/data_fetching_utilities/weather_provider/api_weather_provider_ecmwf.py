@@ -4,7 +4,7 @@ import time
 from typing import List, Optional
 
 from pandas import (
-    DataFrame, to_datetime, Index
+    DataFrame, to_datetime, Index, date_range, Timedelta
 )
 
 from rlf.forecasting.data_fetching_utilities.coordinate import Coordinate
@@ -66,8 +66,14 @@ class APIWeatherProviderECMWF(BaseWeatherProvider):
             if columns is not None:
                 hourly_data[columns[i]] = hourly_parameters_response.Variables(i).ValuesAsNumpy()
 
-        hourly_data[index_parameter] = to_datetime(hourly_parameters_response.Time(), unit='s')
-        df = DataFrame(hourly_data, index=[])
+        hourly_data[index_parameter] = date_range(
+            start=to_datetime(hourly_parameters_response.Time(), unit="s"),
+            end=to_datetime(hourly_parameters_response.TimeEnd(), unit="s"),
+            freq=Timedelta(seconds=hourly_parameters_response.Interval()),
+            inclusive="left"
+        )
+
+        df = DataFrame(hourly_data)
 
         df.index = Index(df[index_parameter])
 
