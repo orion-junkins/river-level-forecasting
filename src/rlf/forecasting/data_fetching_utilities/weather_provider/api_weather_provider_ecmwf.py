@@ -70,7 +70,8 @@ class APIWeatherProviderECMWF(BaseWeatherProvider):
             start=to_datetime(hourly_parameters_response.Time(), unit="s"),
             end=to_datetime(hourly_parameters_response.TimeEnd(), unit="s"),
             freq=Timedelta(seconds=hourly_parameters_response.Interval()),
-            inclusive="left"
+            inclusive="left",
+            tz='utc'
         )
 
         df = DataFrame(hourly_data)
