@@ -4,7 +4,7 @@ import sys
 
 from rlf.aws_dispatcher import AWSDispatcher
 from rlf.forecasting.data_fetching_utilities.coordinate import Coordinate
-from rlf.forecasting.data_fetching_utilities.weather_provider.api_weather_provider import APIWeatherProvider
+from rlf.forecasting.data_fetching_utilities.weather_provider.api_weather_provider_ecmwf import APIWeatherProviderECMWF
 from rlf.forecasting.data_fetching_utilities.weather_provider.aws_weather_uploader import AWSWeatherUploader
 
 # Parse command line args
@@ -19,7 +19,7 @@ else:
 
 # Tunable parameters
 SLEEP_DURATION = 5
-BUCKET_NAME = "all-weather-data"
+BUCKET_NAME = "ecmwf-weather-data"
 AWS_DIR_NAME = "open-meteo"
 
 # Load a list of Coordinate objects from the json file at the given path
@@ -37,7 +37,7 @@ coordinates = list(set(coordinates))
 print(f'Uploading historical weather data for {len(coordinates)} points')
 
 # Instantiate an APIWeatherProvider, AWSDispatcher, and AWSWeatherUploader
-api_weather_provider = APIWeatherProvider(coordinates=coordinates)
+api_weather_provider = APIWeatherProviderECMWF(coordinates=coordinates)
 aws_dispatcher = AWSDispatcher(bucket_name=BUCKET_NAME, directory_name=AWS_DIR_NAME)
 aws_weather_uploader = AWSWeatherUploader(weather_provider=api_weather_provider, aws_dispatcher=aws_dispatcher)
 
