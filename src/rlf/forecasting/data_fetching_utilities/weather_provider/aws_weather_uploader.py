@@ -33,7 +33,7 @@ class AWSWeatherUploader():
                           start_date: str = DEFAULT_START_DATE,
                           end_date: str = DEFAULT_END_DATE,
                           columns: Optional[List[str]] = None,
-                          years_per_query: int = 2,
+                          years_per_query: int = 10,
                           sleep_duration: int = 0) -> None:
         """Refetch historical datums and store this updated data in AWS. This will overwrite whatever data was previously stored for the current river.
 
