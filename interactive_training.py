@@ -15,14 +15,6 @@ try:
         get_training_data,
         build_model_for_dataset,
     )
-    from rlf.aws_dispatcher import AWSDispatcher
-    from rlf.forecasting.catchment_data import CatchmentData
-    from rlf.forecasting.data_fetching_utilities.coordinate import Coordinate
-    from rlf.forecasting.data_fetching_utilities.level_provider.level_provider_nwis import LevelProviderNWIS
-    from rlf.forecasting.data_fetching_utilities.weather_provider.aws_weather_provider import AWSWeatherProvider
-    from rlf.forecasting.training_dataset import TrainingDataset
-    from rlf.models.contributing_model import ContributingModel
-    from rlf.models.ensemble import Ensemble
 except ImportError as e:
     print(
         "Import error on rlf packages. Ensure rlf and its dependencies have been installed into the local environment."
@@ -31,8 +23,8 @@ except ImportError as e:
     exit(1)
 
 # Tunable Parameters
-gauge_id = "12143400"
-data_file = "data/catchments/12143400.json"
+gauge_id = "14182500"
+data_file = "data/catchments/14182500.json"
 columns_file = "data/columns_ecmwf.txt"
 epochs = 1
 train_stride = 25
