@@ -62,12 +62,12 @@ class LevelProviderNWIS(BaseLevelProvider):
         """
         return self.fetch_level()
 
-    def fetch_level(self, start: str = "1900-01-01", end: Optional[str] = None, parameterCd: str = '00060', drop_cols: List[str] = ["00060_cd", "site_no"], rename_dict: dict = {"00060": "level"}) -> pd.DataFrame:
+    def fetch_level(self, start: str = "2017-01-01", end: Optional[str] = None, parameterCd: str = '00060', drop_cols: List[str] = ["00060_cd", "site_no"], rename_dict: dict = {"00060": "level"}) -> pd.DataFrame:
         """
         Fetch level data for the given gauge ID. Fetches instant values from start to end.
         Drops and renames columns according to given args.
         Args:
-            start (str, optional): Start date in the form "yyyy-mm-dd". Defaults to "1900-01-01", giving data from start of collection.
+            start (str, optional): Start date in the form "yyyy-mm-dd". Defaults to "2017-01-01", giving data from start of collection.
             end  (str, optional): End date in the form "yyyy-mm-dd". Defaults to None, giving data til end of collection.
             parameterCd (str, optional): Which parameter to fetch data for. Defaults to '00060' indicated mean level.
             drop_cols (list, optional): Column names to drop if they are present. Defaults to ["00060_cd", "site_no"] (useless metadata).
