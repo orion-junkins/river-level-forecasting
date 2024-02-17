@@ -18,7 +18,7 @@ else:
     raise ValueError(f'Usage: {sys.argv[0]} CATCHMENT_FILEPATH START_DATE END_DATE, where dates are given in the form "yyyy-mm-dd"')
 
 # Tunable parameters
-SLEEP_DURATION = 5
+SLEEP_DURATION = 21
 BUCKET_NAME = "ecmwf-weather-data"
 AWS_DIR_NAME = "open-meteo"
 
