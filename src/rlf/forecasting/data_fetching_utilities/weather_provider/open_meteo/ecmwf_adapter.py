@@ -63,7 +63,7 @@ class OpenMeteoECMWFAdapter(BaseAPIAdapter):
     def get_current(self,
                     coordinate: Coordinate,
                     past_days: int = 92,
-                    forecast_days: int = 16,
+                    forecast_days: int = 10,
                     columns: Optional[List[str]] = None) -> WeatherApiResponse:
         """Make a GET request to the Open Meteo API for current/forecasted data.
 
