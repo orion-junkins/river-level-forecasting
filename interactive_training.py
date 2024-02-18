@@ -63,6 +63,9 @@ test_stride = 25
 # %% Load or build Dataset
 if rebuild_dataset:
     coordinates = get_coordinates_for_catchment(data_file, gauge_id)
+    if not coordinates:
+        print(f"Coordinates not found for gauge {gauge_id}. Exiting.")
+        exit(1)
     columns = get_columns(columns_file)
     dataset = get_training_data(aws_bucket, gauge_id, coordinates, columns)
     pickle.dump(dataset, open(f"data/dataset_{gauge_id}.pkl", "wb"))
