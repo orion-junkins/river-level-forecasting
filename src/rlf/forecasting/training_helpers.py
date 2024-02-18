@@ -79,6 +79,7 @@ EXTENDED_RNN_PARAMS = {
     },
 }
 
+
 def get_columns(column_file: str) -> List[str]:
     """Get the list of columns from a text file.
 
@@ -247,7 +248,7 @@ def build_model_for_dataset(
     num_epochs: int,
     combiner_holdout_size: int,
     train_stride: int,
-    model_variation: str = "RNN", 
+    model_variation: str = "RNN",
     contributing_model_kwargs: Dict[str, Any] = DEFAULT_RNN_PARAMS
 ) -> Ensemble:
     """Build the EnsembleModel with the contributing models.
