@@ -22,9 +22,12 @@ except ImportError as e:
     print(e)
     exit(1)
 
-# Tunable Parameters
-gauge_id = "14182500"
-data_file = "data/catchments/14182500.json"
+# Whether or not to rebuild the dataset
+rebuild_dataset = False
+
+# Training Parameters
+gauge_id = "12143400"
+data_file = "data/catchments/12143400.json"
 columns_file = "data/columns_ecmwf.txt"
 epochs = 1
 train_stride = 25
@@ -32,8 +35,29 @@ combiner_holdout_size = 365 * 24
 test_start = 0.05
 test_stride = 25
 
-# Whether or not to rebuild the dataset
-rebuild_dataset = True
+# Contributing Model Parameters (fast training, naive params)
+model_variation = "Transformer"
+use_future_covariates = False
+model_params = {
+    "random_state": 42,
+    "input_chunk_length": 72,
+    "output_chunk_length": 24,
+    "d_model": 8,
+    "nhead": 4,
+    "num_encoder_layers" : 3,
+    "num_decoder_layers" : 3,
+    "dim_feedforward" : 32,
+    "dropout": 0.1,
+    "activation" : "relu",
+    "batch_size": 64,
+    "n_epochs": epochs,
+    "force_reset": True,
+    "pl_trainer_kwargs": {
+        "accelerator": "cpu",
+        "enable_progress_bar": True,  # be sure to disable if you use these params on HPC or output file is HUGE
+    },
+}
+
 
 #%%
 # Load the coordinates for which we will fetch weather data
@@ -56,7 +80,11 @@ else:
 #%%
 # Build the model for the dataset
 model = build_model_for_dataset(
-    dataset, epochs, combiner_holdout_size, train_stride
+    dataset, 
+    epochs, 
+    combiner_holdout_size,
+    train_stride,model_variation=model_variation,
+    contributing_model_kwargs=model_params
 )
 
 #%%
@@ -68,7 +96,11 @@ os.makedirs(root_dir, exist_ok=True)
 
 #%%
 # Create a forecaster and fit the model
-forecaster = TrainingForecaster(model, dataset, root_dir=root_dir)
+forecaster = TrainingForecaster(
+    model, 
+    dataset, 
+    root_dir=root_dir, 
+    use_future_covariates=use_future_covariates)
 forecaster.fit()
 
 #%%

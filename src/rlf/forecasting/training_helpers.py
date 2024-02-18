@@ -247,6 +247,8 @@ def build_model_for_dataset(
     num_epochs: int,
     combiner_holdout_size: int,
     train_stride: int,
+    model_variation: str = "RNN", 
+    contributing_model_kwargs: Dict[str, Any] = DEFAULT_RNN_PARAMS
 ) -> Ensemble:
     """Build the EnsembleModel with the contributing models.
 
@@ -261,7 +263,7 @@ def build_model_for_dataset(
     """
     contributing_models = [
         ContributingModel(
-            generate_base_contributing_model(num_epochs=num_epochs), prefix
+            generate_base_contributing_model(num_epochs=num_epochs, model_variation=model_variation, contributing_model_kwargs=contributing_model_kwargs), prefix
         )
         for prefix in training_dataset.subsets
     ]
