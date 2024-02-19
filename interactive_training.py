@@ -3,7 +3,6 @@
 import json
 import os
 from datetime import datetime
-import numpy as np
 import pickle
 from typing import Dict, List, Union
 
@@ -24,33 +23,34 @@ except ImportError as e:
 rebuild_dataset = False
 
 # Training Parameters
-gauge_id = "12143400"
-data_file = "data/catchments/12143400.json"  # Note: Ignored if rebuild_dataset is False
+gauge_id = "14182500"
+data_file = f'data/catchments/{gauge_id}.json'  # Note: Ignored if rebuild_dataset is False
 columns_file = "data/columns_ecmwf.txt"  # Note: Ignored if rebuild_dataset is False
 aws_bucket = "ecmwf-weather-data"  # Note: Ignored if rebuild_dataset is False
-epochs = 0
-train_stride = 25
+epochs = 10
+batch_size = 32
+combiner_train_stride = 4
 combiner_holdout_size = 365 * 24
 
 # Contributing Model Parameters (fast training, naive params)
-model_variation = "Transformer"
+contrib_model_variation = "Transformer"
 use_future_covariates = False
-model_params = {
+contrib_model_params = {
     "random_state": 42,
-    "input_chunk_length": 72,
+    "input_chunk_length": 128,
     "output_chunk_length": 24,
     "d_model": 8,
     "nhead": 4,
     "num_encoder_layers": 3,
     "num_decoder_layers": 3,
-    "dim_feedforward": 32,
+    "dim_feedforward": 512,
     "dropout": 0.1,
     "activation": "relu",
-    "batch_size": 64,
+    "batch_size": batch_size,
     "n_epochs": epochs,
     "force_reset": True,
     "pl_trainer_kwargs": {
-        "accelerator": "cpu",  # Set to GPU if available
+        "accelerator": "cpu",  # Set to 'gpu' if available
         "enable_progress_bar": True,  # Disable on HPC or output file is HUGE
     },
 }
@@ -77,24 +77,25 @@ model = build_model_for_dataset(
     dataset,
     epochs,
     combiner_holdout_size,
-    train_stride,
-    model_variation=model_variation,
-    contributing_model_kwargs=model_params
+    combiner_train_stride,
+    model_variation=contrib_model_variation,
+    contributing_model_kwargs=contrib_model_params
 )
 
 # %% Make a directory for storing this run
-timestamp = datetime.now().strftime("%y-%m-%d_%H-%M")
-id = str(np.random.randint(10000))
-root_dir = f"trained_models/interactive_training/{model_variation}/{epochs}/{timestamp}_{id}/"
+timestamp = datetime.now().strftime("%y-%m-%d_%H-%M-%S")
+root_dir = f"trained_models/interactive_training/{gauge_id}/{contrib_model_variation}/{epochs}/{timestamp}/"
 os.makedirs(root_dir, exist_ok=True)
 
 # %%
-# Create a forecaster and fit the model
+# Create a forecaster
 forecaster = TrainingForecaster(
     model,
     dataset,
     root_dir=root_dir,
     use_future_covariates=use_future_covariates)
+
+# %% Fit the Forecaster
 forecaster.fit()
 
 # %%
@@ -148,14 +149,15 @@ with open(f"{root_dir}/training_params.json", "w") as f:
         "columns_file": columns_file,
         "aws_bucket": aws_bucket,
         "epochs": epochs,
-        "train_stride": train_stride,
+        "batch_size": batch_size,
+        "combiner_train_stride": combiner_train_stride,
         "combiner_holdout_size": combiner_holdout_size,
         "use_future_covariates": use_future_covariates,
         "forecast_horizon": forecast_horizon,
         "test_start": test_start,
         "test_stride": test_stride,
-        "model_variation": model_variation,
-        "model_params": model_params,
+        "contrib_model_variation": contrib_model_variation,
+        "contrib_model_params": contrib_model_params,
     }, f, indent=4)
 
 # Print the results and finishing timestamp
