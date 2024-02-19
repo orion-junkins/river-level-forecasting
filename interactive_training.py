@@ -27,9 +27,9 @@ gauge_id = "14182500"
 data_file = f'data/catchments/{gauge_id}.json'  # Note: Ignored if rebuild_dataset is False
 columns_file = "data/columns_ecmwf.txt"  # Note: Ignored if rebuild_dataset is False
 aws_bucket = "ecmwf-weather-data"  # Note: Ignored if rebuild_dataset is False
-epochs = 10
+epochs = 1
 batch_size = 32
-combiner_train_stride = 4
+combiner_train_stride = 4  # Increase to ~365 for rapid testing
 combiner_holdout_size = 365 * 24
 
 # Contributing Model Parameters (fast training, naive params)
@@ -57,7 +57,7 @@ contrib_model_params = {
 
 # Testing Parameters
 forecast_horizon = 24
-test_start = 0.05
+test_start = 0.05  # Increase to ~0.95 for rapid testing
 test_stride = 25
 
 # %% Load or build Dataset
