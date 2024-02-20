@@ -44,6 +44,25 @@ MODEL_VARIATIONS = {
 
 # Default parameters for the RNN model.
 DEFAULT_RNN_PARAMS = {
+    "input_chunk_length": 24,
+    "random_state": 42,
+    "training_length": 48,
+    "batch_size": 64,
+    "model": "GRU",
+    "hidden_dim": 25,
+    "n_rnn_layers": 1,
+    "dropout": 0.00,
+    "n_epochs": 50,
+    "force_reset": True,
+    "pl_trainer_kwargs": {
+        "accelerator": "gpu",
+        "enable_progress_bar": True,  # be sure to disable if you use these params on HPC or output file is HUGE
+    },
+    "optimizer_kwargs": {'lr': 0.00001}
+}
+
+# Larger RNNN model parameters
+EXTENDED_RNN_PARAMS = {
     "input_chunk_length": 128,
     "random_state": 42,
     "training_length": 320,
@@ -165,6 +184,7 @@ def get_level_true(starting_timestamps: List[str], inference_level_provider: Lev
 
 
 def get_training_data(
+    base_path: str,
     gauge_id: str,
     coordinates: List[Coordinate],
     columns: List[str],
@@ -187,7 +207,7 @@ def get_training_data(
     """
     weather_provider = AWSWeatherProvider(
         coordinates,
-        AWSDispatcher("all-weather-data", "open-meteo")
+        AWSDispatcher(base_path, "open-meteo")
     )
     level_provider = LevelProviderNWIS(gauge_id)
     catchment_data = CatchmentData(
@@ -228,6 +248,8 @@ def build_model_for_dataset(
     num_epochs: int,
     combiner_holdout_size: int,
     train_stride: int,
+    model_variation: str = "RNN",
+    contributing_model_kwargs: Dict[str, Any] = DEFAULT_RNN_PARAMS
 ) -> Ensemble:
     """Build the EnsembleModel with the contributing models.
 
@@ -242,7 +264,7 @@ def build_model_for_dataset(
     """
     contributing_models = [
         ContributingModel(
-            generate_base_contributing_model(num_epochs=num_epochs), prefix
+            generate_base_contributing_model(num_epochs=num_epochs, model_variation=model_variation, contributing_model_kwargs=contributing_model_kwargs), prefix
         )
         for prefix in training_dataset.subsets
     ]

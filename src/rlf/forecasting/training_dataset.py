@@ -14,8 +14,8 @@ class TrainingDataset(BaseDataset):
     def __init__(
         self,
         catchment_data: CatchmentData,
-        validation_size: int = 24 * 365 * 3,
-        test_size: int = 24 * 365 * 3,
+        validation_size: int = 24 * 365,
+        test_size: int = 24 * 365,
         rolling_sum_columns: Optional[List[str]] = None,
         rolling_mean_columns: Optional[List[str]] = None,
         rolling_window_sizes: Sequence[int] = (10 * 24, 30 * 24)

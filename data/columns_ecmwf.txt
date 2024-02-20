@@ -1,0 +1,6 @@
+temperature_2m
+precipitation
+rain
+snowfall
+cloud_cover
+soil_temperature_0_to_7cm

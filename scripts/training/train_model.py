@@ -88,7 +88,7 @@ if __name__ == "__main__":
         exit(1)
 
     columns = get_columns(columns_file)
-    dataset = get_training_data(gauge_id, coordinates, columns)
+    dataset = get_training_data("all-weather-data", gauge_id, coordinates, columns)
     model = build_model_for_dataset(
         dataset, epochs, combiner_holdout_size, train_stride
     )
