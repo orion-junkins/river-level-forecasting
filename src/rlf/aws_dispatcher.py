@@ -1,6 +1,5 @@
 import json
 from typing import List
-import os
 
 from pandas import DataFrame
 import pyarrow.parquet as pq
@@ -9,10 +8,6 @@ import s3fs
 from rlf.forecasting.data_fetching_utilities.coordinate import Coordinate
 from rlf.forecasting.data_fetching_utilities.weather_provider.weather_datum import WeatherDatum
 from typing import Optional
-
-
-DEFAULT_LOCAL_PATH = os.path.join("data", "aws_dispatch")
-os.makedirs(DEFAULT_LOCAL_PATH, exist_ok=True)
 
 
 class AWSDispatcher():

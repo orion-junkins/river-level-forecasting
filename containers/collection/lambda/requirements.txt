@@ -1,0 +1,7 @@
+darts==0.23
+dataretrieval
+simplekml
+pyarrow
+boto3
+s3fs
+lxml
