@@ -34,6 +34,13 @@ class ContributingModel(GlobalForecastingModel):
         self._base_model = base_model
         self._column_prefix = column_prefix
 
+    def extreme_lags(self, **kwargs):
+        pass
+
+    def supports_multivariate(self, **kwargs):
+        pass
+
+
     def fit(
         self,
         *,
